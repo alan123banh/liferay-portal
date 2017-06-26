@@ -1832,7 +1832,7 @@ wrapper.java.additional.11="-Dfile.encoding=UTF-8"]]></replacevalue>
 			src="${app.server.parent.dir}/${app.server.tomcat.zip.name}"
 		>
 			<patternset
-				excludes="apache-tomcat-${app.server.tomcat.version}/temp/**,apache-tomcat-${app.server.tomcat.version}/webapps/**"
+				excludes="apache-tomcat-${app.server.tomcat.version}/webapps/**"
 			/>
 			<mapper
 				type="glob"
@@ -1853,11 +1853,6 @@ wrapper.java.additional.11="-Dfile.encoding=UTF-8"]]></replacevalue>
 			<replacetoken><![CDATA[common.loader="${catalina.base}/lib","${catalina.base}/lib/*.jar","${catalina.home}/lib","${catalina.home}/lib/*.jar"]]></replacetoken>
 			<replacevalue><![CDATA[common.loader="${catalina.base}/lib","${catalina.base}/lib/*.jar","${catalina.home}/lib","${catalina.home}/lib/*.jar","${catalina.home}/lib/ext/global","${catalina.home}/lib/ext/global/*.jar","${catalina.home}/lib/ext","${catalina.home}/lib/ext/*.jar"]]></replacevalue>
 		</replace>
-
-		<echo append="true" file="${app.server.tomcat.dir}/conf/logging.properties">
-			<![CDATA[
-org.apache.catalina.startup.ClassLoaderFactory.level=SEVERE]]>
-		</echo>
 
 		<replace file="${app.server.tomcat.dir}/conf/server.xml">
 			<replacetoken><![CDATA[redirectPort="8443" />]]></replacetoken>

@@ -15,7 +15,6 @@
 							},
 							path: 'select_field.js',
 							requires: [
-								'aui-tooltip',
 								'liferay-ddm-form-field-select-search-support',
 								'liferay-ddm-form-field-select-template',
 								'liferay-ddm-form-renderer-field',

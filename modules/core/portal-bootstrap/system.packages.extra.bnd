@@ -271,7 +271,6 @@ Export-Package:\
 	sun.net.util,\
 	\
 	sun.security.provider,\
-	\
 	*
 Import-Package: !*
 -includeresource:\

@@ -207,21 +207,12 @@ public class FriendlyURLEntryPersistenceTest {
 	}
 
 	@Test
-	public void testCountByG_C_C() throws Exception {
-		_persistence.countByG_C_C(RandomTestUtil.nextLong(),
-			RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
+	public void testCountByG_C_C_C() throws Exception {
+		_persistence.countByG_C_C_C(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
-		_persistence.countByG_C_C(0L, 0L, 0L);
-	}
-
-	@Test
-	public void testCountByG_C_U() throws Exception {
-		_persistence.countByG_C_U(RandomTestUtil.nextLong(),
-			RandomTestUtil.nextLong(), StringPool.BLANK);
-
-		_persistence.countByG_C_U(0L, 0L, StringPool.NULL);
-
-		_persistence.countByG_C_U(0L, 0L, (String)null);
+		_persistence.countByG_C_C_C(0L, 0L, 0L, 0L);
 	}
 
 	@Test
@@ -236,12 +227,24 @@ public class FriendlyURLEntryPersistenceTest {
 	}
 
 	@Test
-	public void testCountByG_C_C_M() throws Exception {
-		_persistence.countByG_C_C_M(RandomTestUtil.nextLong(),
+	public void testCountByG_C_C_C_U() throws Exception {
+		_persistence.countByG_C_C_C_U(RandomTestUtil.nextLong(),
 			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
-			RandomTestUtil.randomBoolean());
+			RandomTestUtil.nextLong(), StringPool.BLANK);
 
-		_persistence.countByG_C_C_M(0L, 0L, 0L, RandomTestUtil.randomBoolean());
+		_persistence.countByG_C_C_C_U(0L, 0L, 0L, 0L, StringPool.NULL);
+
+		_persistence.countByG_C_C_C_U(0L, 0L, 0L, 0L, (String)null);
+	}
+
+	@Test
+	public void testCountByG_C_C_C_M() throws Exception {
+		_persistence.countByG_C_C_C_M(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean());
+
+		_persistence.countByG_C_C_C_M(0L, 0L, 0L, 0L,
+			RandomTestUtil.randomBoolean());
 	}
 
 	@Test
@@ -486,6 +489,10 @@ public class FriendlyURLEntryPersistenceTest {
 			ReflectionTestUtil.<Long>invoke(existingFriendlyURLEntry,
 				"getOriginalGroupId", new Class<?>[0]));
 		Assert.assertEquals(Long.valueOf(
+				existingFriendlyURLEntry.getCompanyId()),
+			ReflectionTestUtil.<Long>invoke(existingFriendlyURLEntry,
+				"getOriginalCompanyId", new Class<?>[0]));
+		Assert.assertEquals(Long.valueOf(
 				existingFriendlyURLEntry.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(existingFriendlyURLEntry,
 				"getOriginalClassNameId", new Class<?>[0]));
@@ -497,6 +504,10 @@ public class FriendlyURLEntryPersistenceTest {
 		Assert.assertEquals(Long.valueOf(existingFriendlyURLEntry.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(existingFriendlyURLEntry,
 				"getOriginalGroupId", new Class<?>[0]));
+		Assert.assertEquals(Long.valueOf(
+				existingFriendlyURLEntry.getCompanyId()),
+			ReflectionTestUtil.<Long>invoke(existingFriendlyURLEntry,
+				"getOriginalCompanyId", new Class<?>[0]));
 		Assert.assertEquals(Long.valueOf(
 				existingFriendlyURLEntry.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(existingFriendlyURLEntry,
@@ -512,6 +523,10 @@ public class FriendlyURLEntryPersistenceTest {
 		Assert.assertEquals(Long.valueOf(existingFriendlyURLEntry.getGroupId()),
 			ReflectionTestUtil.<Long>invoke(existingFriendlyURLEntry,
 				"getOriginalGroupId", new Class<?>[0]));
+		Assert.assertEquals(Long.valueOf(
+				existingFriendlyURLEntry.getCompanyId()),
+			ReflectionTestUtil.<Long>invoke(existingFriendlyURLEntry,
+				"getOriginalCompanyId", new Class<?>[0]));
 		Assert.assertEquals(Long.valueOf(
 				existingFriendlyURLEntry.getClassNameId()),
 			ReflectionTestUtil.<Long>invoke(existingFriendlyURLEntry,

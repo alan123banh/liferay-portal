@@ -150,13 +150,13 @@ public class DLSyncEventMessageListener extends BaseMessageListener {
 
 			boolean calculateChecksum = false;
 
-			String checksum = _syncUtil.getChecksum(modifiedTime, typePK);
+			String checksum = SyncUtil.getChecksum(modifiedTime, typePK);
 
 			if ((checksum == null) && !dlFileEntry.isInTrash()) {
 				calculateChecksum = true;
 			}
 
-			syncDLObject = _syncUtil.toSyncDLObject(
+			syncDLObject = SyncUtil.toSyncDLObject(
 				dlFileEntry, event, calculateChecksum);
 
 			if (checksum != null) {
@@ -168,21 +168,21 @@ public class DLSyncEventMessageListener extends BaseMessageListener {
 			}
 
 			syncDLObject.setLanTokenKey(
-				_syncUtil.getLanTokenKey(modifiedTime, typePK, false));
+				SyncUtil.getLanTokenKey(modifiedTime, typePK, false));
 		}
 		else {
 			DLFolder dlFolder = _dlFolderLocalService.fetchDLFolder(typePK);
 
-			if ((dlFolder == null) || !_syncUtil.isSupportedFolder(dlFolder)) {
+			if ((dlFolder == null) || !SyncUtil.isSupportedFolder(dlFolder)) {
 				return;
 			}
 
-			syncDLObject = _syncUtil.toSyncDLObject(dlFolder, event);
+			syncDLObject = SyncUtil.toSyncDLObject(dlFolder, event);
 		}
 
 		syncDLObject.setModifiedTime(modifiedTime);
 
-		_syncUtil.addSyncDLObject(syncDLObject);
+		SyncUtil.addSyncDLObject(syncDLObject);
 	}
 
 	@Reference(unbind = "-")
@@ -237,8 +237,5 @@ public class DLSyncEventMessageListener extends BaseMessageListener {
 	private DLFolderLocalService _dlFolderLocalService;
 	private DLSyncEventLocalService _dlSyncEventLocalService;
 	private SyncDLObjectLocalService _syncDLObjectLocalService;
-
-	@Reference
-	private SyncUtil _syncUtil;
 
 }

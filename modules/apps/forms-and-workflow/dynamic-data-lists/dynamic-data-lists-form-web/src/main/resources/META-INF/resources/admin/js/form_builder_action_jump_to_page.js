@@ -62,23 +62,24 @@ AUI.add(
 					_createSourceField: function() {
 						var instance = this;
 
-						var value = [];
+						var value;
 
 						var action = instance.get('action');
 
 						if (action && action.source) {
 							if (action.source.value) {
-								value = [action.source.value];
+								value = action.source.value;
 							}
 							else {
 								var options = instance.get('options');
 
-								value = [options[action.source].value];
+								value = options[action.source].value;
 							}
 						}
 
-						instance._sourceField = instance.createSelectField(
+						instance._sourceField = new Liferay.DDM.Field.Select(
 							{
+								bubbleTargets: [instance],
 								fieldName: instance.get('index') + '-action',
 								label: Liferay.Language.get('the'),
 								options: instance.get('options'),
@@ -96,23 +97,24 @@ AUI.add(
 					_createTargetField: function() {
 						var instance = this;
 
-						var value = [];
+						var value;
 
 						var action = instance.get('action');
 
 						if (action && action.target) {
 							if (action.target.value) {
-								value = [action.target.value];
+								value = action.target.value;
 							}
 							else {
 								var options = instance.get('options');
 
-								value = [options[action.target].value];
+								value = options[action.target].value;
 							}
 						}
 
-						instance._targetField = instance.createSelectField(
+						instance._targetField = new Liferay.DDM.Field.Select(
 							{
+								bubbleTargets: [instance],
 								fieldName: instance.get('index') + '-action',
 								label: Liferay.Language.get('the'),
 								options: instance.get('options'),

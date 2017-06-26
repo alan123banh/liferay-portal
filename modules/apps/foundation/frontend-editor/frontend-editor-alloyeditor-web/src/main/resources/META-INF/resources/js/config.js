@@ -11,8 +11,7 @@
 							path: 'alloyeditor.js',
 							requires: [
 								'aui-component',
-								'liferay-portlet-base',
-								'timers'
+								'liferay-portlet-base'
 							]
 						},
 						'liferay-alloy-editor-source': {

@@ -62,7 +62,8 @@ public class PortletPreferencesTestUtil {
 	}
 
 	public static javax.portlet.PortletPreferences
-			fetchLayoutJxPortletPreferences(Layout layout, Portlet portlet)
+			fetchLayoutJxPortletPreferences(
+				Layout layout, Portlet portlet)
 		throws Exception {
 
 		return PortletPreferencesLocalServiceUtil.fetchPreferences(

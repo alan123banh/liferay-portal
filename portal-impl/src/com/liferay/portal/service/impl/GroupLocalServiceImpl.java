@@ -800,6 +800,10 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 					resourcePermission);
 			}
 
+			// Trash
+
+			trashEntryLocalService.deleteEntries(group.getGroupId());
+
 			// Workflow
 
 			List<WorkflowHandler<?>> scopeableWorkflowHandlers =

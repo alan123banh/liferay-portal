@@ -17,51 +17,27 @@
 <%@ include file="/init.jsp" %>
 
 <%
-String redirectURI = ParamUtil.getString(request, "redirectURI");
-
 String clientId = ParamUtil.getString(request, "clientId");
 
-WeDeployAuthApp weDeployAuthApp = WeDeployAuthAppLocalServiceUtil.fetchWeDeployAuthApp(redirectURI, clientId);
+String redirectURI = ParamUtil.getString(request, "redirectURI");
 %>
 
 <div class="container-fluid-1280">
-	<c:choose>
-		<c:when test="<%= weDeployAuthApp == null %>">
-			<div class="alert alert-info">
-				<liferay-ui:message key="no-wedeploy-apps-were-found" />
-			</div>
-		</c:when>
-		<c:otherwise>
-			<p>
-				<liferay-ui:message arguments="<%= weDeployAuthApp.getName() %>" key="x-would-like-to-view-the-following-information" />
-			</p>
+	<div class="button-holder">
+		<portlet:actionURL name="/wedeploy_auth/authorize_user" var="allowAuthorizeUserURL">
+			<portlet:param name="<%= Constants.CMD %>" value="allow" />
+			<portlet:param name="clientId" value="<%= clientId %>" />
+			<portlet:param name="redirectURI" value="<%= redirectURI %>" />
+		</portlet:actionURL>
 
-			<ul>
-				<li>
-					<liferay-ui:message key="full-name" />
-				</li>
-				<li>
-					<liferay-ui:message key="email-address" />
-				</li>
-			</ul>
+		<aui:button cssClass="btn btn-lg btn-primary" href="<%= allowAuthorizeUserURL %>" value='<%= LanguageUtil.get(request, "allow") %>' />
 
-			<div class="button-holder">
-				<portlet:actionURL name="/wedeploy_auth/authorize_user" var="allowAuthorizeUserURL">
-					<portlet:param name="<%= Constants.CMD %>" value="allow" />
-					<portlet:param name="redirectURI" value="<%= redirectURI %>" />
-					<portlet:param name="clientId" value="<%= clientId %>" />
-				</portlet:actionURL>
+		<portlet:actionURL name="/wedeploy_auth/authorize_user" var="denyAuthorizeUserURL">
+			<portlet:param name="<%= Constants.CMD %>" value="deny" />
+			<portlet:param name="clientId" value="<%= clientId %>" />
+			<portlet:param name="redirectURI" value="<%= redirectURI %>" />
+		</portlet:actionURL>
 
-				<aui:button cssClass="btn btn-lg btn-primary" href="<%= allowAuthorizeUserURL %>" value='<%= LanguageUtil.get(request, "allow") %>' />
-
-				<portlet:actionURL name="/wedeploy_auth/authorize_user" var="denyAuthorizeUserURL">
-					<portlet:param name="<%= Constants.CMD %>" value="deny" />
-					<portlet:param name="redirectURI" value="<%= redirectURI %>" />
-					<portlet:param name="clientId" value="<%= clientId %>" />
-				</portlet:actionURL>
-
-				<aui:button cssClass="btn btn-danger btn-lg" href="<%= denyAuthorizeUserURL %>" value='<%= LanguageUtil.get(request, "deny") %>' />
-			</div>
-		</c:otherwise>
-	</c:choose>
+		<aui:button cssClass="btn btn-danger btn-lg" href="<%= denyAuthorizeUserURL %>" value='<%= LanguageUtil.get(request, "deny") %>' />
+	</div>
 </div>

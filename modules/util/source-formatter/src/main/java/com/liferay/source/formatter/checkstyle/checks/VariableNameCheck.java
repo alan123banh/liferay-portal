@@ -32,6 +32,8 @@ import java.util.regex.Pattern;
  */
 public class VariableNameCheck extends AbstractCheck {
 
+	public static final String MSG_RENAME_VARIABLE = "variable.rename";
+
 	@Override
 	public int[] getDefaultTokens() {
 		return new int[] {TokenTypes.PARAMETER_DEF, TokenTypes.VARIABLE_DEF};
@@ -57,7 +59,7 @@ public class VariableNameCheck extends AbstractCheck {
 			if (matcher.find()) {
 				String newName = matcher.group(1) + array[0] + matcher.group(2);
 
-				log(detailAST.getLineNo(), _MSG_RENAME_VARIABLE, name, newName);
+				log(detailAST.getLineNo(), MSG_RENAME_VARIABLE, name, newName);
 			}
 		}
 	}
@@ -92,7 +94,7 @@ public class VariableNameCheck extends AbstractCheck {
 		}
 
 		if (!_classHasVariableWithName(detailAST, newName)) {
-			log(detailAST.getLineNo(), _MSG_RENAME_VARIABLE, name, newName);
+			log(detailAST.getLineNo(), MSG_RENAME_VARIABLE, name, newName);
 		}
 	}
 
@@ -165,8 +167,6 @@ public class VariableNameCheck extends AbstractCheck {
 		new String[] {"DDL", "Ddl"}, new String[] {"DDM", "Ddm"},
 		new String[] {"DL", "Dl"}, new String[] {"PK", "Pk"}
 	};
-
-	private static final String _MSG_RENAME_VARIABLE = "variable.rename";
 
 	private static final Pattern _isVariableNamePattern = Pattern.compile(
 		"(_?)(is|IS_)([A-Z])(.*)");

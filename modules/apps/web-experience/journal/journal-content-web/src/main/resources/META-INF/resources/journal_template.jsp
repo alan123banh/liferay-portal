@@ -40,7 +40,7 @@ String refererPortletName = ParamUtil.getString(request, "refererPortletName");
 		var updateTemplate = function(ddmTemplateKey, ddmTemplateId) {
 			templateId = ddmTemplateId;
 
-			form.setAttribute('<%= HtmlUtil.escape(refererPortletName) %>ddmTemplateKey', ddmTemplateKey);
+			form.attr('<%= HtmlUtil.escape(refererPortletName) %>ddmTemplateKey').val(ddmTemplateKey);
 
 			templatePreview.html('<div class="loading-animation"></div>');
 

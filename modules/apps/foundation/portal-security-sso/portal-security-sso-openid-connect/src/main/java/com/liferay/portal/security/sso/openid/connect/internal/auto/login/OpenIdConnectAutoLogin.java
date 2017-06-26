@@ -20,8 +20,6 @@ import com.liferay.portal.kernel.security.auto.login.BaseAutoLogin;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.security.sso.openid.connect.OpenIdConnect;
-import com.liferay.portal.security.sso.openid.connect.OpenIdConnectFlowState;
-import com.liferay.portal.security.sso.openid.connect.OpenIdConnectSession;
 import com.liferay.portal.security.sso.openid.connect.constants.OpenIdConnectWebKeys;
 
 import javax.servlet.http.HttpServletRequest;
@@ -48,44 +46,26 @@ public class OpenIdConnectAutoLogin extends BaseAutoLogin {
 			return null;
 		}
 
-		HttpSession httpSession = request.getSession(false);
+		HttpSession session = request.getSession();
 
-		if (httpSession == null) {
+		Long userId = (Long)session.getAttribute(
+			OpenIdConnectWebKeys.OPEN_ID_CONNECT_LOGIN);
+
+		if (userId == null) {
 			return null;
 		}
 
-		OpenIdConnectSession openIdConnectSession =
-			(OpenIdConnectSession)httpSession.getAttribute(
-				OpenIdConnectWebKeys.OPEN_ID_CONNECT_SESSION);
+		session.removeAttribute(OpenIdConnectWebKeys.OPEN_ID_CONNECT_LOGIN);
 
-		if (openIdConnectSession == null) {
-			return null;
-		}
+		User user = _userLocalService.getUserById(userId);
 
-		OpenIdConnectFlowState openIdConnectFlowState =
-			openIdConnectSession.getOpenIdConnectFlowState();
+		String[] credentials = new String[3];
 
-		if (OpenIdConnectFlowState.AUTH_COMPLETE.equals(
-				openIdConnectFlowState)) {
+		credentials[0] = String.valueOf(user.getUserId());
+		credentials[1] = user.getPassword();
+		credentials[2] = Boolean.TRUE.toString();
 
-			long userId = openIdConnectSession.getLoginUserId();
-
-			User user = _userLocalService.getUserById(userId);
-
-			String[] credentials = new String[3];
-
-			credentials[0] = String.valueOf(user.getUserId());
-			credentials[1] = user.getPassword();
-			credentials[2] = Boolean.TRUE.toString();
-
-			openIdConnectSession.setOpenIdConnectFlowState(
-				OpenIdConnectFlowState.PORTAL_AUTH_COMPLETE);
-
-			return credentials;
-		}
-		else {
-			return null;
-		}
+		return credentials;
 	}
 
 	@Reference

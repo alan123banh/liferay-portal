@@ -180,15 +180,9 @@ public class WorkflowHandlerRegistryUtil {
 
 					@Override
 					public Void call() throws Exception {
-						boolean hasWorkflowInstanceInProgress =
-							_instance._hasWorkflowInstanceInProgress(
-								companyId, groupId, className, classPK);
-
-						if (!hasWorkflowInstanceInProgress) {
-							workflowHandler.startWorkflowInstance(
-								companyId, groupId, userId, classPK, model,
-								tempWorkflowContext);
-						}
+						workflowHandler.startWorkflowInstance(
+							companyId, groupId, userId, classPK, model,
+							tempWorkflowContext);
 
 						return null;
 					}

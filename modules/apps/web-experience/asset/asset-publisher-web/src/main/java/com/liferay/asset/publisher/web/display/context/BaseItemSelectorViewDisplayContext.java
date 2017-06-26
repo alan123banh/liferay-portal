@@ -17,6 +17,7 @@ package com.liferay.asset.publisher.web.display.context;
 import com.liferay.asset.publisher.web.constants.AssetPublisherWebKeys;
 import com.liferay.asset.publisher.web.util.AssetPublisherUtil;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortalPreferences;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
@@ -24,7 +25,6 @@ import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.site.item.selector.criterion.SiteItemSelectorCriterion;
@@ -107,8 +107,7 @@ public abstract class BaseItemSelectorViewDisplayContext
 	@Override
 	public PortletURL getPortletURL() throws PortletException {
 		PortletURL portletURL = PortletURLUtil.clone(
-			this.portletURL,
-			PortalUtil.getLiferayPortletResponse(getPortletResponse()));
+			this.portletURL, (LiferayPortletResponse)getPortletResponse());
 
 		long plid = ParamUtil.getLong(request, "plid");
 		long groupId = ParamUtil.getLong(request, "groupId");

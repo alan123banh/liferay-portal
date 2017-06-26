@@ -99,9 +99,7 @@
 					publishRenderURL.setParameter("layoutSetBranchId", String.valueOf(layoutSetBranchId));
 					publishRenderURL.setParameter("layoutSetBranchName", layoutSetBranch.getName());
 
-					boolean translateLayoutSetBranchName = LayoutSetBranchConstants.MASTER_BRANCH_NAME.equals(HtmlUtil.escape(layoutSetBranch.getName()));
-
-					publishMessage = LanguageUtil.format(request, publishDialogTitle, HtmlUtil.escape(layoutSetBranch.getName()), translateLayoutSetBranchName);
+					publishMessage = LanguageUtil.format(request, publishDialogTitle, HtmlUtil.escape(layoutSetBranch.getName()), false);
 					%>
 
 				</c:when>

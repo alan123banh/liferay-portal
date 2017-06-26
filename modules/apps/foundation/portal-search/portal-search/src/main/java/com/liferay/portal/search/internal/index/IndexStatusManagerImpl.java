@@ -16,7 +16,6 @@ package com.liferay.portal.search.internal.index;
 
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.concurrent.ConcurrentHashSet;
-import com.liferay.portal.kernel.search.IndexStatusManagerThreadLocal;
 import com.liferay.portal.search.configuration.IndexStatusManagerConfiguration;
 import com.liferay.portal.search.index.IndexStatusManager;
 
@@ -38,11 +37,7 @@ public class IndexStatusManagerImpl implements IndexStatusManager {
 
 	@Override
 	public boolean isIndexReadOnly() {
-		if (IndexStatusManagerThreadLocal.isIndexReadOnly() || _indexReadOnly) {
-			return true;
-		}
-
-		return false;
+		return _indexReadOnly;
 	}
 
 	@Override

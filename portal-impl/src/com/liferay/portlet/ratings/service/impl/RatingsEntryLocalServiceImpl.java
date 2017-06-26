@@ -20,18 +20,19 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.search.Indexer;
+import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.social.SocialActivityManagerUtil;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portlet.ratings.service.base.RatingsEntryLocalServiceBaseImpl;
 import com.liferay.ratings.kernel.exception.EntryScoreException;
 import com.liferay.ratings.kernel.model.RatingsEntry;
 import com.liferay.ratings.kernel.model.RatingsStats;
 import com.liferay.social.kernel.model.SocialActivityConstants;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Brian Wing Shun Chan
@@ -76,25 +77,23 @@ public class RatingsEntryLocalServiceImpl
 			className, classPK);
 
 		int totalEntries = stats.getTotalEntries() - 1;
+		double totalScore = stats.getTotalScore() - oldScore;
 
-		if (totalEntries == 0) {
-			ratingsStatsPersistence.remove(stats);
+		double averageScore = 0;
+
+		if (totalEntries > 0) {
+			averageScore = totalScore / totalEntries;
 		}
-		else {
-			double totalScore = stats.getTotalScore() - oldScore;
 
-			double averageScore = 0;
+		stats.setTotalEntries(totalEntries);
+		stats.setTotalScore(totalScore);
+		stats.setAverageScore(averageScore);
 
-			if (totalEntries > 0) {
-				averageScore = totalScore / totalEntries;
-			}
+		ratingsStatsPersistence.update(stats);
 
-			stats.setTotalEntries(totalEntries);
-			stats.setTotalScore(totalScore);
-			stats.setAverageScore(averageScore);
+		// Indexer
 
-			ratingsStatsPersistence.update(stats);
-		}
+		reindex(stats);
 	}
 
 	@Override
@@ -107,10 +106,6 @@ public class RatingsEntryLocalServiceImpl
 			userId, classNameId, classPK);
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
 	@Override
 	public List<RatingsEntry> getEntries(
 		long userId, String className, List<Long> classPKs) {
@@ -118,23 +113,6 @@ public class RatingsEntryLocalServiceImpl
 		long classNameId = classNameLocalService.getClassNameId(className);
 
 		return ratingsEntryFinder.findByU_C_C(userId, classNameId, classPKs);
-	}
-
-	@Override
-	public Map<Long, RatingsEntry> getEntries(
-		long userId, String className, long[] classPKs) {
-
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		Map<Long, RatingsEntry> ratingsEntries = new HashMap<>();
-
-		for (RatingsEntry entry : ratingsEntryPersistence.findByU_C_C(
-				userId, classNameId, classPKs)) {
-
-			ratingsEntries.put(entry.getClassPK(), entry);
-		}
-
-		return ratingsEntries;
 	}
 
 	@Override
@@ -196,18 +174,18 @@ public class RatingsEntryLocalServiceImpl
 
 			// Stats
 
-			RatingsStats stats = ratingsStatsPersistence.fetchByC_C(
-				classNameId, classPK);
-
-			if (stats == null) {
-				stats = ratingsStatsLocalService.addStats(classNameId, classPK);
-			}
+			RatingsStats stats = ratingsStatsLocalService.getStats(
+				className, classPK);
 
 			stats.setTotalScore(stats.getTotalScore() - oldScore + score);
 			stats.setAverageScore(
 				stats.getTotalScore() / stats.getTotalEntries());
 
 			ratingsStatsPersistence.update(stats);
+
+			// Indexer
+
+			reindex(stats);
 		}
 		else {
 			User user = userPersistence.findByPrimaryKey(userId);
@@ -227,12 +205,8 @@ public class RatingsEntryLocalServiceImpl
 
 			// Stats
 
-			RatingsStats stats = ratingsStatsPersistence.fetchByC_C(
-				classNameId, classPK);
-
-			if (stats == null) {
-				stats = ratingsStatsLocalService.addStats(classNameId, classPK);
-			}
+			RatingsStats stats = ratingsStatsLocalService.getStats(
+				className, classPK);
 
 			stats.setTotalEntries(stats.getTotalEntries() + 1);
 			stats.setTotalScore(stats.getTotalScore() + score);
@@ -240,6 +214,10 @@ public class RatingsEntryLocalServiceImpl
 				stats.getTotalScore() / stats.getTotalEntries());
 
 			ratingsStatsPersistence.update(stats);
+
+			// Indexer
+
+			reindex(stats);
 		}
 
 		// Social
@@ -258,6 +236,14 @@ public class RatingsEntryLocalServiceImpl
 		}
 
 		return entry;
+	}
+
+	protected void reindex(RatingsStats stats) throws PortalException {
+		String className = PortalUtil.getClassName(stats.getClassNameId());
+
+		Indexer<?> indexer = IndexerRegistryUtil.nullSafeGetIndexer(className);
+
+		indexer.reindex(className, stats.getClassPK());
 	}
 
 	protected void validate(double score) throws PortalException {

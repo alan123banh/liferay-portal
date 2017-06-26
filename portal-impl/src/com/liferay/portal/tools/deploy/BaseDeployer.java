@@ -44,7 +44,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.kernel.util.Time;
-import com.liferay.portal.kernel.util.UnsafeConsumer;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
@@ -78,7 +77,6 @@ import java.nio.file.Paths;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -172,7 +170,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 			String extResource =
 				"ext-" + servletContextName + resource.substring(3);
 
-			String path = DeployUtil.getResourcePath(tempDirPaths, extResource);
+			String path = DeployUtil.getResourcePath(extResource);
 
 			if (_log.isDebugEnabled()) {
 				if (path == null) {
@@ -194,7 +192,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 	public void addRequiredJar(List<String> jars, String resource)
 		throws Exception {
 
-		String path = DeployUtil.getResourcePath(tempDirPaths, resource);
+		String path = DeployUtil.getResourcePath(resource);
 
 		if (path == null) {
 			throw new RuntimeException(
@@ -272,39 +270,33 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 	@Override
 	public AutoDeployer cloneAutoDeployer() throws AutoDeployException {
 		try {
-			Class<? extends BaseDeployer> clazz = getClass();
+			Class<?> clazz = getClass();
 
-			BaseDeployer baseDeployer = (BaseDeployer)clazz.newInstance();
+			Deployer deployer = (Deployer)clazz.newInstance();
 
-			baseDeployer.setAppServerType(appServerType);
-			baseDeployer.setAuiTaglibDTD(auiTaglibDTD);
-			baseDeployer.setBaseDir(baseDir);
-			baseDeployer.setDestDir(destDir);
-			baseDeployer.setFilePattern(filePattern);
-			baseDeployer.setJars(jars);
-			baseDeployer.setJbossPrefix(jbossPrefix);
-			baseDeployer.setPortletExtTaglibDTD(portletExtTaglibDTD);
-			baseDeployer.setPortletTaglibDTD(portletTaglibDTD);
-			baseDeployer.setSecurityTaglibDTD(securityTaglibDTD);
-			baseDeployer.setThemeTaglibDTD(themeTaglibDTD);
-			baseDeployer.setTomcatLibDir(tomcatLibDir);
-			baseDeployer.setUiTaglibDTD(uiTaglibDTD);
-			baseDeployer.setUnpackWar(unpackWar);
-			baseDeployer.setUtilTaglibDTD(utilTaglibDTD);
-			baseDeployer.setWars(wars);
-			baseDeployer.setWildflyPrefix(wildflyPrefix);
+			deployer.setAppServerType(appServerType);
+			deployer.setAuiTaglibDTD(auiTaglibDTD);
+			deployer.setBaseDir(baseDir);
+			deployer.setDestDir(destDir);
+			deployer.setFilePattern(filePattern);
+			deployer.setJars(jars);
+			deployer.setJbossPrefix(jbossPrefix);
+			deployer.setPortletExtTaglibDTD(portletExtTaglibDTD);
+			deployer.setPortletTaglibDTD(portletTaglibDTD);
+			deployer.setSecurityTaglibDTD(securityTaglibDTD);
+			deployer.setThemeTaglibDTD(themeTaglibDTD);
+			deployer.setTomcatLibDir(tomcatLibDir);
+			deployer.setUiTaglibDTD(uiTaglibDTD);
+			deployer.setUnpackWar(unpackWar);
+			deployer.setUtilTaglibDTD(utilTaglibDTD);
+			deployer.setWars(wars);
+			deployer.setWildflyPrefix(wildflyPrefix);
 
-			return (AutoDeployer)baseDeployer;
+			return (AutoDeployer)deployer;
 		}
 		catch (Exception e) {
 			throw new AutoDeployException(e);
 		}
-	}
-
-	@Override
-	public void close() throws IOException {
-		UnsafeConsumer.accept(
-			tempDirPaths, DeployUtil::deletePath, IOException.class);
 	}
 
 	@Override
@@ -343,7 +335,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 				jarFullName.lastIndexOf("/") + 1);
 
 			if (!FileUtil.exists(jarFullName)) {
-				DeployUtil.getResourcePath(tempDirPaths, jarName);
+				DeployUtil.getResourcePath(jarName);
 			}
 
 			FileUtil.copyFile(
@@ -400,8 +392,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 			}
 
 			try {
-				String portalTldPath = DeployUtil.getResourcePath(
-					tempDirPaths, portalTld);
+				String portalTldPath = DeployUtil.getResourcePath(portalTld);
 
 				FileUtil.copyFile(
 					portalTldPath, srcFile + "/WEB-INF/tld/" + portalTld, true);
@@ -549,8 +540,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 			return;
 		}
 
-		String contextPath = DeployUtil.getResourcePath(
-			tempDirPaths, "context.xml");
+		String contextPath = DeployUtil.getResourcePath("context.xml");
 
 		String content = FileUtil.read(contextPath);
 
@@ -1295,8 +1285,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 
 		if (ignoreFiltersEnabled) {
 			String ignoreFiltersContent = FileUtil.read(
-				DeployUtil.getResourcePath(
-					tempDirPaths, "ignore-filters-web.xml"));
+				DeployUtil.getResourcePath("ignore-filters-web.xml"));
 
 			return ignoreFiltersContent;
 		}
@@ -1308,7 +1297,6 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 	public String getInvokerFilterContent() {
 		StringBundler sb = new StringBundler(4);
 
-		sb.append(getInvokerFilterContent("ASYNC"));
 		sb.append(getInvokerFilterContent("ERROR"));
 		sb.append(getInvokerFilterContent("FORWARD"));
 		sb.append(getInvokerFilterContent("INCLUDE"));
@@ -1318,7 +1306,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 	}
 
 	public String getInvokerFilterContent(String dispatcher) {
-		StringBundler sb = new StringBundler(24);
+		StringBundler sb = new StringBundler(23);
 
 		sb.append("<filter>");
 		sb.append("<filter-name>Invoker Filter - ");
@@ -1327,7 +1315,6 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 		sb.append("<filter-class>");
 		sb.append(InvokerFilter.class.getName());
 		sb.append("</filter-class>");
-		sb.append("<async-supported>true</async-supported>");
 		sb.append("<init-param>");
 		sb.append("<param-name>dispatcher</param-name>");
 		sb.append("<param-value>");
@@ -1552,13 +1539,12 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 
 		return FileUtil.read(
 			DeployUtil.getResourcePath(
-				tempDirPaths, "servlet-context-include-filters-web.xml"));
+				"servlet-context-include-filters-web.xml"));
 	}
 
 	public String getSessionFiltersContent() throws Exception {
 		String sessionFiltersContent = FileUtil.read(
-			DeployUtil.getResourcePath(
-				tempDirPaths, "session-filters-web.xml"));
+			DeployUtil.getResourcePath("session-filters-web.xml"));
 
 		return sessionFiltersContent;
 	}
@@ -1575,8 +1561,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 
 		if (speedFiltersEnabled) {
 			String speedFiltersContent = FileUtil.read(
-				DeployUtil.getResourcePath(
-					tempDirPaths, "speed-filters-web.xml"));
+				DeployUtil.getResourcePath("speed-filters-web.xml"));
 
 			return speedFiltersContent;
 		}
@@ -1794,7 +1779,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 			}
 		}
 		catch (Exception e) {
-			_log.error(file.getPath() + ": " + e.toString(), e);
+			_log.error(file.getPath() + ": " + e.toString());
 		}
 		finally {
 			if (is != null) {
@@ -2067,7 +2052,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 				getExtraFiltersContent(webXmlVersion, srcFile);
 
 		String liferayWebXmlContent = FileUtil.read(
-			DeployUtil.getResourcePath(tempDirPaths, "web.xml"));
+			DeployUtil.getResourcePath("web.xml"));
 
 		int z = liferayWebXmlContent.indexOf("</web-app>");
 
@@ -2221,7 +2206,6 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 	protected String portletExtTaglibDTD;
 	protected String portletTaglibDTD;
 	protected String securityTaglibDTD;
-	protected final Set<Path> tempDirPaths = new HashSet<>();
 	protected String themeTaglibDTD;
 	protected String tomcatLibDir;
 	protected String uiTaglibDTD;

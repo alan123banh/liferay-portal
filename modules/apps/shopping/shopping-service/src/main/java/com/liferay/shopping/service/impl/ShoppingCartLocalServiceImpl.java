@@ -175,7 +175,7 @@ public class ShoppingCartLocalServiceImpl
 				}
 			}
 			catch (NoSuchCouponException nsce) {
-				throw new NoSuchCouponException(couponCodesArray[i], nsce);
+				throw new NoSuchCouponException(couponCodesArray[i]);
 			}
 
 			// Temporarily disable stacking of coupon codes

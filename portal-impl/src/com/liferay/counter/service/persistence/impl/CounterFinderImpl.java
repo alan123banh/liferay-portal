@@ -199,33 +199,43 @@ public class CounterFinderImpl
 		long rangeMin = -1;
 		int rangeSize = getRangeSize(name);
 
-		try (Connection connection = getConnection();
-			PreparedStatement ps1 = connection.prepareStatement(
-				_SQL_SELECT_ID_BY_NAME)) {
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
 
-			ps1.setString(1, name);
+		try {
+			connection = getConnection();
 
-			try (ResultSet resultSet = ps1.executeQuery()) {
-				if (!resultSet.next()) {
-					rangeMin = _DEFAULT_CURRENT_ID;
+			preparedStatement = connection.prepareStatement(
+				_SQL_SELECT_ID_BY_NAME);
 
-					if (size > rangeMin) {
-						rangeMin = size;
-					}
+			preparedStatement.setString(1, name);
 
-					try (PreparedStatement ps2 = connection.prepareStatement(
-							_SQL_INSERT)) {
+			resultSet = preparedStatement.executeQuery();
 
-						ps2.setString(1, name);
-						ps2.setLong(2, rangeMin);
+			if (!resultSet.next()) {
+				rangeMin = _DEFAULT_CURRENT_ID;
 
-						ps2.executeUpdate();
-					}
+				if (size > rangeMin) {
+					rangeMin = size;
 				}
+
+				resultSet.close();
+				preparedStatement.close();
+
+				preparedStatement = connection.prepareStatement(_SQL_INSERT);
+
+				preparedStatement.setString(1, name);
+				preparedStatement.setLong(2, rangeMin);
+
+				preparedStatement.executeUpdate();
 			}
 		}
 		catch (Exception e) {
 			throw processException(e);
+		}
+		finally {
+			DataAccess.cleanUp(connection, preparedStatement, resultSet);
 		}
 
 		CounterHolder counterHolder = _obtainIncrement(name, rangeSize, size);

@@ -120,12 +120,12 @@ public class GZipFilter extends BasePortalFilter {
 
 		request.setAttribute(SKIP_FILTER, Boolean.TRUE);
 
-		GZipResponse gZipResponse = new GZipResponse(response);
+		GZipResponse gZipResponse = new GZipResponse(request, response);
 
 		processFilter(
 			GZipFilter.class.getName(), request, gZipResponse, filterChain);
 
-		gZipResponse.finishResponse();
+		gZipResponse.finishResponse(true);
 	}
 
 	private static final String _COMPRESS = "compress";

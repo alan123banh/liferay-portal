@@ -94,7 +94,7 @@ public class PortletURLUtil {
 
 		return clone(
 			liferayPortletURL, liferayPortletURL.getLifecycle(),
-			PortalUtil.getLiferayPortletResponse(mimeResponse));
+			(LiferayPortletResponse)mimeResponse);
 	}
 
 	public static PortletURL clone(
@@ -114,8 +114,7 @@ public class PortletURLUtil {
 		LiferayPortletURL liferayPortletURL = (LiferayPortletURL)portletURL;
 
 		return clone(
-			liferayPortletURL, lifecycle,
-			PortalUtil.getLiferayPortletResponse(mimeResponse));
+			liferayPortletURL, lifecycle, (LiferayPortletResponse)mimeResponse);
 	}
 
 	public static PortletURL getCurrent(
@@ -165,8 +164,8 @@ public class PortletURLUtil {
 		PortletRequest portletRequest, MimeResponse mimeResponse) {
 
 		return getCurrent(
-			PortalUtil.getLiferayPortletRequest(portletRequest),
-			PortalUtil.getLiferayPortletResponse(mimeResponse));
+			(LiferayPortletRequest)portletRequest,
+			(LiferayPortletResponse)mimeResponse);
 	}
 
 	public static String getRefreshURL(

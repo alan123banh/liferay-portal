@@ -15,12 +15,12 @@
 package com.liferay.portal.workflow.kaleo.definition.internal.parser;
 
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.workflow.WorkflowException;
 import com.liferay.portal.workflow.kaleo.definition.Assignment;
 import com.liferay.portal.workflow.kaleo.definition.Definition;
 import com.liferay.portal.workflow.kaleo.definition.Task;
 import com.liferay.portal.workflow.kaleo.definition.TaskForm;
 import com.liferay.portal.workflow.kaleo.definition.TaskFormReference;
-import com.liferay.portal.workflow.kaleo.definition.exception.KaleoDefinitionValidationException;
 import com.liferay.portal.workflow.kaleo.definition.parser.NodeValidator;
 
 import java.util.Set;
@@ -39,23 +39,23 @@ public class TaskNodeValidator extends BaseNodeValidator<Task> {
 
 	@Override
 	protected void doValidate(Definition definition, Task task)
-		throws KaleoDefinitionValidationException {
+		throws WorkflowException {
 
 		if (task.getIncomingTransitionsCount() == 0) {
-			throw new KaleoDefinitionValidationException.
-				MustSetIncomingTransition(task.getName());
+			throw new WorkflowException(
+				"No incoming transition found for task " + task.getName());
 		}
 
 		if (task.getOutgoingTransitionsCount() == 0) {
-			throw new KaleoDefinitionValidationException.
-				MustSetOutgoingTransition(task.getName());
+			throw new WorkflowException(
+				"No outgoing transition found for task " + task.getName());
 		}
 
 		Set<Assignment> assignments = task.getAssignments();
 
 		if ((assignments == null) || assignments.isEmpty()) {
-			throw new KaleoDefinitionValidationException.MustSetAssignments(
-				task.getName());
+			throw new WorkflowException(
+				"No assignments for task " + task.getName());
 		}
 
 		Set<TaskForm> taskForms = task.getTaskForms();
@@ -69,9 +69,10 @@ public class TaskNodeValidator extends BaseNodeValidator<Task> {
 			if (Validator.isNull(formDefinition) ||
 				(taskFormReference == null)) {
 
-				throw new KaleoDefinitionValidationException.
-					MustSetTaskFormDefinitionOrReference(
-						task.getName(), taskForm.getName());
+				throw new WorkflowException(
+					"Task form must specify either the form reference or " +
+						"form definition for task: " + task.getName() +
+							" and form: " + taskForm.getName());
 			}
 		}
 	}

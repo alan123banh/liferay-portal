@@ -39,6 +39,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -50,11 +51,11 @@ import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
 import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.xml.SecureXMLFactoryProviderUtil;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -254,7 +255,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 			return null;
 		}
 
-		return PortletIdCodec.decodePortletName(portletId);
+		return PortletConstants.getRootPortletId(portletId);
 	}
 
 	/**
@@ -628,15 +629,23 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 			parentLayout = _layoutLocalService.getLayout(
 				layout.getGroupId(), layout.isPrivateLayout(), parentLayoutId);
 
-			if (_layoutLocalService.hasLayout(
+			try {
+				_layoutLocalService.getLayoutByUuidAndGroupId(
 					parentLayout.getUuid(), liveGroupId,
-					parentLayout.isPrivateLayout())) {
+					parentLayout.isPrivateLayout());
 
 				// If one parent is found, all others are assumed to exist
 
 				break;
 			}
-			else {
+			catch (NoSuchLayoutException nsle) {
+
+				// LPS-52675
+
+				if (_log.isDebugEnabled()) {
+					_log.debug(nsle, nsle);
+				}
+
 				missingParentLayouts.add(parentLayout);
 
 				parentLayoutId = parentLayout.getParentLayoutId();
@@ -1250,7 +1259,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		return MapUtil.getBoolean(
 			parameterMap,
 			PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE +
-				PortletIdCodec.decodePortletName(portletId));
+				PortletConstants.getRootPortletId(portletId));
 	}
 
 	protected Map<String, Boolean> getExportPortletSetupControlsMap(
@@ -1292,29 +1301,29 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		else if (rootPortletId != null) {
 			exportCurPortletConfiguration =
 				exportPortletConfiguration &&
-				MapUtil.getBoolean(
-					parameterMap,
-					PortletDataHandlerKeys.PORTLET_CONFIGURATION +
-						StringPool.UNDERLINE + rootPortletId);
+					MapUtil.getBoolean(
+						parameterMap,
+						PortletDataHandlerKeys.PORTLET_CONFIGURATION +
+							StringPool.UNDERLINE + rootPortletId);
 
 			exportCurPortletArchivedSetups =
 				exportCurPortletConfiguration &&
-				MapUtil.getBoolean(
-					parameterMap,
-					PortletDataHandlerKeys.PORTLET_ARCHIVED_SETUPS +
-						StringPool.UNDERLINE + rootPortletId);
+					MapUtil.getBoolean(
+						parameterMap,
+						PortletDataHandlerKeys.PORTLET_ARCHIVED_SETUPS +
+							StringPool.UNDERLINE + rootPortletId);
 			exportCurPortletSetup =
 				exportCurPortletConfiguration &&
-				MapUtil.getBoolean(
-					parameterMap,
-					PortletDataHandlerKeys.PORTLET_SETUP +
-						StringPool.UNDERLINE + rootPortletId);
+					MapUtil.getBoolean(
+						parameterMap,
+						PortletDataHandlerKeys.PORTLET_SETUP +
+							StringPool.UNDERLINE + rootPortletId);
 			exportCurPortletUserPreferences =
 				exportCurPortletConfiguration &&
-				MapUtil.getBoolean(
-					parameterMap,
-					PortletDataHandlerKeys.PORTLET_USER_PREFERENCES +
-						StringPool.UNDERLINE + rootPortletId);
+					MapUtil.getBoolean(
+						parameterMap,
+						PortletDataHandlerKeys.PORTLET_USER_PREFERENCES +
+							StringPool.UNDERLINE + rootPortletId);
 		}
 
 		Map<String, Boolean> exportPortletSetupControlsMap = new HashMap<>();
@@ -1370,7 +1379,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		return MapUtil.getBoolean(
 			parameterMap,
 			PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE +
-				PortletIdCodec.decodePortletName(portletId));
+				PortletConstants.getRootPortletId(portletId));
 	}
 
 	protected Map<String, Boolean> getImportPortletSetupControlsMap(
@@ -1407,45 +1416,45 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 
 			importCurPortletArchivedSetups =
 				importCurPortletConfiguration &&
-				MapUtil.getBoolean(
-					parameterMap,
-					PortletDataHandlerKeys.PORTLET_ARCHIVED_SETUPS_ALL);
+					MapUtil.getBoolean(
+						parameterMap,
+						PortletDataHandlerKeys.PORTLET_ARCHIVED_SETUPS_ALL);
 			importCurPortletSetup =
 				importCurPortletConfiguration &&
-				MapUtil.getBoolean(
-					parameterMap, PortletDataHandlerKeys.PORTLET_SETUP_ALL);
+					MapUtil.getBoolean(
+						parameterMap, PortletDataHandlerKeys.PORTLET_SETUP_ALL);
 			importCurPortletUserPreferences =
 				importCurPortletConfiguration &&
-				MapUtil.getBoolean(
-					parameterMap,
-					PortletDataHandlerKeys.PORTLET_USER_PREFERENCES_ALL);
+					MapUtil.getBoolean(
+						parameterMap,
+						PortletDataHandlerKeys.PORTLET_USER_PREFERENCES_ALL);
 		}
 		else if (rootPortletId != null) {
 			importCurPortletConfiguration =
 				importPortletConfiguration &&
-				MapUtil.getBoolean(
-					parameterMap,
-					PortletDataHandlerKeys.PORTLET_CONFIGURATION +
-						StringPool.UNDERLINE + rootPortletId);
+					MapUtil.getBoolean(
+						parameterMap,
+						PortletDataHandlerKeys.PORTLET_CONFIGURATION +
+							StringPool.UNDERLINE + rootPortletId);
 
 			importCurPortletArchivedSetups =
 				importCurPortletConfiguration &&
-				MapUtil.getBoolean(
-					parameterMap,
-					PortletDataHandlerKeys.PORTLET_ARCHIVED_SETUPS +
-						StringPool.UNDERLINE + rootPortletId);
+					MapUtil.getBoolean(
+						parameterMap,
+						PortletDataHandlerKeys.PORTLET_ARCHIVED_SETUPS +
+							StringPool.UNDERLINE + rootPortletId);
 			importCurPortletSetup =
 				importCurPortletConfiguration &&
-				MapUtil.getBoolean(
-					parameterMap,
-					PortletDataHandlerKeys.PORTLET_SETUP +
-						StringPool.UNDERLINE + rootPortletId);
+					MapUtil.getBoolean(
+						parameterMap,
+						PortletDataHandlerKeys.PORTLET_SETUP +
+							StringPool.UNDERLINE + rootPortletId);
 			importCurPortletUserPreferences =
 				importCurPortletConfiguration &&
-				MapUtil.getBoolean(
-					parameterMap,
-					PortletDataHandlerKeys.PORTLET_USER_PREFERENCES +
-						StringPool.UNDERLINE + rootPortletId);
+					MapUtil.getBoolean(
+						parameterMap,
+						PortletDataHandlerKeys.PORTLET_USER_PREFERENCES +
+							StringPool.UNDERLINE + rootPortletId);
 		}
 
 		Map<String, Boolean> importPortletSetupMap = new HashMap<>();

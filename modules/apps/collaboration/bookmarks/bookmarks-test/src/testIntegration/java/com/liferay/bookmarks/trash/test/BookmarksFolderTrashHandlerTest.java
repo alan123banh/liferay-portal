@@ -33,8 +33,6 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.trash.exception.RestoreEntryException;
-import com.liferay.trash.exception.TrashEntryException;
 import com.liferay.trash.test.util.BaseTrashHandlerTestCase;
 import com.liferay.trash.test.util.DefaultWhenIsAssetable;
 import com.liferay.trash.test.util.DefaultWhenIsIndexableBaseModel;
@@ -51,7 +49,6 @@ import com.liferay.trash.test.util.WhenParentModelIsSameType;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
@@ -142,28 +139,6 @@ public class BookmarksFolderTrashHandlerTest
 		ServiceTestUtil.setUser(TestPropsValues.getUser());
 
 		super.setUp();
-	}
-
-	@Override
-	@Test(expected = TrashEntryException.class)
-	public void testTrashParentAndBaseModel() throws Exception {
-		try {
-			super.testTrashParentAndBaseModel();
-		}
-		catch (com.liferay.trash.kernel.exception.TrashEntryException tee) {
-			throw new TrashEntryException();
-		}
-	}
-
-	@Override
-	@Test(expected = RestoreEntryException.class)
-	public void testTrashParentAndRestoreParentAndBaseModel() throws Exception {
-		try {
-			super.testTrashParentAndRestoreParentAndBaseModel();
-		}
-		catch (com.liferay.trash.kernel.exception.RestoreEntryException ree) {
-			throw new RestoreEntryException();
-		}
 	}
 
 	@Override

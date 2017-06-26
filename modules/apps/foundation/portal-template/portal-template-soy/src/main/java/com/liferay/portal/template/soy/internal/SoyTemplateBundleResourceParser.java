@@ -17,14 +17,12 @@ package com.liferay.portal.template.soy.internal;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.template.TemplateResourceParser;
 import com.liferay.portal.template.URLResourceParser;
-import com.liferay.portal.template.soy.utils.SoyTemplateUtil;
 
 import java.net.URL;
 
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Marcellus Tavares
@@ -32,30 +30,27 @@ import org.osgi.service.component.annotations.Component;
 @Component(
 	immediate = true,
 	property = {"lang.type=" + TemplateConstants.LANG_TYPE_SOY},
-	service =
-		{SoyTemplateBundleResourceParser.class, TemplateResourceParser.class}
+	service = {
+		SoyTemplateBundleResourceParser.class, TemplateResourceParser.class
+	}
 )
 public class SoyTemplateBundleResourceParser extends URLResourceParser {
 
 	@Override
 	public URL getURL(String templateId) {
-		long bundleId = SoyTemplateUtil.getBundleId(templateId);
-
-		Bundle bundle = _bundleContext.getBundle(bundleId);
-
-		int index = templateId.indexOf(TemplateConstants.BUNDLE_SEPARATOR);
+		int pos = templateId.indexOf(TemplateConstants.BUNDLE_SEPARATOR);
 
 		String templateName = templateId.substring(
-			index + TemplateConstants.BUNDLE_SEPARATOR.length());
+			pos + TemplateConstants.BUNDLE_SEPARATOR.length());
+
+		Bundle bundle = _soyProviderCapabilityBundleRegister.getTemplateBundle(
+			templateId);
 
 		return bundle.getResource(templateName);
 	}
 
-	@Activate
-	protected void activate(BundleContext bundleContext) {
-		_bundleContext = bundleContext;
-	}
-
-	private BundleContext _bundleContext;
+	@Reference(unbind = "-")
+	private SoyProviderCapabilityBundleRegister
+		_soyProviderCapabilityBundleRegister;
 
 }

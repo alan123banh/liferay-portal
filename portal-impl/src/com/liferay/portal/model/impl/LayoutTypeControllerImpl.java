@@ -74,11 +74,8 @@ public class LayoutTypeControllerImpl implements LayoutTypeController {
 			PropsUtil.get(PropsKeys.LAYOUT_URL, filter));
 		_urlFriendliable = GetterUtil.getBoolean(
 			PropsUtil.get(PropsKeys.LAYOUT_URL_FRIENDLIABLE, filter), true);
-
-		String viewPage = GetterUtil.getString(
+		_viewPage = GetterUtil.getString(
 			PropsUtil.get(PropsKeys.LAYOUT_VIEW_PAGE, filter));
-
-		_viewPage = StrutsUtil.TEXT_HTML_DIR + viewPage;
 	}
 
 	@Override
@@ -102,18 +99,23 @@ public class LayoutTypeControllerImpl implements LayoutTypeController {
 	}
 
 	public String getViewPath(String portletId) {
+		String path = StrutsUtil.TEXT_HTML_DIR;
 
 		// Manually check the p_p_id. See LEP-1724.
 
-		if (Validator.isNull(portletId)) {
-			return _viewPage;
+		if (Validator.isNotNull(portletId)) {
+			if (_type.equals(LayoutConstants.TYPE_PANEL)) {
+				path += "/portal/layout/view/panel.jsp";
+			}
+			else {
+				path += "/portal/layout/view/portlet.jsp";
+			}
+		}
+		else {
+			path = StrutsUtil.TEXT_HTML_DIR + _viewPage;
 		}
 
-		if (_type.equals(LayoutConstants.TYPE_PANEL)) {
-			return StrutsUtil.TEXT_HTML_DIR + "/portal/layout/view/panel.jsp";
-		}
-
-		return StrutsUtil.TEXT_HTML_DIR + "/portal/layout/view/portlet.jsp";
+		return path;
 	}
 
 	@Override

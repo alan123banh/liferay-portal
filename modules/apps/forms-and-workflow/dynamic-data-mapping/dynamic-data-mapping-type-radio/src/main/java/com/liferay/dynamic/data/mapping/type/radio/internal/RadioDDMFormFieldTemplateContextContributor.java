@@ -37,8 +37,8 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	immediate = true, property = "ddm.form.field.type.name=radio",
 	service = {
-		DDMFormFieldTemplateContextContributor.class,
-		RadioDDMFormFieldTemplateContextContributor.class
+		RadioDDMFormFieldTemplateContextContributor.class,
+		DDMFormFieldTemplateContextContributor.class
 	}
 )
 public class RadioDDMFormFieldTemplateContextContributor

@@ -94,11 +94,9 @@ public class PushNotificationMessageSender
 
 		JSONArray jsonArray = jsonFactory.createJSONArray();
 
-		Stream<NotificationRecipient> notificationRecipientStream =
-			notificationRecipientsSetStream.flatMap(
-				notificationRecipientSet -> notificationRecipientSet.stream());
-
-		notificationRecipientStream.filter(
+		notificationRecipientsSetStream.flatMap(
+			notificationRecipientsSet -> notificationRecipientsSet.stream()
+		).filter(
 			notificationRecipient -> notificationRecipient.getUserId() > 0
 		).forEach(
 			notificationRecipient ->

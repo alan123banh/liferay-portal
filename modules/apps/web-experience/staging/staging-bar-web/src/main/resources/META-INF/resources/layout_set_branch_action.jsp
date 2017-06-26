@@ -42,7 +42,7 @@ long currentLayoutSetBranchId = GetterUtil.getLong((String)request.getAttribute(
 	<c:if test="<%= LayoutSetBranchPermissionUtil.contains(permissionChecker, layoutSetBranch, ActionKeys.PERMISSIONS) %>">
 		<liferay-security:permissionsURL
 			modelResource="<%= LayoutSetBranch.class.getName() %>"
-			modelResourceDescription="<%= layoutSetBranchDisplayContext.getLayoutSetBranchDisplayName(layoutSetBranch) %>"
+			modelResourceDescription="<%= layoutSetBranch.getName() %>"
 			resourcePrimKey="<%= String.valueOf(layoutSetBranch.getLayoutSetBranchId()) %>"
 			var="permissionsURL"
 			windowState="<%= LiferayWindowState.POP_UP.toString() %>"

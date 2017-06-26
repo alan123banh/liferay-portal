@@ -422,7 +422,7 @@
 						'destroy',
 						function() {
 							if (callback) {
-								callback(linkUrl, selectedItem);
+								callback(linkUrl);
 							}
 						}
 					);

@@ -79,9 +79,7 @@ public class DefaultIndexerRequestBufferExecutor
 			indexerRequestBuffer.remove(indexerRequest);
 		}
 
-		if (!BufferOverflowThreadLocal.isOverflowMode()) {
-			commit(searchEngineIds);
-		}
+		commit(searchEngineIds);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

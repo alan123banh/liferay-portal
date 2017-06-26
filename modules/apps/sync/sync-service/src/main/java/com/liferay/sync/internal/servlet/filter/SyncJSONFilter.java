@@ -219,7 +219,7 @@ public class SyncJSONFilter implements Filter {
 
 		OutputStream outputStream = servletResponse.getOutputStream();
 
-		String json = _syncUtil.buildExceptionMessage(throwable);
+		String json = SyncUtil.buildExceptionMessage(throwable);
 
 		json = "{\"exception\": \"" + json + "\"}";
 
@@ -286,8 +286,5 @@ public class SyncJSONFilter implements Filter {
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private SyncUtil _syncUtil;
 
 }

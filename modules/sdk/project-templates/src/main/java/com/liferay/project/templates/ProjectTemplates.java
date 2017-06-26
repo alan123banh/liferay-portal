@@ -328,9 +328,7 @@ public class ProjectTemplates {
 		if (template.equals("activator") && !className.endsWith("Activator")) {
 			className += "Activator";
 		}
-		else if ((template.equals("freemarker-portlet") ||
-				  template.equals("mvc-portlet") ||
-				  template.equals("spring-mvc-portlet") ||
+		else if ((template.equals("mvc-portlet") ||
 				  template.equals("portlet")) &&
 				 (className.length() > 7) && className.endsWith("Portlet")) {
 

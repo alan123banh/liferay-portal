@@ -44,9 +44,12 @@ import java.util.Set;
  */
 public class UnprocessedExceptionCheck extends AbstractCheck {
 
+	public static final String MSG_UNPROCESSED_EXCEPTION =
+		"exception.unprocessed";
+
 	@Override
 	public int[] getDefaultTokens() {
-		return new int[] {TokenTypes.LITERAL_CATCH, TokenTypes.LITERAL_NEW};
+		return new int[] {TokenTypes.LITERAL_CATCH};
 	}
 
 	@Override
@@ -62,19 +65,12 @@ public class UnprocessedExceptionCheck extends AbstractCheck {
 			return;
 		}
 
-		if (detailAST.getType() == TokenTypes.LITERAL_CATCH) {
-			_checkUnprocessedException(detailAST);
-		}
-		else {
-			_checkUnprocessedThrownException(detailAST);
-		}
-	}
-
-	private void _checkUnprocessedException(DetailAST detailAST) {
 		DetailAST parameterDefAST = detailAST.findFirstToken(
 			TokenTypes.PARAMETER_DEF);
 
 		String exceptionVariableName = _getName(parameterDefAST);
+
+		_checkUnthrownException(detailAST, exceptionVariableName);
 
 		if (_containsVariable(
 				detailAST.findFirstToken(TokenTypes.SLIST),
@@ -133,7 +129,7 @@ public class UnprocessedExceptionCheck extends AbstractCheck {
 				exceptionClassName.equals("SystemException")) {
 
 				log(
-					parameterDefAST.getLineNo(), _MSG_UNPROCESSED_EXCEPTION,
+					parameterDefAST.getLineNo(), MSG_UNPROCESSED_EXCEPTION,
 					originalExceptionClassName);
 
 				break;
@@ -149,53 +145,32 @@ public class UnprocessedExceptionCheck extends AbstractCheck {
 		}
 	}
 
-	private void _checkUnprocessedThrownException(DetailAST detailAST) {
-		String name = _getName(detailAST);
+	private void _checkUnthrownException(
+		DetailAST detailAST, String variableName) {
 
-		if ((name == null) || !name.endsWith("Exception")) {
-			return;
-		}
+		List<DetailAST> literalNewASTList = DetailASTUtil.getAllChildTokens(
+			detailAST, true, TokenTypes.LITERAL_NEW);
 
-		DetailAST parentAST = detailAST.getParent();
+		for (DetailAST literalNewAST : literalNewASTList) {
+			String name = _getName(literalNewAST);
 
-		if (parentAST.getType() != TokenTypes.EXPR) {
-			return;
-		}
-
-		DetailAST exprAST = parentAST;
-
-		while (true) {
-			if (parentAST == null) {
-				return;
+			if ((name == null) || !name.endsWith("Exception")) {
+				continue;
 			}
 
-			if (parentAST.getType() == TokenTypes.LITERAL_CATCH) {
-				break;
+			DetailAST parentAST = literalNewAST.getParent();
+
+			if (parentAST.getType() != TokenTypes.EXPR) {
+				continue;
 			}
 
 			parentAST = parentAST.getParent();
-		}
 
-		DetailAST parameterDefAST = parentAST.findFirstToken(
-			TokenTypes.PARAMETER_DEF);
-
-		String exceptionVariableName = _getName(parameterDefAST);
-
-		if (_containsVariable(
-				parentAST.findFirstToken(TokenTypes.SLIST),
-				exceptionVariableName)) {
-
-			return;
-		}
-
-		parentAST = exprAST.getParent();
-
-		if ((parentAST.getType() == TokenTypes.LITERAL_THROW) ||
-			(parentAST.getType() == TokenTypes.SLIST)) {
-
-			log(
-				detailAST.getLineNo(), _MSG_UNPROCESSED_EXCEPTION,
-				exceptionVariableName);
+			if (parentAST.getType() == TokenTypes.SLIST) {
+				log(
+					literalNewAST.getLineNo(), MSG_UNPROCESSED_EXCEPTION,
+					variableName);
+			}
 		}
 	}
 
@@ -281,8 +256,5 @@ public class UnprocessedExceptionCheck extends AbstractCheck {
 
 		return javaPackage.getName();
 	}
-
-	private static final String _MSG_UNPROCESSED_EXCEPTION =
-		"exception.unprocessed";
 
 }

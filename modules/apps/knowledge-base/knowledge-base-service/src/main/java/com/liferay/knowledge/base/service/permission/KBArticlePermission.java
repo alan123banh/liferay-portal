@@ -18,21 +18,14 @@ import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.service.KBArticleLocalServiceUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
-import com.liferay.portal.kernel.security.permission.BaseModelPermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-
-import org.osgi.service.component.annotations.Component;
 
 /**
  * @author Peter Shin
  * @author Brian Wing Shun Chan
  */
-@Component(
-	property = {"model.class.name=com.liferay.knowledge.base.model.KBArticle"},
-	service = BaseModelPermissionChecker.class
-)
-public class KBArticlePermission implements BaseModelPermissionChecker {
+public class KBArticlePermission {
 
 	public static void check(
 			PermissionChecker permissionChecker, KBArticle kbArticle,
@@ -45,10 +38,11 @@ public class KBArticlePermission implements BaseModelPermissionChecker {
 	}
 
 	public static void check(
-			PermissionChecker permissionChecker, long classPK, String actionId)
+			PermissionChecker permissionChecker, long resourcePrimKey,
+			String actionId)
 		throws PortalException {
 
-		if (!contains(permissionChecker, classPK, actionId)) {
+		if (!contains(permissionChecker, resourcePrimKey, actionId)) {
 			throw new PrincipalException();
 		}
 	}
@@ -71,26 +65,14 @@ public class KBArticlePermission implements BaseModelPermissionChecker {
 	}
 
 	public static boolean contains(
-			PermissionChecker permissionChecker, long classPK, String actionId)
-		throws PortalException {
-
-		KBArticle kbArticle = KBArticleLocalServiceUtil.fetchLatestKBArticle(
-			classPK, WorkflowConstants.STATUS_ANY);
-
-		if (kbArticle == null) {
-			kbArticle = KBArticleLocalServiceUtil.getKBArticle(classPK);
-		}
-
-		return contains(permissionChecker, kbArticle, actionId);
-	}
-
-	@Override
-	public void checkBaseModel(
-			PermissionChecker permissionChecker, long groupId, long primaryKey,
+			PermissionChecker permissionChecker, long resourcePrimKey,
 			String actionId)
 		throws PortalException {
 
-		check(permissionChecker, primaryKey, actionId);
+		KBArticle kbArticle = KBArticleLocalServiceUtil.getLatestKBArticle(
+			resourcePrimKey, WorkflowConstants.STATUS_ANY);
+
+		return contains(permissionChecker, kbArticle, actionId);
 	}
 
 }

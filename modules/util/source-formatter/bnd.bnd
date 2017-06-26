@@ -1,6 +1,6 @@
 Bundle-Name: Liferay Source Formatter
 Bundle-SymbolicName: com.liferay.source.formatter
-Bundle-Version: 1.0.412
+Bundle-Version: 1.0.397
 Import-Package:\
 	!javax.portlet,\
 	\
@@ -8,7 +8,6 @@ Import-Package:\
 	\
 	!org.apache.maven.plugin,\
 	!org.apache.tools.ant.*,\
-	\
 	*
 Main-Class: com.liferay.source.formatter.SourceFormatter
 -includeresource:\

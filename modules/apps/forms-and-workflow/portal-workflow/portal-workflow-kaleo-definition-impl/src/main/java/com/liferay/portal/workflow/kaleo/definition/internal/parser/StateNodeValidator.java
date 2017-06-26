@@ -14,9 +14,9 @@
 
 package com.liferay.portal.workflow.kaleo.definition.internal.parser;
 
+import com.liferay.portal.kernel.workflow.WorkflowException;
 import com.liferay.portal.workflow.kaleo.definition.Definition;
 import com.liferay.portal.workflow.kaleo.definition.State;
-import com.liferay.portal.workflow.kaleo.definition.exception.KaleoDefinitionValidationException;
 import com.liferay.portal.workflow.kaleo.definition.parser.NodeValidator;
 
 import java.util.Objects;
@@ -35,36 +35,38 @@ public class StateNodeValidator extends BaseNodeValidator<State> {
 
 	@Override
 	protected void doValidate(Definition definition, State state)
-		throws KaleoDefinitionValidationException {
+		throws WorkflowException {
 
 		if (state.isInitial()) {
 			validateInitialState(definition, state);
 		}
 		else if (state.getIncomingTransitionsCount() == 0) {
-			throw new KaleoDefinitionValidationException.
-				MustSetIncomingTransition(state.getName());
+			throw new WorkflowException(
+				"No incoming transition found for state " + state.getName());
 		}
 	}
 
 	protected void validateInitialState(Definition definition, State state)
-		throws KaleoDefinitionValidationException {
+		throws WorkflowException {
 
 		State initialState = definition.getInitialState();
 
 		if (!Objects.equals(initialState, state)) {
-			throw new KaleoDefinitionValidationException.
-				MultipleInitialStateNodes(
-					state.getName(), initialState.getName());
+			throw new WorkflowException(
+				"Multiple initial states " + state.getName() + " and " +
+					initialState.getName());
 		}
 
 		if (state.getIncomingTransitionsCount() > 0) {
-			throw new KaleoDefinitionValidationException.
-				MustNotSetIncomingTransition(state.getName());
+			throw new WorkflowException(
+				"An incoming transition was found for initial state " +
+					state.getName());
 		}
 
 		if (state.getOutgoingTransitionsCount() == 0) {
-			throw new KaleoDefinitionValidationException.
-				MustSetOutgoingTransition(state.getName());
+			throw new WorkflowException(
+				"No outgoing transition found for initial state " +
+					state.getName());
 		}
 	}
 

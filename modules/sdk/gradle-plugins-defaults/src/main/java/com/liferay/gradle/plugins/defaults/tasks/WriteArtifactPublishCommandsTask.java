@@ -256,6 +256,13 @@ public class WriteArtifactPublishCommandsTask extends DefaultTask {
 	private void _addPublishCommands(
 		List<String> commands, boolean firstPublish) {
 
+		// Publish snapshot
+
+		commands.add(
+			_getGradleCommand(
+				BasePlugin.UPLOAD_ARCHIVES_TASK_NAME,
+				"-P" + GradleUtil.SNAPSHOT_PROPERTY_NAME));
+
 		// Publish release
 
 		String[] arguments = new String[0];

@@ -74,10 +74,10 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
+import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.model.PortletItem;
 import com.liferay.portal.kernel.model.PortletPreferences;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
@@ -513,7 +513,7 @@ public class PortletImportController implements ImportController {
 						exportImportPortletPreferencesProcessor =
 							ExportImportPortletPreferencesProcessorRegistryUtil.
 								getExportImportPortletPreferencesProcessor(
-									PortletIdCodec.decodePortletName(
+									PortletConstants.getRootPortletId(
 										curPortletId));
 
 					if (exportImportPortletPreferencesProcessor != null) {
@@ -1447,7 +1447,7 @@ public class PortletImportController implements ImportController {
 
 		String rootPortletId = headerElement.attributeValue("root-portlet-id");
 
-		String expectedRootPortletId = PortletIdCodec.decodePortletName(
+		String expectedRootPortletId = PortletConstants.getRootPortletId(
 			portletId);
 
 		if (!expectedRootPortletId.equals(rootPortletId)) {

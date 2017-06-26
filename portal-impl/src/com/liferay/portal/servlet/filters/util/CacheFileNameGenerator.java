@@ -16,75 +16,65 @@ package com.liferay.portal.servlet.filters.util;
 
 import com.liferay.portal.kernel.cache.key.CacheKeyGenerator;
 import com.liferay.portal.kernel.cache.key.CacheKeyGeneratorUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.Digester;
 import com.liferay.portal.kernel.util.DigesterUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.registry.collections.ServiceTrackerCollections;
-
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Miguel Pastor
- * @author Carlos Sierra Andrés
  */
 public class CacheFileNameGenerator {
 
-	public static String getCacheFileName(
-		HttpServletRequest request, String cacheName) {
+	public String getCacheFileName(
+		Class<?> clazz, HttpServletRequest request,
+		String[] removeParameterNames, String[] cacheKeyKeys) {
 
 		CacheKeyGenerator cacheKeyGenerator =
-			CacheKeyGeneratorUtil.getCacheKeyGenerator(cacheName);
+			CacheKeyGeneratorUtil.getCacheKeyGenerator(clazz.getName());
 
 		cacheKeyGenerator.append(HttpUtil.getProtocol(request.isSecure()));
 		cacheKeyGenerator.append(StringPool.UNDERLINE);
 		cacheKeyGenerator.append(request.getRequestURI());
 
-		StringBundler queryStringSB = new StringBundler(
-			_cacheFileNameContributors.size() * 4);
+		StringBundler sb = new StringBundler();
 
-		for (CacheFileNameContributor cacheFileNameContributor :
-				_cacheFileNameContributors) {
+		sb.append(StringPool.QUESTION);
+		sb.append(request.getQueryString());
 
-			String value = cacheFileNameContributor.getParameterValue(request);
+		String queryString = sb.toString();
 
-			if (value == null) {
-				continue;
+		if (removeParameterNames != null) {
+			for (String removeParameterName : removeParameterNames) {
+				queryString = HttpUtil.removeParameter(
+					queryString, removeParameterName);
 			}
-
-			queryStringSB.append(StringPool.UNDERLINE);
-			queryStringSB.append(cacheFileNameContributor.getParameterName());
-			queryStringSB.append(StringPool.UNDERLINE);
-			queryStringSB.append(value);
 		}
 
-		cacheKeyGenerator.append(
-			DigesterUtil.digestBase64(
-				Digester.SHA_256, queryStringSB.toString()));
+		queryString = HttpUtil.getQueryString(queryString);
 
-		return _sterilizeFileName(String.valueOf(cacheKeyGenerator.finish()));
+		String queryStringDigest = DigesterUtil.digestBase64(
+			Digester.SHA_256, queryString);
+
+		queryStringDigest = queryStringDigest.replaceAll(
+			"\\+", StringPool.DASH);
+		queryStringDigest = queryStringDigest.replaceAll(
+			StringPool.SLASH, StringPool.AT);
+		queryStringDigest = queryStringDigest.replaceAll(
+			StringPool.EQUAL, StringPool.UNDERLINE);
+
+		cacheKeyGenerator.append(queryStringDigest);
+
+		if (cacheKeyKeys != null) {
+			for (String cacheKeyKey : cacheKeyKeys) {
+				cacheKeyGenerator.append(cacheKeyKey);
+			}
+		}
+
+		return String.valueOf(cacheKeyGenerator.finish());
 	}
-
-	private static String _sterilizeFileName(String fileName) {
-		return StringUtil.replace(
-			fileName,
-			new char[] {
-				CharPool.SLASH, CharPool.BACK_SLASH, CharPool.PLUS,
-				CharPool.EQUAL
-			},
-			new char[] {
-				CharPool.UNDERLINE, CharPool.UNDERLINE, CharPool.DASH,
-				CharPool.UNDERLINE
-			});
-	}
-
-	private static final List<CacheFileNameContributor>
-		_cacheFileNameContributors = ServiceTrackerCollections.openList(
-			CacheFileNameContributor.class);
 
 }

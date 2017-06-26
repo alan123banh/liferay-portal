@@ -16,7 +16,6 @@ package com.liferay.portal.service.impl;
 
 import com.liferay.exportimport.kernel.staging.MergeLayoutPrototypesThreadLocal;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.NoSuchLayoutRevisionException;
 import com.liferay.portal.kernel.exception.NoSuchPortletPreferencesException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -35,7 +34,6 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.comparator.LayoutRevisionCreateDateComparator;
-import com.liferay.portal.kernel.util.comparator.LayoutRevisionModifiedDateComparator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.portal.service.base.LayoutRevisionLocalServiceBaseImpl;
@@ -266,16 +264,12 @@ public class LayoutRevisionLocalServiceImpl
 			new LayoutRevisionCreateDateComparator(false));
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
 	@Override
 	public LayoutRevision fetchLayoutRevision(
 		long layoutSetBranchId, boolean head, long plid) {
 
-		return layoutRevisionPersistence.fetchByL_H_P_Collection_First(
-			layoutSetBranchId, head, plid, null);
+		return layoutRevisionPersistence.fetchByL_H_P(
+			layoutSetBranchId, head, plid);
 	}
 
 	@Override
@@ -312,17 +306,13 @@ public class LayoutRevisionLocalServiceImpl
 			layoutSetBranchId, parentLayoutRevision, plid);
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
 	@Override
 	public LayoutRevision getLayoutRevision(
 			long layoutSetBranchId, long plid, boolean head)
 		throws PortalException {
 
-		return layoutRevisionPersistence.findByL_H_P_Collection_First(
-			layoutSetBranchId, head, plid, null);
+		return layoutRevisionPersistence.findByL_H_P(
+			layoutSetBranchId, head, plid);
 	}
 
 	@Override
@@ -376,14 +366,6 @@ public class LayoutRevisionLocalServiceImpl
 		long layoutSetBranchId, long plid) {
 
 		return layoutRevisionPersistence.findByL_P(layoutSetBranchId, plid);
-	}
-
-	@Override
-	public List<LayoutRevision> getLayoutRevisions(
-		long layoutSetBranchId, long plid, boolean head) {
-
-		return layoutRevisionPersistence.findByL_H_P_Collection(
-			layoutSetBranchId, head, plid);
 	}
 
 	@Override
@@ -556,8 +538,6 @@ public class LayoutRevisionLocalServiceImpl
 		LayoutRevision layoutRevision =
 			layoutRevisionPersistence.findByPrimaryKey(layoutRevisionId);
 
-		boolean head = layoutRevision.isHead();
-
 		layoutRevision.setStatus(status);
 		layoutRevision.setStatusByUserId(user.getUserId());
 		layoutRevision.setStatusByUserName(user.getFullName());
@@ -589,13 +569,12 @@ public class LayoutRevisionLocalServiceImpl
 				}
 			}
 		}
-		else if (head) {
+		else {
 			List<LayoutRevision> layoutRevisions =
 				layoutRevisionPersistence.findByL_P_S(
 					layoutRevision.getLayoutSetBranchId(),
-					layoutRevision.getPlid(), WorkflowConstants.STATUS_APPROVED,
-					QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-					new LayoutRevisionModifiedDateComparator(false));
+					layoutRevision.getPlid(),
+					WorkflowConstants.STATUS_APPROVED);
 
 			for (LayoutRevision curLayoutRevision : layoutRevisions) {
 				if (curLayoutRevision.getLayoutRevisionId() !=

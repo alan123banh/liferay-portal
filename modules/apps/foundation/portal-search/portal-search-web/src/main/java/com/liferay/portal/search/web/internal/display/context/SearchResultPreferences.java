@@ -21,8 +21,6 @@ public interface SearchResultPreferences {
 
 	public boolean isDisplayResultsInDocumentForm();
 
-	public boolean isHighlightEnabled();
-
 	public boolean isViewInContext();
 
 }

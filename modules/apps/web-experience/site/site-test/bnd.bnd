@@ -7,7 +7,6 @@ Import-Package:\
 	!com.liferay.util.xml,\
 	\
 	!org.junit.experimental.theories,\
-	\
 	*
 Include-Resource: test-classes/integration
 Liferay-Releng-Module-Group-Description:

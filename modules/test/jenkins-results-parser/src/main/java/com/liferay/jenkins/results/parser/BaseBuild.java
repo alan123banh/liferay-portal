@@ -14,9 +14,6 @@
 
 package com.liferay.jenkins.results.parser;
 
-import com.liferay.jenkins.results.parser.failure.message.generator.FailureMessageGenerator;
-import com.liferay.jenkins.results.parser.failure.message.generator.GenericFailureMessageGenerator;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -1742,8 +1739,7 @@ public abstract class BaseBuild implements Build {
 				String archiveMarkerContent = JenkinsResultsParserUtil.toString(
 					buildURL + "/archive-marker", false, 0, 0, 0);
 
-				fromArchive =
-					(archiveMarkerContent != null) &&
+				fromArchive = (archiveMarkerContent != null) &&
 					!archiveMarkerContent.isEmpty();
 			}
 		}

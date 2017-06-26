@@ -14,13 +14,6 @@
 
 package com.liferay.jenkins.results.parser;
 
-import com.liferay.jenkins.results.parser.failure.message.generator.DownstreamFailureMessageGenerator;
-import com.liferay.jenkins.results.parser.failure.message.generator.FailureMessageGenerator;
-import com.liferay.jenkins.results.parser.failure.message.generator.GenericFailureMessageGenerator;
-import com.liferay.jenkins.results.parser.failure.message.generator.PoshiTestFailureMessageGenerator;
-import com.liferay.jenkins.results.parser.failure.message.generator.PoshiValidationFailureMessageGenerator;
-import com.liferay.jenkins.results.parser.failure.message.generator.RebaseFailureMessageGenerator;
-
 import java.io.IOException;
 import java.io.StringWriter;
 
@@ -487,6 +480,13 @@ public class TopLevelBuild extends BaseBuild {
 				rootElement, Dom4JUtil.getNewElement("hr"),
 				Dom4JUtil.getNewElement("h4", null, "Failed Jobs:"));
 
+			Element failedJobsOrderedListElement = Dom4JUtil.getNewElement(
+				"ol", rootElement,
+				Dom4JUtil.getNewElement(
+					"li", null, super.getGitHubMessageElement()));
+
+			int failureCount = 1;
+
 			List<Element> failureElements = new ArrayList<>();
 
 			for (Build downstreamBuild : getDownstreamBuilds(null)) {
@@ -508,9 +508,20 @@ public class TopLevelBuild extends BaseBuild {
 				failureElements.add(downstreamBuild.getGitHubMessageElement());
 			}
 
-			failureElements.add(0, super.getGitHubMessageElement());
+			for (Element failureElement : failureElements) {
+				Element failedJobsListItemElement = Dom4JUtil.getNewElement(
+					"li", failedJobsOrderedListElement);
 
-			Dom4JUtil.getOrderedListElement(failureElements, rootElement, 5);
+				if (failureCount == 5) {
+					failedJobsListItemElement.addText("...");
+
+					break;
+				}
+
+				failedJobsListItemElement.add(failureElement);
+
+				failureCount++;
+			}
 
 			String jobName = getJobName();
 
@@ -561,7 +572,6 @@ public class TopLevelBuild extends BaseBuild {
 
 	private static final FailureMessageGenerator[] _FAILURE_MESSAGE_GENERATORS =
 		{
-			new PoshiTestFailureMessageGenerator(),
 			new PoshiValidationFailureMessageGenerator(),
 			new RebaseFailureMessageGenerator(),
 

@@ -128,57 +128,33 @@ public class NotificationUtil {
 
 	public static void notifyCalendarBookingRecipients(
 			CalendarBooking calendarBooking, NotificationType notificationType,
-			NotificationTemplateType notificationTemplateType, User senderUser)
+			NotificationTemplateType notificationTemplateType, User sender)
 		throws Exception {
 
 		NotificationSender notificationSender =
 			NotificationSenderFactory.getNotificationSender(
 				notificationType.toString());
 
-		if (notificationTemplateType == NotificationTemplateType.DECLINE) {
-			User recipientUser = senderUser;
+		List<NotificationRecipient> notificationRecipients =
+			_getNotificationRecipients(calendarBooking);
 
-			Calendar calendar = calendarBooking.getCalendar();
+		for (NotificationRecipient notificationRecipient :
+				notificationRecipients) {
 
-			senderUser = getDefaultSenderUser(calendar);
+			User user = notificationRecipient.getUser();
 
-			String resourceName = calendar.getName(
-				recipientUser.getLanguageId());
-
-			NotificationRecipient notificationRecipient =
-				new NotificationRecipient(recipientUser);
+			if (user.equals(sender)) {
+				continue;
+			}
 
 			NotificationTemplateContext notificationTemplateContext =
 				NotificationTemplateContextFactory.getInstance(
 					notificationType, notificationTemplateType, calendarBooking,
-					recipientUser);
+					user);
 
 			notificationSender.sendNotification(
-				senderUser.getEmailAddress(), resourceName,
+				sender.getEmailAddress(), sender.getFullName(),
 				notificationRecipient, notificationTemplateContext);
-		}
-		else {
-			List<NotificationRecipient> notificationRecipients =
-				_getNotificationRecipients(calendarBooking);
-
-			for (NotificationRecipient notificationRecipient :
-					notificationRecipients) {
-
-				User user = notificationRecipient.getUser();
-
-				if (user.equals(senderUser)) {
-					continue;
-				}
-
-				NotificationTemplateContext notificationTemplateContext =
-					NotificationTemplateContextFactory.getInstance(
-						notificationType, notificationTemplateType,
-						calendarBooking, user);
-
-				notificationSender.sendNotification(
-					senderUser.getEmailAddress(), senderUser.getFullName(),
-					notificationRecipient, notificationTemplateContext);
-			}
 		}
 	}
 

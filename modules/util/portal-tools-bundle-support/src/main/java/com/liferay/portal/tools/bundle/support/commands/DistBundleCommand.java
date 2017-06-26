@@ -17,7 +17,6 @@ package com.liferay.portal.tools.bundle.support.commands;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
-import com.liferay.portal.tools.bundle.support.constants.BundleSupportConstants;
 import com.liferay.portal.tools.bundle.support.internal.util.FileUtil;
 
 import java.io.File;
@@ -44,17 +43,13 @@ public class DistBundleCommand extends BaseCommand {
 
 		Files.createDirectories(outputPath.getParent());
 
-		File liferayHomeDir = getLiferayHomeDir();
-
-		Path liferayHomeDirPath = liferayHomeDir.toPath();
-
 		if (_format.equals("zip")) {
-			FileUtil.zip(liferayHomeDirPath, _outputFile, _includeFolder);
+			_distBundleZip();
 		}
 		else if (_format.equals("tar") || _format.equals("tar.gz") ||
 				 _format.equals("tgz")) {
 
-			FileUtil.tar(liferayHomeDirPath, _outputFile, _includeFolder);
+			_distBundleTar();
 		}
 		else {
 			throw new IllegalArgumentException(
@@ -86,15 +81,24 @@ public class DistBundleCommand extends BaseCommand {
 		_outputFile = outputFile;
 	}
 
+	private void _distBundleTar() throws Exception {
+		FileUtil.tar(getLiferayHomePath(), _outputFile, _includeFolder);
+	}
+
+	private void _distBundleZip() throws Exception {
+		FileUtil.zip(getLiferayHomePath(), _outputFile, _includeFolder);
+	}
+
+	private static final String _DEFAULT_FORMAT = "zip";
+
 	@Parameter(description = "The archive format.", names = "--format")
-	private String _format = BundleSupportConstants.DEFAULT_BUNDLE_FORMAT;
+	private String _format = _DEFAULT_FORMAT;
 
 	@Parameter(
 		description = "Add a parent folder to the archive.",
 		names = "--include-folder"
 	)
-	private boolean _includeFolder =
-		BundleSupportConstants.DEFAULT_INCLUDE_FOLDER;
+	private boolean _includeFolder;
 
 	@Parameter(
 		description = "The path of the archive.", names = {"-o", "--output"},

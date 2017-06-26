@@ -33,10 +33,7 @@ import java.util.concurrent.Callable;
 
 /**
  * @author Adolfo Pérez
- * @deprecated As of 7.0.0, replaced by {@link
- *             com.liferay.document.library.internal.capabilities.LiferayProcessorCapability}
  */
-@Deprecated
 public class LiferayProcessorCapability
 	implements ProcessorCapability, RepositoryEventAware,
 			   RepositoryWrapperAware {
@@ -104,6 +101,12 @@ public class LiferayProcessorCapability
 	@Override
 	public Repository wrapRepository(Repository repository) {
 		return new LiferayProcessorRepositoryWrapper(repository, this);
+	}
+
+	public enum ResourceGenerationStrategy {
+
+		ALWAYS_GENERATE, REUSE
+
 	}
 
 	protected void registerDLProcessorCallback(

@@ -25,15 +25,11 @@ import java.util.Map;
  */
 public class DDMDataProviderResponse {
 
-	public static DDMDataProviderResponse error(Status status) {
-		return new DDMDataProviderResponse(status, Collections.emptyList());
-	}
-
 	public static DDMDataProviderResponse of(
 		DDMDataProviderResponseOutput... ddmDataProviderResponseOutputs) {
 
 		return new DDMDataProviderResponse(
-			Status.OK, Arrays.asList(ddmDataProviderResponseOutputs));
+			Arrays.asList(ddmDataProviderResponseOutputs));
 	}
 
 	public DDMDataProviderResponseOutput get(String name) {
@@ -44,22 +40,8 @@ public class DDMDataProviderResponse {
 		return Collections.unmodifiableMap(_dataMap);
 	}
 
-	public Status getStatus() {
-		return _status;
-	}
-
-	public enum Status {
-
-		OK, SERVICE_UNAVAILABLE, SHORTCIRCUIT, TIMEOUT, UNAUTHORIZED,
-		UNKNOWN_ERROR
-
-	}
-
 	private DDMDataProviderResponse(
-		Status status,
 		List<DDMDataProviderResponseOutput> ddmDataProviderResponseOutputs) {
-
-		_status = status;
 
 		ddmDataProviderResponseOutputs.forEach(
 			ddmDataProviderResponseOutput -> _dataMap.put(
@@ -69,6 +51,5 @@ public class DDMDataProviderResponse {
 
 	private final Map<String, DDMDataProviderResponseOutput> _dataMap =
 		new HashMap<>();
-	private final Status _status;
 
 }

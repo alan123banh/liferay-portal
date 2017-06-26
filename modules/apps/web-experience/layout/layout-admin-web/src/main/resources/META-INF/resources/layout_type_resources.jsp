@@ -23,24 +23,24 @@ String type = ParamUtil.getString(request, "type", "portlet");
 
 Layout selLayout = layoutsAdminDisplayContext.getSelLayout();
 
-Theme selTheme = null;
+String selThemeId = null;
 
 if (layout.isTypeControlPanel()) {
 	if (layoutsAdminDisplayContext.getSelPlid() != 0) {
 		selLayout = LayoutLocalServiceUtil.getLayout(layoutsAdminDisplayContext.getSelPlid());
 
-		selTheme = selLayout.getTheme();
+		selThemeId = selLayout.getThemeId();
 	}
 	else {
 		LayoutSet selLayoutSet = layoutsAdminDisplayContext.getSelLayoutSet();
 
-		selTheme = selLayoutSet.getTheme();
+		selThemeId = selLayoutSet.getThemeId();
 	}
 }
 else {
 	selLayout = layout;
 
-	selTheme = selLayout.getTheme();
+	selThemeId = layout.getThemeId();
 }
 
 String layoutTemplateId = PropsValues.DEFAULT_LAYOUT_TEMPLATE_ID;
@@ -62,7 +62,7 @@ if (selLayout != null) {
 			<liferay-ui:layout-templates-list
 				layoutTemplateId="<%= layoutTemplateId %>"
 				layoutTemplateIdPrefix="addLayout"
-				layoutTemplates="<%= LayoutTemplateLocalServiceUtil.getLayoutTemplates(selTheme.getThemeId()) %>"
+				layoutTemplates="<%= LayoutTemplateLocalServiceUtil.getLayoutTemplates(selThemeId) %>"
 			/>
 		</div>
 	</c:when>

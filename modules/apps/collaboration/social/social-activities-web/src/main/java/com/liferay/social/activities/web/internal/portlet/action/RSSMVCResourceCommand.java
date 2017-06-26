@@ -144,7 +144,7 @@ public class RSSMVCResourceCommand extends BaseRSSMVCResourceCommand {
 		syndLinks.add(selfSyndLink);
 
 		LiferayPortletResponse liferayPortletResponse =
-			_portal.getLiferayPortletResponse(resourceResponse);
+			(LiferayPortletResponse)resourceResponse;
 
 		ResourceURL rssURL = liferayPortletResponse.createResourceURL();
 

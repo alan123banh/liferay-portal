@@ -38,8 +38,8 @@ import org.osgi.service.component.annotations.Component;
 @Component(
 	immediate = true, property = "ddm.form.field.type.name=fieldset",
 	service = {
-		DDMFormFieldTemplateContextContributor.class,
-		FieldSetDDMFormFieldTemplateContextContributor.class
+		FieldSetDDMFormFieldTemplateContextContributor.class,
+		DDMFormFieldTemplateContextContributor.class
 	}
 )
 public class FieldSetDDMFormFieldTemplateContextContributor

@@ -20,7 +20,7 @@
 	<c:if test="<%= ddmForm != null %>">
 
 		<%
-		request.setAttribute("checkRequired", checkRequired);
+		pageContext.setAttribute("checkRequired", checkRequired);
 
 		DDMFormFieldRenderingContext ddmFormFieldRenderingContext = new DDMFormFieldRenderingContext();
 

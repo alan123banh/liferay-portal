@@ -170,8 +170,6 @@ public abstract class BaseDDLExporter implements DDLExporter {
 			}
 		}
 
-		valueString = HtmlUtil.render(valueString);
-
 		return new DDMFormFieldRenderedValue(
 			ddmFormField.getName(), ddmFormField.getLabel(), valueString);
 	}

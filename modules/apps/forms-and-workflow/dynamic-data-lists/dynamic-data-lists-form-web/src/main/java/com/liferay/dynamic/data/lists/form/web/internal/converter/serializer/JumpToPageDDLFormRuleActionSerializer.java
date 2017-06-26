@@ -29,9 +29,7 @@ public class JumpToPageDDLFormRuleActionSerializer
 	}
 
 	@Override
-	public String serialize(
-		DDLFormRuleSerializerContext ddlFormRuleSerializerContext) {
-
+	public String serialize() {
 		return String.format(
 			_functionCallBinaryExpressionFormat, "jumpPage",
 			_jumpToPageDDLFormRuleAction.getSource(),

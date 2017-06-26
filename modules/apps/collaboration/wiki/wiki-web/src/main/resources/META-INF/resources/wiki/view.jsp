@@ -19,7 +19,7 @@
 <liferay-util:dynamic-include key="com.liferay.wiki.web#/wiki/view.jsp#pre" />
 
 <%
-WikiPortletInstanceConfiguration wikiPortletInstanceConfiguration = wikiRequestHelper.getWikiPortletInstanceConfiguration();
+WikiPortletInstanceOverriddenConfiguration wikiPortletInstanceOverriddenConfiguration = wikiRequestHelper.getWikiPortletInstanceOverridenConfiguration();
 
 boolean followRedirect = ParamUtil.getBoolean(request, "followRedirect", true);
 
@@ -95,13 +95,13 @@ PortletURL taggedPagesURL = renderResponse.createRenderURL();
 taggedPagesURL.setParameter("mvcRenderCommandName", "/wiki/view_tagged_pages");
 taggedPagesURL.setParameter("nodeId", String.valueOf(node.getNodeId()));
 
-AssetEntry layoutAssetEntry = AssetEntryLocalServiceUtil.getEntry(WikiPage.class.getName(), wikiPage.getResourcePrimKey());
-
-AssetEntryServiceUtil.incrementViewCounter(layoutAssetEntry);
+AssetEntryServiceUtil.incrementViewCounter(WikiPage.class.getName(), wikiPage.getResourcePrimKey());
 
 if (Validator.isNotNull(ParamUtil.getString(request, "title"))) {
 	AssetUtil.addLayoutTags(request, AssetTagLocalServiceUtil.getTags(WikiPage.class.getName(), wikiPage.getResourcePrimKey()));
 }
+
+AssetEntry layoutAssetEntry = AssetEntryLocalServiceUtil.getEntry(WikiPage.class.getName(), wikiPage.getResourcePrimKey());
 
 request.setAttribute(WebKeys.LAYOUT_ASSET_ENTRY, layoutAssetEntry);
 
@@ -194,7 +194,7 @@ if (portletTitleBasedNavigation) {
 
 				contextObjects.put("assetEntry", layoutAssetEntry);
 				contextObjects.put("formattedContent", formattedContent);
-				contextObjects.put("wikiPortletInstanceConfiguration", wikiPortletInstanceConfiguration);
+				contextObjects.put("wikiPortletInstanceOverriddenConfiguration", wikiPortletInstanceOverriddenConfiguration);
 				%>
 
 				<c:if test="<%= !portletTitleBasedNavigation %>">
@@ -345,7 +345,6 @@ if (portletTitleBasedNavigation) {
 										<liferay-ui:ratings
 											className="<%= WikiPage.class.getName() %>"
 											classPK="<%= wikiPage.getResourcePrimKey() %>"
-											inTrash="<%= wikiPage.isInTrash() %>"
 										/>
 									</div>
 								</c:if>
@@ -357,9 +356,13 @@ if (portletTitleBasedNavigation) {
 										<div class="row">
 
 											<%
-											List<FileEntry> attachmentsFileEntries = wikiPage.getAttachmentsFileEntries();
+											Map<String, Object> data = new HashMap<String, Object>();
+
+											data.put("senna-off", "true");
 
 											DLMimeTypeDisplayContext dlMimeTypeDisplayContext = (DLMimeTypeDisplayContext)request.getAttribute(WikiWebKeys.DL_MIME_TYPE_DISPLAY_CONTEXT);
+
+											List<FileEntry> attachmentsFileEntries = wikiPage.getAttachmentsFileEntries();
 
 											for (FileEntry fileEntry : attachmentsFileEntries) {
 												String rowURL = PortletFileRepositoryUtil.getDownloadPortletFileEntryURL(themeDisplay, fileEntry, "status=" + WorkflowConstants.STATUS_APPROVED);
@@ -367,6 +370,7 @@ if (portletTitleBasedNavigation) {
 
 												<div class="col-md-4">
 													<liferay-frontend:horizontal-card
+														linkData="<%= data %>"
 														text="<%= fileEntry.getTitle() %>"
 														url="<%= rowURL %>"
 													>

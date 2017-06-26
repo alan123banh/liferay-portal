@@ -29,11 +29,8 @@ import com.liferay.dynamic.data.mapping.util.DDMFormFactory;
 import com.liferay.dynamic.data.mapping.util.DDMFormInstanceFactory;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
-import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCResourceCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
@@ -217,23 +214,11 @@ public class GetDataProviderParametersSettingsMVCResourceCommand
 		return outputsJSONArray;
 	}
 
-	protected String getType(String type) {
-		try {
-			JSONArray typeJSONArray = _jsonFactory.createJSONArray(type);
+	protected String getType(String type) throws Exception {
+		JSONArray typeJSONArray = _jsonFactory.createJSONArray(type);
 
-			return typeJSONArray.getString(0);
-		}
-		catch (JSONException jsone) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(jsone);
-			}
-
-			return type;
-		}
+		return typeJSONArray.getString(0);
 	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		GetDataProviderParametersSettingsMVCResourceCommand.class);
 
 	@Reference
 	private DDMDataProviderInstanceService _ddmDataProviderInstanceService;

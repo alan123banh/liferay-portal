@@ -34,11 +34,11 @@ import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.model.UserPersonalSite;
-import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
@@ -309,11 +309,6 @@ public class GroupImpl extends GroupBaseImpl {
 
 				String groupFriendlyURL = PortalUtil.getGroupFriendlyURL(
 					layoutSet, themeDisplay);
-
-				if (isUser()) {
-					return PortalUtil.addPreservedParameters(
-						themeDisplay, groupFriendlyURL, false, true);
-				}
 
 				return PortalUtil.addPreservedParameters(
 					themeDisplay, groupFriendlyURL);
@@ -1053,7 +1048,7 @@ public class GroupImpl extends GroupBaseImpl {
 		UnicodeProperties typeSettingsProperties =
 			getParentLiveGroupTypeSettingsProperties();
 
-		portletId = PortletIdCodec.decodePortletName(portletId);
+		portletId = PortletConstants.getRootPortletId(portletId);
 
 		String typeSettingsProperty = typeSettingsProperties.getProperty(
 			StagingUtil.getStagedPortletId(portletId));

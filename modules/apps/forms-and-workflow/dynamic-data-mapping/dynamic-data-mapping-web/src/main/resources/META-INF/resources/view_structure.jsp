@@ -19,13 +19,10 @@
 <%
 String redirect = ParamUtil.getString(request, "redirect");
 
+long structureVersionId = ParamUtil.getLong(request, "structureVersionId");
 String portletResourceNamespace = ParamUtil.getString(request, "portletResourceNamespace", renderResponse.getNamespace());
 
-long structureVersionId = ParamUtil.getLong(request, "structureVersionId");
-
 DDMStructureVersion structureVersion = DDMStructureVersionServiceUtil.getStructureVersion(structureVersionId);
-
-DDMStructure structure = structureVersion.getStructure();
 
 String script = BeanParamUtil.getString(structureVersion, request, "definition");
 

@@ -28,7 +28,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
-import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -39,8 +38,7 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.test.log.CaptureAppender;
-import com.liferay.portal.test.log.Log4JLoggerTestUtil;
+import com.liferay.portal.security.permission.AdvancedPermissionChecker;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
@@ -55,13 +53,10 @@ import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Level;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -99,140 +94,112 @@ public class DDMDataProviderPaginatorServletTest {
 		PrincipalThreadLocal.setName(_originalName);
 	}
 
-	@Ignore
 	@Test
 	public void testPagination() throws Exception {
-		try (CaptureAppender captureAppender =
-				Log4JLoggerTestUtil.configureLog4JLogger(
-					_URL_CONFIGURATION_RESOURCE_CLASS_NAME, Level.OFF)) {
+		DDMDataProviderInstance ddmDataProviderInstance =
+			createDDMDataProviderInstance();
 
-			DDMDataProviderInstance ddmDataProviderInstance =
-				createDDMDataProviderInstance();
+		Map<String, String> params = createRequestParametersMap(
+			ddmDataProviderInstance);
 
-			Map<String, String> params = createRequestParametersMap(
-				ddmDataProviderInstance);
+		HttpServletRequest httpServletRequest = createHttpServletRequest(
+			params, 0, 10);
 
-			HttpServletRequest httpServletRequest = createHttpServletRequest(
-				params, 0, 10);
+		JSONArray responseJSONArray = createJSONArray(
+			executeDDMDataProviderPaginatorServlet(httpServletRequest));
 
-			JSONArray responseJSONArray = createJSONArray(
-				executeDDMDataProviderPaginatorServlet(httpServletRequest));
-
-			Assert.assertEquals(10, responseJSONArray.length());
-		}
+		Assert.assertEquals(10, responseJSONArray.length());
 	}
 
-	@Ignore
 	@Test
 	public void testPaginationToDifferentPagesShouldBeDifferent()
 		throws Exception {
 
-		try (CaptureAppender captureAppender =
-				Log4JLoggerTestUtil.configureLog4JLogger(
-					_URL_CONFIGURATION_RESOURCE_CLASS_NAME, Level.OFF)) {
+		DDMDataProviderInstance ddmDataProviderInstance =
+			createDDMDataProviderInstance();
 
-			DDMDataProviderInstance ddmDataProviderInstance =
-				createDDMDataProviderInstance();
+		Map<String, String> params = createRequestParametersMap(
+			ddmDataProviderInstance);
 
-			Map<String, String> params = createRequestParametersMap(
-				ddmDataProviderInstance);
+		HttpServletRequest httpServletRequest = createHttpServletRequest(
+			params, 0, 1);
 
-			HttpServletRequest httpServletRequest = createHttpServletRequest(
-				params, 0, 1);
+		JSONArray responseJSONArray1 = createJSONArray(
+			executeDDMDataProviderPaginatorServlet(httpServletRequest));
 
-			JSONArray responseJSONArray1 = createJSONArray(
-				executeDDMDataProviderPaginatorServlet(httpServletRequest));
+		httpServletRequest = createHttpServletRequest(params, 1, 2);
 
-			httpServletRequest = createHttpServletRequest(params, 1, 2);
+		JSONArray responseJSONArray2 = createJSONArray(
+			executeDDMDataProviderPaginatorServlet(httpServletRequest));
 
-			JSONArray responseJSONArray2 = createJSONArray(
-				executeDDMDataProviderPaginatorServlet(httpServletRequest));
-
-			JSONAssert.assertNotEquals(
-				responseJSONArray1.toJSONString(),
-				responseJSONArray2.toJSONString(), false);
-		}
+		JSONAssert.assertNotEquals(
+			responseJSONArray1.toJSONString(),
+			responseJSONArray2.toJSONString(), false);
 	}
 
-	@Ignore
 	@Test
 	public void testPaginationToSamePageShouldBeEquals() throws Exception {
 		DDMDataProviderInstance ddmDataProviderInstance =
 			createDDMDataProviderInstance();
 
-		try (CaptureAppender captureAppender =
-				Log4JLoggerTestUtil.configureLog4JLogger(
-					_URL_CONFIGURATION_RESOURCE_CLASS_NAME, Level.OFF)) {
+		Map<String, String> params = createRequestParametersMap(
+			ddmDataProviderInstance);
 
-			Map<String, String> params = createRequestParametersMap(
-				ddmDataProviderInstance);
+		HttpServletRequest httpServletRequest = createHttpServletRequest(
+			params, 0, 1);
 
-			HttpServletRequest httpServletRequest = createHttpServletRequest(
-				params, 0, 1);
+		JSONArray responseJSONArray1 = createJSONArray(
+			executeDDMDataProviderPaginatorServlet(httpServletRequest));
 
-			JSONArray responseJSONArray1 = createJSONArray(
-				executeDDMDataProviderPaginatorServlet(httpServletRequest));
+		httpServletRequest = createHttpServletRequest(params, 0, 1);
 
-			httpServletRequest = createHttpServletRequest(params, 0, 1);
+		JSONArray responseJSONArray2 = createJSONArray(
+			executeDDMDataProviderPaginatorServlet(httpServletRequest));
 
-			JSONArray responseJSONArray2 = createJSONArray(
-				executeDDMDataProviderPaginatorServlet(httpServletRequest));
+		Assert.assertEquals(1, responseJSONArray1.length());
 
-			Assert.assertEquals(1, responseJSONArray1.length());
+		Assert.assertEquals(
+			responseJSONArray1.length(), responseJSONArray2.length());
 
-			Assert.assertEquals(
-				responseJSONArray1.length(), responseJSONArray2.length());
-
-			JSONAssert.assertEquals(
-				responseJSONArray1.toJSONString(),
-				responseJSONArray2.toJSONString(), false);
-		}
+		JSONAssert.assertEquals(
+			responseJSONArray1.toJSONString(),
+			responseJSONArray2.toJSONString(), false);
 	}
 
 	@Test
 	public void testPaginationWithInvalidPaginationParametersShouldFail()
 		throws Exception {
 
-		try (CaptureAppender captureAppender =
-				Log4JLoggerTestUtil.configureLog4JLogger(
-					_URL_CONFIGURATION_RESOURCE_CLASS_NAME, Level.OFF)) {
+		DDMDataProviderInstance ddmDataProviderInstance =
+			createDDMDataProviderInstance();
 
-			DDMDataProviderInstance ddmDataProviderInstance =
-				createDDMDataProviderInstance();
+		Map<String, String> params = createRequestParametersMap(
+			ddmDataProviderInstance);
 
-			Map<String, String> params = createRequestParametersMap(
-				ddmDataProviderInstance);
+		HttpServletRequest httpServletRequest = createHttpServletRequest(
+			params, 1, 1);
 
-			HttpServletRequest httpServletRequest = createHttpServletRequest(
-				params, 1, 1);
+		MockHttpServletResponse mockHttpServletResponse =
+			executeDDMDataProviderPaginatorServlet(httpServletRequest);
 
-			MockHttpServletResponse mockHttpServletResponse =
-				executeDDMDataProviderPaginatorServlet(httpServletRequest);
-
-			Assert.assertEquals(
-				MockHttpServletResponse.SC_BAD_REQUEST,
-				mockHttpServletResponse.getStatus());
-		}
+		Assert.assertEquals(
+			MockHttpServletResponse.SC_BAD_REQUEST,
+			mockHttpServletResponse.getStatus());
 	}
 
 	@Test
 	public void testPaginationWithoutRequiredParametersShouldFail()
 		throws Exception {
 
-		try (CaptureAppender captureAppender =
-				Log4JLoggerTestUtil.configureLog4JLogger(
-					_URL_CONFIGURATION_RESOURCE_CLASS_NAME, Level.OFF)) {
+		HttpServletRequest httpServletRequest = createHttpServletRequest(
+			new HashMap<String, String>(), 0, 1);
 
-			HttpServletRequest httpServletRequest = createHttpServletRequest(
-				new HashMap<String, String>(), 0, 1);
+		MockHttpServletResponse mockHttpServletResponse =
+			executeDDMDataProviderPaginatorServlet(httpServletRequest);
 
-			MockHttpServletResponse mockHttpServletResponse =
-				executeDDMDataProviderPaginatorServlet(httpServletRequest);
-
-			Assert.assertEquals(
-				MockHttpServletResponse.SC_BAD_REQUEST,
-				mockHttpServletResponse.getStatus());
-		}
+		Assert.assertEquals(
+			MockHttpServletResponse.SC_BAD_REQUEST,
+			mockHttpServletResponse.getStatus());
 	}
 
 	protected DDMDataProviderInstance createDDMDataProviderInstance()
@@ -428,7 +395,11 @@ public class DDMDataProviderPaginatorServletTest {
 			PermissionThreadLocal.getPermissionChecker();
 
 		PermissionThreadLocal.setPermissionChecker(
-			PermissionCheckerFactoryUtil.create(TestPropsValues.getUser()));
+			new AdvancedPermissionChecker() {
+				{
+					init(TestPropsValues.getUser());
+				}
+			});
 	}
 
 	protected void setUpPrincipalThreadLocal() throws Exception {
@@ -439,9 +410,6 @@ public class DDMDataProviderPaginatorServletTest {
 
 	@DeleteAfterTestRun
 	protected Group group;
-
-	private static final String _URL_CONFIGURATION_RESOURCE_CLASS_NAME =
-		"com.netflix.config.sources.URLConfigurationSource";
 
 	private Servlet _ddmDataProviderPaginatorServlet;
 	private String _originalName;

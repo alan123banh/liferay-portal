@@ -3,51 +3,52 @@ AUI.add(
 	function(A) {
 		var CACHE = {};
 
-		var Settings = Liferay.DDL.Settings;
+		var Lang = A.Lang;
 
 		var FormBuilderSettingsRetriever = A.Component.create(
 			{
+				ATTRS: {
+					getFieldTypeSettingFormContextURL: {
+						validator: Lang.isString,
+						value: ''
+					},
+
+					portletNamespace: {
+						validator: Lang.isString,
+						value: ''
+					}
+				},
+
 				EXTENDS: A.Base,
 
 				NAME: 'liferay-ddl-form-builder-settings-retriever',
 
 				prototype: {
-					getSettingsContext: function(field, callback) {
+					getSettingsContext: function(type, callback) {
 						var instance = this;
 
 						return new A.Promise(
 							function(resolve, reject) {
 								var resolveJSON = function(json) {
-									var parsed = JSON.parse(json);
-
-									resolve(parsed);
-
-									return parsed;
+									resolve(JSON.parse(json));
 								};
-
-								var type = field.get('type');
-
-								var settingsContext = field.get('context.settingsContext');
 
 								var cachedContextJSON = CACHE[type];
 
-								if (settingsContext) {
-									resolve(settingsContext);
-								}
-								else if (cachedContextJSON) {
-									settingsContext = resolveJSON(cachedContextJSON);
-
-									field.set('context.settingsContext', settingsContext);
+								if (cachedContextJSON) {
+									resolveJSON(cachedContextJSON);
 								}
 								else {
 									var payload = {
 										type: type
 									};
 
+									var portletNamespace = instance.get('portletNamespace');
+
 									A.io.request(
-										Settings.getFieldTypeSettingFormContextURL,
+										instance.get('getFieldTypeSettingFormContextURL'),
 										{
-											data: Liferay.Util.ns(Settings.portletNamespace, payload),
+											data: Liferay.Util.ns(portletNamespace, payload),
 											dataType: 'JSON',
 											method: 'GET',
 											on: {
@@ -59,9 +60,7 @@ AUI.add(
 
 													CACHE[type] = contextJSON;
 
-													settingsContext = resolveJSON(contextJSON);
-
-													field.set('context.settingsContext', settingsContext);
+													resolveJSON(contextJSON);
 												}
 											}
 										}

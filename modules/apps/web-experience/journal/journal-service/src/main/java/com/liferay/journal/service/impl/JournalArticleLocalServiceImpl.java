@@ -5533,7 +5533,7 @@ public class JournalArticleLocalServiceImpl
 			smallImage, article.getSmallImageId(), smallImageFile,
 			smallImageBytes);
 
-		// Email and workflow
+		// Email and Workflow
 
 		if (expired && imported) {
 			updateStatus(
@@ -5818,10 +5818,9 @@ public class JournalArticleLocalServiceImpl
 				article.getModifiedDate(), JournalArticle.class.getName(),
 				article.getPrimaryKey(), article.getUuid(),
 				getClassTypeId(article), assetCategoryIds, assetTagNames,
-				isListable(article), false, null, null, null,
-				article.getExpirationDate(), ContentTypes.TEXT_HTML, title,
-				description, description, null, article.getLayoutUuid(), 0, 0,
-				priority);
+				isListable(article), false, null, null, null, null,
+				ContentTypes.TEXT_HTML, title, description, description, null,
+				article.getLayoutUuid(), 0, 0, priority);
 		}
 		else {
 			JournalArticleResource journalArticleResource =
@@ -5840,9 +5839,9 @@ public class JournalArticleLocalServiceImpl
 				journalArticleResource.getResourcePrimKey(),
 				journalArticleResource.getUuid(), getClassTypeId(article),
 				assetCategoryIds, assetTagNames, isListable(article), visible,
-				null, null, publishDate, article.getExpirationDate(),
-				ContentTypes.TEXT_HTML, title, description, description, null,
-				article.getLayoutUuid(), 0, 0, priority);
+				null, null, publishDate, null, ContentTypes.TEXT_HTML, title,
+				description, description, null, article.getLayoutUuid(), 0, 0,
+				priority);
 		}
 
 		assetLinkLocalService.updateLinks(
@@ -6303,11 +6302,11 @@ public class JournalArticleLocalServiceImpl
 				Folder folder = article.addImagesFolder();
 
 				String fileEntryName = DLUtil.getUniqueFileName(
-					folder.getGroupId(), folder.getFolderId(),
+					fileEntry.getGroupId(), folder.getFolderId(),
 					fileEntry.getFileName());
 
 				fileEntry = PortletFileRepositoryUtil.addPortletFileEntry(
-					folder.getGroupId(), fileEntry.getUserId(),
+					groupId, fileEntry.getUserId(),
 					JournalArticle.class.getName(),
 					article.getResourcePrimKey(), JournalConstants.SERVICE_NAME,
 					folder.getFolderId(), fileEntry.getContentStream(),

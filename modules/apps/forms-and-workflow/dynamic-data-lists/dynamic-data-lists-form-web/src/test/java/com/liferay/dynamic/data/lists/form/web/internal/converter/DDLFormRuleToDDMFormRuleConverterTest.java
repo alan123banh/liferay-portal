@@ -14,7 +14,6 @@
 
 package com.liferay.dynamic.data.lists.form.web.internal.converter;
 
-import com.liferay.dynamic.data.lists.form.web.internal.converter.serializer.DDLFormRuleSerializerContext;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormRule;
@@ -22,6 +21,7 @@ import com.liferay.dynamic.data.mapping.storage.FieldConstants;
 import com.liferay.portal.json.JSONFactoryImpl;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.MapUtil;
@@ -63,6 +63,7 @@ public class DDLFormRuleToDDMFormRuleConverterTest
 	@Before
 	public void setUp() throws Exception {
 		setUpDDLFormRuleDeserializer();
+		setUpServiceContextThreadLocal();
 
 		_ddlFormRulesToDDMFormRulesConverter =
 			new DDLFormRuleToDDMFormRuleConverter();
@@ -179,7 +180,7 @@ public class DDLFormRuleToDDMFormRuleConverterTest
 			Arrays.asList(ddmFormField0, ddmFormField1, ddmFormField2));
 
 		PowerMockito.when(
-			_ddlFormRuleSerializerContext.getAttribute("form")
+			_serviceContext.getAttribute("form")
 		).thenReturn(
 			ddmForm
 		);
@@ -270,8 +271,7 @@ public class DDLFormRuleToDDMFormRuleConverterTest
 		String serializedDDLFormRules = read(fileName);
 
 		return _ddlFormRulesToDDMFormRulesConverter.convert(
-			_ddlFormRulesDeserializer.deserialize(serializedDDLFormRules),
-			_ddlFormRuleSerializerContext);
+			_ddlFormRulesDeserializer.deserialize(serializedDDLFormRules));
 	}
 
 	protected List<String> extractCallFunctionParameters(String callFunction) {
@@ -297,16 +297,25 @@ public class DDLFormRuleToDDMFormRuleConverterTest
 		field.set(_ddlFormRulesDeserializer, new JSONFactoryImpl());
 	}
 
+	protected void setUpServiceContextThreadLocal() {
+		PowerMockito.mockStatic(ServiceContextThreadLocal.class);
+
+		PowerMockito.when(
+			ServiceContextThreadLocal.getServiceContext()
+		).thenReturn(
+			_serviceContext
+		);
+	}
+
 	private final Pattern _callFunctionPattern = Pattern.compile(
 		"call\\(\\s*\'([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-" +
 			"[0-9a-f]{12})\'\\s*,\\s*\'(.*)\'\\s*,\\s*\'(.*)\'\\s*\\)");
 	private final DDLFormRuleDeserializer _ddlFormRulesDeserializer =
 		new DDLFormRuleDeserializer();
-
-	@Mock
-	private DDLFormRuleSerializerContext _ddlFormRuleSerializerContext;
-
 	private DDLFormRuleToDDMFormRuleConverter
 		_ddlFormRulesToDDMFormRulesConverter;
+
+	@Mock
+	private ServiceContext _serviceContext;
 
 }

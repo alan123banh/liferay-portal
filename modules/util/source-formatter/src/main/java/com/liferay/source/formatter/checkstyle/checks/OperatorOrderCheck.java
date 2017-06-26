@@ -25,6 +25,9 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  */
 public class OperatorOrderCheck extends AbstractCheck {
 
+	public static final String MSG_LITERAL_OR_NUM_LEFT_ARGUMENT =
+		"left.argument.literal.or.num";
+
 	@Override
 	public int[] getDefaultTokens() {
 		return new int[] {
@@ -45,7 +48,7 @@ public class OperatorOrderCheck extends AbstractCheck {
 
 		if (!ArrayUtil.contains(_LITERAL_OR_NUM_TYPES, secondChild.getType())) {
 			log(
-				firstChild.getLineNo(), _MSG_LITERAL_OR_NUM_LEFT_ARGUMENT,
+				firstChild.getLineNo(), MSG_LITERAL_OR_NUM_LEFT_ARGUMENT,
 				firstChild.getText());
 		}
 	}
@@ -54,8 +57,5 @@ public class OperatorOrderCheck extends AbstractCheck {
 		TokenTypes.NUM_DOUBLE, TokenTypes.NUM_FLOAT, TokenTypes.NUM_INT,
 		TokenTypes.NUM_LONG, TokenTypes.STRING_LITERAL
 	};
-
-	private static final String _MSG_LITERAL_OR_NUM_LEFT_ARGUMENT =
-		"left.argument.literal.or.num";
 
 }

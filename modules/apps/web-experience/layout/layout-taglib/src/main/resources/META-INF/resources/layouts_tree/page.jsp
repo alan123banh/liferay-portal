@@ -82,9 +82,11 @@ String treeId = (String)request.getAttribute("liferay-layout:layouts-tree:treeId
 
 			<%
 			long[] openNodes = StringUtil.split(SessionTreeJSClicks.getOpenNodes(request, treeId), 0L);
+
+			JSONObject layoutsJSONObject = JSONFactoryUtil.createJSONObject(LayoutsTreeUtil.getLayoutsJSON(request, groupId, privateLayout, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, openNodes, true, treeId));
 			%>
 
-			layouts: <%= LayoutsTreeUtil.getLayoutsJSON(request, groupId, privateLayout, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, openNodes, true, treeId) %>,
+			layouts: <%= layoutsJSONObject %>,
 
 			<c:if test="<%= Validator.isNotNull(linkTemplate) %>">
 				linkTemplate: '<%= HtmlUtil.escapeJS(linkTemplate) %>',

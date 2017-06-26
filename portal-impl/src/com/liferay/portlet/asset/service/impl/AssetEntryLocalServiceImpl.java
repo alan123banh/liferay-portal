@@ -50,8 +50,6 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.social.SocialActivityManagerUtil;
-import com.liferay.portal.kernel.transaction.Propagation;
-import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringPool;
@@ -380,24 +378,6 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 	}
 
 	@Override
-	public void incrementViewCounter(long userId, AssetEntry assetEntry)
-		throws PortalException {
-
-		User user = userPersistence.findByPrimaryKey(userId);
-
-		assetEntryLocalService.incrementViewCounter(
-			user.getUserId(), assetEntry.getClassName(),
-			assetEntry.getClassPK(), 1);
-
-		if (!user.isDefaultUser()) {
-			SocialActivityManagerUtil.addActivity(
-				user.getUserId(), assetEntry, SocialActivityConstants.TYPE_VIEW,
-				StringPool.BLANK, 0);
-		}
-	}
-
-	@Override
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public AssetEntry incrementViewCounter(
 			long userId, String className, long classPK)
 		throws PortalException {
@@ -442,6 +422,13 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 		entry.setViewCount(entry.getViewCount() + increment);
 
 		assetEntryPersistence.update(entry);
+
+		try {
+			reindex(entry);
+		}
+		catch (PortalException pe) {
+			throw new SystemException(pe);
+		}
 	}
 
 	@Override
@@ -767,7 +754,7 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 
 		// Tags
 
-		if ((tagNames != null) && (!entry.isNew() || (tagNames.length > 0))) {
+		if (tagNames != null) {
 			long siteGroupId = PortalUtil.getSiteGroupId(groupId);
 
 			Group siteGroup = groupLocalService.getGroup(siteGroupId);
@@ -775,19 +762,21 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 			List<AssetTag> tags = assetTagLocalService.checkTags(
 				userId, siteGroup, tagNames);
 
+			List<AssetTag> oldTags = assetEntryPersistence.getAssetTags(
+				entry.getEntryId());
+
 			assetEntryPersistence.setAssetTags(entry.getEntryId(), tags);
 
 			if (entry.isVisible()) {
-				if (entry.isNew()) {
+				boolean isNew = entry.isNew();
+
+				if (isNew) {
 					for (AssetTag tag : tags) {
 						assetTagLocalService.incrementAssetCount(
 							tag.getTagId(), classNameId);
 					}
 				}
 				else {
-					List<AssetTag> oldTags = assetEntryPersistence.getAssetTags(
-						entry.getEntryId());
-
 					for (AssetTag oldTag : oldTags) {
 						if (!tags.contains(oldTag)) {
 							assetTagLocalService.decrementAssetCount(
@@ -804,9 +793,6 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 				}
 			}
 			else if (oldVisible) {
-				List<AssetTag> oldTags = assetEntryPersistence.getAssetTags(
-					entry.getEntryId());
-
 				for (AssetTag oldTag : oldTags) {
 					assetTagLocalService.decrementAssetCount(
 						oldTag.getTagId(), classNameId);
@@ -993,6 +979,8 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 			socialActivityCounterLocalService.disableActivityCounters(
 				entry.getClassNameId(), entry.getClassPK());
 		}
+
+		reindex(entry);
 
 		return entry;
 	}

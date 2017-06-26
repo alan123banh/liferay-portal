@@ -307,8 +307,9 @@ public class MediaWikiToCreoleTranslator extends BaseTranslator {
 		"<var>", "</var>"
 	};
 
-	private final Pattern[] _htmlTagPatterns =
-		{Pattern.compile("<div[^>]*>"), Pattern.compile("<font[^>]*>")};
+	private final Pattern[] _htmlTagPatterns = {
+		Pattern.compile("<div[^>]*>"), Pattern.compile("<font[^>]*>")
+	};
 	private final Pattern _imagePattern = Pattern.compile(
 		"(\\[{2})(Image|File)(:)", Pattern.DOTALL);
 	private final Pattern _linkPattern = Pattern.compile(

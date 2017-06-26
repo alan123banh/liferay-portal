@@ -28,6 +28,8 @@ import java.util.List;
  */
 public class LocalPatternCheck extends AbstractCheck {
 
+	public static final String MSG_LOCAL_PATTERN = "pattern.local";
+
 	@Override
 	public int[] getDefaultTokens() {
 		return new int[] {TokenTypes.VARIABLE_DEF};
@@ -65,9 +67,7 @@ public class LocalPatternCheck extends AbstractCheck {
 
 		DetailAST nameAST = detailAST.findFirstToken(TokenTypes.IDENT);
 
-		log(detailAST.getLineNo(), _MSG_LOCAL_PATTERN, nameAST.getText());
+		log(detailAST.getLineNo(), MSG_LOCAL_PATTERN, nameAST.getText());
 	}
-
-	private static final String _MSG_LOCAL_PATTERN = "pattern.local";
 
 }

@@ -239,14 +239,11 @@ String orderByType = ParamUtil.getString(request, "orderByType", "asc");
 	var submitButton = A.one('#<portlet:namespace />fm_submit');
 
 	if (submitButton) {
-		submitButton.on(
-			'click',
-			function(event) {
-				if (form) {
-					form.submit();
-				}
+		submitButton.on('click', function(event) {
+			if (form) {
+				form.submit();
 			}
-		);
+		});
 	}
 </aui:script>
 

@@ -31,8 +31,8 @@ import org.osgi.service.component.annotations.Component;
 @Component(
 	immediate = true, property = "ddm.form.field.type.name=editor",
 	service = {
-		DDMFormFieldTemplateContextContributor.class,
-		EditorDDMFormFieldTemplateContextContributor.class
+		EditorDDMFormFieldTemplateContextContributor.class,
+		DDMFormFieldTemplateContextContributor.class
 	}
 )
 public class EditorDDMFormFieldTemplateContextContributor

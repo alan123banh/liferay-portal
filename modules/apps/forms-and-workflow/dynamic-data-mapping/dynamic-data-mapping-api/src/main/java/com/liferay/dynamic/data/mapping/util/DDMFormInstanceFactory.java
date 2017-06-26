@@ -15,19 +15,13 @@
 package com.liferay.dynamic.data.mapping.util;
 
 import com.liferay.dynamic.data.mapping.annotations.DDMFormField;
-import com.liferay.dynamic.data.mapping.model.DDMFormFieldType;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.model.Value;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
-import com.liferay.portal.kernel.json.JSONArray;
-import com.liferay.portal.kernel.json.JSONException;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.lang.reflect.Array;
@@ -37,7 +31,6 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * @author Marcellus Tavares
@@ -91,36 +84,25 @@ public class DDMFormInstanceFactory {
 					ddmFormFieldFactoryHelper.getDDMFormFieldPredefinedValue();
 
 				return convert(
-					method.getReturnType(),
-					ddmFormFieldFactoryHelper.getDDMFormFieldType(),
-					predefinedValue.getString(_locale));
+					method.getReturnType(), predefinedValue.getString(_locale));
 			}
 			else {
-				return convert(
-					method.getReturnType(),
-					ddmFormFieldFactoryHelper.getDDMFormFieldType(),
-					ddmFormFieldValues);
+				return convert(method.getReturnType(), ddmFormFieldValues);
 			}
 		}
 
 		protected Object convert(
-			Class<?> returnType, String ddmFormFieldType,
-			List<DDMFormFieldValue> ddmFormFieldValues) {
+			Class<?> returnType, List<DDMFormFieldValue> ddmFormFieldValues) {
 
 			if (returnType.isArray()) {
 				return toArray(
-					returnType.getComponentType(), ddmFormFieldType,
-					ddmFormFieldValues);
+					returnType.getComponentType(), ddmFormFieldValues);
 			}
 
-			return toPrimitive(
-				returnType, ddmFormFieldType, ddmFormFieldValues.get(0));
+			return toPrimitive(returnType, ddmFormFieldValues.get(0));
 		}
 
-		protected Object convert(
-			Class<?> returnType, String ddmFormFieldType,
-			String predefinedValue) {
-
+		protected Object convert(Class<?> returnType, String predefinedValue) {
 			if (returnType.isArray()) {
 				return Array.newInstance(returnType.getComponentType(), 0);
 			}
@@ -154,42 +136,14 @@ public class DDMFormInstanceFactory {
 			if ((returnType == String.class) &&
 				Validator.isNotNull(predefinedValue)) {
 
-				return toString(ddmFormFieldType, predefinedValue);
+				return predefinedValue;
 			}
 
 			return null;
 		}
 
-		protected String joinJSONArrayString(String valueString) {
-			if (Validator.isNull(valueString)) {
-				return valueString;
-			}
-
-			try {
-				JSONArray jsonArray = JSONFactoryUtil.createJSONArray(
-					valueString);
-
-				StringBundler sb = new StringBundler(jsonArray.length() * 2);
-
-				for (int i = 0; i < jsonArray.length(); i++) {
-					sb.append(jsonArray.getString(i));
-					sb.append(StringPool.COMMA);
-				}
-
-				if (sb.length() > 0) {
-					sb.setIndex(sb.index() - 1);
-				}
-
-				return sb.toString();
-			}
-			catch (JSONException jsone) {
-				return valueString;
-			}
-		}
-
 		protected Object toArray(
-			Class<?> returnType, String ddmFormFieldType,
-			List<DDMFormFieldValue> ddmFormFieldValues) {
+			Class<?> returnType, List<DDMFormFieldValue> ddmFormFieldValues) {
 
 			Object array = Array.newInstance(
 				returnType, ddmFormFieldValues.size());
@@ -198,9 +152,7 @@ public class DDMFormInstanceFactory {
 
 			for (DDMFormFieldValue ddmFormFieldValue : ddmFormFieldValues) {
 				Array.set(
-					array, i++,
-					toPrimitive(
-						returnType, ddmFormFieldType, ddmFormFieldValue));
+					array, i++, toPrimitive(returnType, ddmFormFieldValue));
 			}
 
 			return array;
@@ -248,8 +200,7 @@ public class DDMFormInstanceFactory {
 		}
 
 		protected Object toPrimitive(
-			Class<?> returnType, String ddmFormFieldType,
-			DDMFormFieldValue ddmFormFieldValue) {
+			Class<?> returnType, DDMFormFieldValue ddmFormFieldValue) {
 
 			Value value = ddmFormFieldValue.getValue();
 
@@ -280,7 +231,7 @@ public class DDMFormInstanceFactory {
 			}
 
 			if (returnType == String.class) {
-				return toString(ddmFormFieldType, value.getString(_locale));
+				return toString(value);
 			}
 
 			return toDynamicForm(returnType, ddmFormFieldValue);
@@ -290,12 +241,8 @@ public class DDMFormInstanceFactory {
 			return Short.valueOf(value.getString(_locale));
 		}
 
-		protected String toString(String ddmFormFieldType, String valueString) {
-			if (Objects.equals(ddmFormFieldType, DDMFormFieldType.SELECT)) {
-				return joinJSONArrayString(valueString);
-			}
-
-			return valueString;
+		protected String toString(Value value) {
+			return value.getString(_locale);
 		}
 
 		private final T _clazz;

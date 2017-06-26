@@ -285,7 +285,20 @@ public class EditUserMVCActionCommand extends BaseMVCActionCommand {
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
-		actionRequest = _wrapActionRequest(actionRequest);
+		DynamicActionRequest dynamicActionRequest = new DynamicActionRequest(
+			actionRequest);
+
+		long prefixId = getListTypeId(
+			actionRequest, "prefixValue", ListTypeConstants.CONTACT_PREFIX);
+
+		dynamicActionRequest.setParameter("prefixId", String.valueOf(prefixId));
+
+		long suffixId = getListTypeId(
+			actionRequest, "suffixValue", ListTypeConstants.CONTACT_SUFFIX);
+
+		dynamicActionRequest.setParameter("suffixId", String.valueOf(suffixId));
+
+		actionRequest = dynamicActionRequest;
 
 		String cmd = ParamUtil.getString(actionRequest, Constants.CMD);
 
@@ -369,7 +382,7 @@ public class EditUserMVCActionCommand extends BaseMVCActionCommand {
 						redirect, themeDisplay.getI18nPath(), i18nPath);
 				}
 
-				redirect = http.setParameter(
+				redirect = _http.setParameter(
 					redirect, actionResponse.getNamespace() + "p_u_i_d",
 					user.getUserId());
 			}
@@ -380,8 +393,8 @@ public class EditUserMVCActionCommand extends BaseMVCActionCommand {
 				(userLocalService.fetchUserById(scopeGroup.getClassPK()) ==
 					null)) {
 
-				redirect = http.setParameter(redirect, "doAsGroupId", 0);
-				redirect = http.setParameter(redirect, "refererPlid", 0);
+				redirect = _http.setParameter(redirect, "doAsGroupId", 0);
+				redirect = _http.setParameter(redirect, "refererPlid", 0);
 			}
 
 			sendRedirect(actionRequest, actionResponse, redirect);
@@ -454,7 +467,7 @@ public class EditUserMVCActionCommand extends BaseMVCActionCommand {
 					if (submittedPassword) {
 						User user = portal.getSelectedUser(actionRequest);
 
-						redirect = http.setParameter(
+						redirect = _http.setParameter(
 							redirect, actionResponse.getNamespace() + "p_u_i_d",
 							user.getUserId());
 					}
@@ -808,35 +821,17 @@ public class EditUserMVCActionCommand extends BaseMVCActionCommand {
 	}
 
 	@Reference
-	protected Http http;
-
-	@Reference
 	protected Portal portal;
 
 	protected UserLocalService userLocalService;
 
-	private ActionRequest _wrapActionRequest(ActionRequest actionRequest)
-		throws Exception {
-
-		DynamicActionRequest dynamicActionRequest = new DynamicActionRequest(
-			actionRequest);
-
-		long prefixId = getListTypeId(
-			actionRequest, "prefixValue", ListTypeConstants.CONTACT_PREFIX);
-
-		dynamicActionRequest.setParameter("prefixId", String.valueOf(prefixId));
-
-		long suffixId = getListTypeId(
-			actionRequest, "suffixValue", ListTypeConstants.CONTACT_SUFFIX);
-
-		dynamicActionRequest.setParameter("suffixId", String.valueOf(suffixId));
-
-		return dynamicActionRequest;
-	}
-
 	private AnnouncementsDeliveryLocalService
 		_announcementsDeliveryLocalService;
 	private DLAppLocalService _dlAppLocalService;
+
+	@Reference
+	private Http _http;
+
 	private ListTypeLocalService _listTypeLocalService;
 	private UserService _userService;
 

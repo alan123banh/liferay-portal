@@ -15,7 +15,6 @@
 package com.liferay.portal.kernel.repository.capabilities;
 
 import com.liferay.portal.kernel.repository.DocumentRepository;
-import com.liferay.portal.kernel.repository.event.RepositoryEventTrigger;
 
 /**
  * @author Adolfo Pérez
@@ -32,16 +31,10 @@ public interface PortalCapabilityLocator {
 		DocumentRepository documentRepository);
 
 	public ProcessorCapability getProcessorCapability(
-		DocumentRepository documentRepository,
-		ProcessorCapability.ResourceGenerationStrategy
-			resourceGenerationStrategy);
+		DocumentRepository documentRepository);
 
 	public RelatedModelCapability getRelatedModelCapability(
 		DocumentRepository documentRepository);
-
-	public RepositoryEventTriggerCapability getRepositoryEventTriggerCapability(
-		DocumentRepository documentRepository,
-		RepositoryEventTrigger repositoryEventTrigger);
 
 	public SyncCapability getSyncCapability(
 		DocumentRepository documentRepository);

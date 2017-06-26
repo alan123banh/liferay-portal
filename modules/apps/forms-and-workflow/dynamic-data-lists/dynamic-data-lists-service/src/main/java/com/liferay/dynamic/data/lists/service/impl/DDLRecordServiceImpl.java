@@ -27,7 +27,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 
 import java.io.Serializable;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -191,21 +190,6 @@ public class DDLRecordServiceImpl extends DDLRecordServiceBaseImpl {
 			getPermissionChecker(), record.getRecordId(), ActionKeys.VIEW);
 
 		return record;
-	}
-
-	/**
-	 * Returns all the records matching the record set ID
-	 *
-	 * @param  recordSetId the record's record set ID
-	 * @return the matching records
-	 * @throws PortalException if a portal exception occurred
-	 */
-	@Override
-	public List<DDLRecord> getRecords(long recordSetId) throws PortalException {
-		DDLRecordSetPermission.contains(
-			getPermissionChecker(), recordSetId, ActionKeys.VIEW);
-
-		return ddlRecordLocalService.getRecords(recordSetId);
 	}
 
 	/**

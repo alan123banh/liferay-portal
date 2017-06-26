@@ -12,6 +12,10 @@ AUI.add(
 						valueFn: '_valueColumnHandler'
 					},
 
+					defaultLanguageId: {
+						value: themeDisplay.getDefaultLanguageId()
+					},
+
 					fieldHandler: {
 						valueFn: '_valueFieldHandler'
 					},
@@ -30,10 +34,15 @@ AUI.add(
 				NAME: 'liferay-ddl-form-builder-layout-serializer',
 
 				prototype: {
-					getPages: function() {
+					serialize: function() {
 						var instance = this;
 
-						return instance.visit();
+						return A.JSON.stringify(
+							{
+								defaultLanguageId: instance.get('defaultLanguageId'),
+								pages: instance.visit()
+							}
+						);
 					},
 
 					_serializeColumn: function(column) {
@@ -43,15 +52,15 @@ AUI.add(
 							size: column.get('size')
 						};
 
-						var fields = [];
+						var fieldNames = [];
 
 						var fieldsList = column.get('value');
 
 						if (fieldsList) {
-							fields = instance._visitFields(fieldsList.get('fields'));
+							fieldNames = instance._visitFields(fieldsList.get('fields'));
 						}
 
-						serializedColumn.fields = fields;
+						serializedColumn.fieldNames = fieldNames;
 
 						return serializedColumn;
 					},
@@ -59,7 +68,7 @@ AUI.add(
 					_serializeField: function(field) {
 						var instance = this;
 
-						return field.get('context');
+						return field.get('fieldName');
 					},
 
 					_serializePage: function(page, index) {
@@ -69,13 +78,23 @@ AUI.add(
 
 						var pages = builder.get('pages');
 
-						var descriptions = pages.get('localizedDescriptions');
-						var titles = pages.get('localizedTitles');
+						var descriptions = pages.get('descriptions');
+						var titles = pages.get('titles');
+
+						var languageId = instance.get('defaultLanguageId');
+
+						var description = {};
+
+						description[languageId] = descriptions[index] || '';
+
+						var title = {};
+
+						title[languageId] = titles[index] || '';
 
 						return {
-							description: descriptions[index] || '',
+							description: description,
 							rows: instance._visitRows(page.get('rows')),
-							title: titles[index] || ''
+							title: title
 						};
 					},
 
@@ -118,7 +137,7 @@ AUI.add(
 							function(item) {
 								return item.columns.filter(
 									function(column) {
-										return column.fields.length > 0;
+										return column.fieldNames.length > 0;
 									}
 								).length > 0;
 							}

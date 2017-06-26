@@ -18,47 +18,41 @@ import com.liferay.mentions.matcher.MentionsMatcher;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
-
-import java.lang.reflect.Field;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.mockito.MockitoAnnotations;
+
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 /**
  * @author Adolfo Pérez
  */
-public class DefaultMentionsMatcherTest {
+@PrepareForTest
+@RunWith(PowerMockRunner.class)
+public class DefaultMentionsMatcherTest extends PowerMockito {
 
 	@Before
 	public void setUp() throws Exception {
-		Field field = ReflectionUtil.getDeclaredField(
-			PropsUtil.class, "_props");
+		MockitoAnnotations.initMocks(this);
 
-		field.set(
-			null,
-			ProxyUtil.newProxyInstance(
-				ClassLoader.getSystemClassLoader(),
-				new Class<?>[] {Props.class},
-				(proxy, method, args) -> {
-					if (method.equals(
-							Props.class.getMethod("get", String.class)) &&
-						PropsKeys.USERS_SCREEN_NAME_SPECIAL_CHARACTERS.equals(
-							args[0])) {
+		Props props = mock(Props.class);
 
-						return _SCREEN_NAME_SPECIAL_CHARS;
-					}
+		when(
+			props.get(PropsKeys.USERS_SCREEN_NAME_SPECIAL_CHARACTERS)
+		).thenReturn(
+			_SCREEN_NAME_SPECIAL_CHARS
+		);
 
-					return null;
-				}));
-
-		_mentionsMatcher = new DefaultMentionsMatcher();
+		PropsUtil.setProps(props);
 	}
 
 	@Test
@@ -172,7 +166,7 @@ public class DefaultMentionsMatcherTest {
 	}
 
 	protected <T> void assertEquals(T value, Iterable<T> iterable) {
-		assertEquals(Collections.singletonList(value), iterable);
+		assertEquals(Arrays.asList(value), iterable);
 	}
 
 	private static final String _SCREEN_NAME_SPECIAL_CHARS = "-._";
@@ -180,6 +174,7 @@ public class DefaultMentionsMatcherTest {
 	private static final String _SCREEN_NAME_WITH_SPECIAL_CHARS =
 		"user" + _SCREEN_NAME_SPECIAL_CHARS;
 
-	private MentionsMatcher _mentionsMatcher;
+	private final MentionsMatcher _mentionsMatcher =
+		new DefaultMentionsMatcher();
 
 }

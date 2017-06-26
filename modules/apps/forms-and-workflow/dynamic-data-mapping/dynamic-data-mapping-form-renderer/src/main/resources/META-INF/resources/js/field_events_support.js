@@ -105,9 +105,7 @@ AUI.add(
 			_onValueChange: function(event) {
 				var instance = this;
 
-				var value = instance.getValue();
-
-				instance.set('value', value);
+				instance.set('value', instance.getValue());
 			}
 		};
 

@@ -1,8 +1,6 @@
 AUI.add(
 	'liferay-ddl-form-builder-rule-builder',
 	function(A) {
-		var Settings = Liferay.DDL.Settings;
-
 		var SoyTemplateUtil = Liferay.DDM.SoyTemplateUtil;
 
 		var MAP_ACTION_DESCRIPTIONS = {
@@ -21,8 +19,32 @@ AUI.add(
 						value: null
 					},
 
-					roles: {
+					functionsMetadata: {
 						value: []
+					},
+
+					getDataProviderInstancesURL: {
+						value: ''
+					},
+
+					getDataProviderParametersSettingsURL: {
+						value: ''
+					},
+
+					getFunctionsURL: {
+						value: ''
+					},
+
+					getRoles: {
+						value: []
+					},
+
+					getRolesURL: {
+						value: ''
+					},
+
+					portletNamespace: {
+						value: ''
 					},
 
 					rules: {
@@ -215,9 +237,13 @@ AUI.add(
 									bubbleTargets: [instance],
 									contentBox: instance.get('contentBox'),
 									fields: instance.getFields(),
+									functionsMetadata: instance.get('functionsMetadata'),
+									getDataProviderParametersSettingsURL: instance.get('getDataProviderParametersSettingsURL'),
 									getDataProviders: instance._dataProviders,
+									getFunctionsURL: instance.get('getFunctionsURL'),
+									getRoles: instance.get('getRoles'),
 									pages: instance.getPages(),
-									roles: instance.get('roles')
+									portletNamespace: instance.get('portletNamespace')
 								}
 							);
 						}
@@ -245,7 +271,7 @@ AUI.add(
 						var instance = this;
 
 						A.io.request(
-							Settings.getDataProviderInstancesURL,
+							instance.get('getDataProviderInstancesURL'),
 							{
 								method: 'GET',
 								on: {
@@ -410,11 +436,11 @@ AUI.add(
 					_getUserRoles: function() {
 						var instance = this;
 
-						var roles = instance.get('roles');
+						var roles = instance.get('getRoles');
 
 						if (!roles.length) {
 							A.io.request(
-								Settings.getRolesURL,
+								instance.get('getRolesURL'),
 								{
 									method: 'GET',
 									on: {
@@ -506,7 +532,7 @@ AUI.add(
 							);
 						}
 
-						instance.set('roles', roles);
+						instance.set('getRoles', roles);
 					},
 
 					_renderCards: function(rules) {

@@ -39,7 +39,6 @@ import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.SortedArrayList;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.ArrayList;
@@ -124,7 +123,7 @@ public abstract class LiferayRepositoryBase implements CapabilityProvider {
 
 			DDMFormValues ddmFormValues =
 				(DDMFormValues)serviceContext.getAttribute(
-					DDMFormValues.class.getName() + StringPool.POUND +
+					DDMFormValues.class.getName() +
 						ddmStructure.getStructureId());
 
 			if (ddmFormValues == null) {

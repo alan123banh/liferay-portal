@@ -19,9 +19,6 @@ package com.liferay.portal.security.sso.openid.connect.constants;
  */
 public class OpenIdConnectConstants {
 
-	public static final String REDIRECT_URL_PATTERN =
-		"/c/portal/login/openidconnect";
-
 	public static final String SERVICE_NAME =
 		"com.liferay.portal.security.sso.openid.connect";
 

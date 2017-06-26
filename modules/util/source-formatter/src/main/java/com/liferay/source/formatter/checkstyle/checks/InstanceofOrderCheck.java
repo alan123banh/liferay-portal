@@ -26,6 +26,8 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  */
 public class InstanceofOrderCheck extends AbstractCheck {
 
+	public static final String MSG_ORDER_INSTANCEOF = "instanceof.order";
+
 	@Override
 	public int[] getDefaultTokens() {
 		return new int[] {TokenTypes.LITERAL_INSTANCEOF};
@@ -64,7 +66,7 @@ public class InstanceofOrderCheck extends AbstractCheck {
 
 		if (comparator.compare(typeName1, typeName2) > 0) {
 			log(
-				nextConditionAST.getLineNo(), _MSG_ORDER_INSTANCEOF, typeName2,
+				nextConditionAST.getLineNo(), MSG_ORDER_INSTANCEOF, typeName2,
 				typeName1);
 		}
 	}
@@ -91,7 +93,5 @@ public class InstanceofOrderCheck extends AbstractCheck {
 
 		return nameAST.getText();
 	}
-
-	private static final String _MSG_ORDER_INSTANCEOF = "instanceof.order";
 
 }

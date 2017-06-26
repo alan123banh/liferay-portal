@@ -50,7 +50,6 @@ page import="com.liferay.portal.kernel.model.LayoutConstants" %><%@
 page import="com.liferay.portal.kernel.model.LayoutRevision" %><%@
 page import="com.liferay.portal.kernel.model.LayoutRevisionConstants" %><%@
 page import="com.liferay.portal.kernel.model.LayoutSetBranch" %><%@
-page import="com.liferay.portal.kernel.model.LayoutSetBranchConstants" %><%@
 page import="com.liferay.portal.kernel.model.Portlet" %><%@
 page import="com.liferay.portal.kernel.model.StagedGroupedModel" %><%@
 page import="com.liferay.portal.kernel.model.StagedModel" %><%@

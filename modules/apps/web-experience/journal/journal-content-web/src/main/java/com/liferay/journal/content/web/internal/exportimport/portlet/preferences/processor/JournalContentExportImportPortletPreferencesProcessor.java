@@ -79,10 +79,7 @@ public class JournalContentExportImportPortletPreferencesProcessor
 	@Override
 	public List<Capability> getImportCapabilities() {
 		return ListUtil.toList(
-			new Capability[] {
-				_journalContentMetadataImporterCapability,
-				_referencedStagedModelImporterCapability
-			});
+			new Capability[] {_referencedStagedModelImporterCapability});
 	}
 
 	@Override
@@ -176,13 +173,6 @@ public class JournalContentExportImportPortletPreferencesProcessor
 
 			return portletPreferences;
 		}
-
-		Map<String, String[]> parameterMap =
-			portletDataContext.getParameterMap();
-
-		parameterMap.put(
-			PortletDataHandlerKeys.PORTLET_DATA_ALL,
-			new String[] {Boolean.TRUE.toString()});
 
 		StagedModelDataHandlerUtil.exportReferenceStagedModel(
 			portletDataContext, portletId, article);
@@ -401,11 +391,6 @@ public class JournalContentExportImportPortletPreferencesProcessor
 	private DDMTemplateLocalService _ddmTemplateLocalService;
 	private GroupLocalService _groupLocalService;
 	private JournalArticleLocalService _journalArticleLocalService;
-
-	@Reference
-	private JournalContentMetadataImporterCapability
-		_journalContentMetadataImporterCapability;
-
 	private JournalContentSearchLocalService _journalContentSearchLocalService;
 	private LayoutLocalService _layoutLocalService;
 

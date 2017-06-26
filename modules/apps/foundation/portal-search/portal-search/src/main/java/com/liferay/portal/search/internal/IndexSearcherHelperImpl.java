@@ -62,6 +62,10 @@ public class IndexSearcherHelperImpl implements IndexSearcherHelper {
 	public Hits search(SearchContext searchContext, Query query)
 		throws SearchException {
 
+		if (_log.isDebugEnabled()) {
+			_log.debug("Search query " + getQueryString(searchContext, query));
+		}
+
 		SearchEngine searchEngine = _searchEngineHelper.getSearchEngine(
 			searchContext.getSearchEngineId());
 
@@ -73,6 +77,10 @@ public class IndexSearcherHelperImpl implements IndexSearcherHelper {
 	@Override
 	public long searchCount(SearchContext searchContext, Query query)
 		throws SearchException {
+
+		if (_log.isDebugEnabled()) {
+			_log.debug("Search query " + getQueryString(searchContext, query));
+		}
 
 		SearchEngine searchEngine = _searchEngineHelper.getSearchEngine(
 			searchContext.getSearchEngineId());

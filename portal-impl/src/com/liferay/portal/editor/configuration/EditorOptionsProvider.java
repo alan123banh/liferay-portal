@@ -18,18 +18,20 @@ import com.liferay.portal.kernel.editor.configuration.EditorOptions;
 import com.liferay.portal.kernel.editor.configuration.EditorOptionsContributor;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.registry.collections.ServiceReferenceMapper;
+import com.liferay.registry.collections.ServiceTrackerCollections;
+import com.liferay.registry.collections.ServiceTrackerMap;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
  * @author Sergio González
  */
 public class EditorOptionsProvider
-	extends BaseEditorProvider<EditorOptionsContributor> {
-
-	public EditorOptionsProvider() {
-		super(EditorOptionsContributor.class);
-	}
+	extends BaseEditorConfigurationProvider<EditorOptionsContributor> {
 
 	public EditorOptions getEditorOptions(
 		String portletName, String editorConfigKey, String editorName,
@@ -39,14 +41,37 @@ public class EditorOptionsProvider
 
 		EditorOptions editorOptions = new EditorOptions();
 
-		visitEditorContributors(
-			editorOptionsContributor ->
-				editorOptionsContributor.populateEditorOptions(
-					editorOptions, inputEditorTaglibAttributes, themeDisplay,
-					requestBackedPortletURLFactory),
-			portletName, editorConfigKey, editorName);
+		Iterator<EditorOptionsContributor> iterator = ListUtil.reverseIterator(
+			getContributors(portletName, editorConfigKey, editorName));
+
+		while (iterator.hasNext()) {
+			EditorOptionsContributor editorOptionsContributor = iterator.next();
+
+			editorOptionsContributor.populateEditorOptions(
+				editorOptions, inputEditorTaglibAttributes, themeDisplay,
+				requestBackedPortletURLFactory);
+		}
 
 		return editorOptions;
 	}
+
+	@Override
+	protected ServiceTrackerMap<String, List<EditorOptionsContributor>>
+		getServiceTrackerMap() {
+
+		return _serviceTrackerMap;
+	}
+
+	private static final ServiceReferenceMapper
+		<String, EditorOptionsContributor>
+			_serviceReferenceMapper = new EditorServiceReferenceMapper<>();
+	private static final ServiceTrackerMap
+		<String, List<EditorOptionsContributor>> _serviceTrackerMap =
+			ServiceTrackerCollections.openMultiValueMap(
+				EditorOptionsContributor.class,
+				"(|(editor.config.key=*)(editor.name=*)(javax.portlet.name=*)" +
+					"(objectClass=" + EditorOptionsContributor.class.getName() +
+						"))",
+				_serviceReferenceMapper);
 
 }

@@ -101,11 +101,6 @@ public class PortletSharedSearchSettingsImpl
 	}
 
 	@Override
-	public RenderRequest getRenderRequest() {
-		return _renderRequest;
-	}
-
-	@Override
 	public SearchContext getSearchContext() {
 		return _searchSettings.getSearchContext();
 	}

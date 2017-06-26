@@ -25,7 +25,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -41,36 +40,14 @@ public class CleanServiceBuilderCommandTest extends BaseCommandTestCase {
 
 	@Test
 	public void testCleanServiceBuilderDefault() throws Exception {
-		String prefix = "default";
-		String[] tableNames = {"SampleBar", "Sample_Foo", "Sample_User"};
-
-		_createTablesAndPopulate(prefix, tableNames);
-		_testCleanServiceBuilder(prefix, tableNames);
-	}
-
-	@Test
-	public void testCleanServiceBuilderMissingTable() throws Exception {
-		String prefix = "default";
-		String[] tableNames = {"SampleBar", "Sample_Foo", "Sample_User"};
-
-		_createTablesAndPopulate(prefix, tableNames);
-
-		try (Connection connection = DriverManager.getConnection(getUrl())) {
-			try (Statement statement = connection.createStatement()) {
-				statement.executeUpdate("DROP TABLE " + tableNames[0]);
-			}
-		}
-
-		_testCleanServiceBuilder(prefix, tableNames);
+		_testCleanServiceBuilder(
+			"default", "SampleBar", "Sample_Foo", "Sample_User");
 	}
 
 	@Test
 	public void testCleanServiceBuilderNoAutoNamespace() throws Exception {
-		String prefix = "no-auto-namespace";
-		String[] tableNames = {"Foo", "SampleBar", "User_"};
-
-		_createTablesAndPopulate(prefix, tableNames);
-		_testCleanServiceBuilder(prefix, tableNames);
+		_testCleanServiceBuilder(
+			"no-auto-namespace", "Foo", "SampleBar", "User_");
 	}
 
 	protected void cleanServiceBuilder(
@@ -119,7 +96,7 @@ public class CleanServiceBuilderCommandTest extends BaseCommandTestCase {
 		Assert.assertEquals(1, preparedStatement.executeUpdate());
 	}
 
-	private void _createTablesAndPopulate(String prefix, String... tableNames)
+	private void _testCleanServiceBuilder(String prefix, String... tableNames)
 		throws Exception {
 
 		String url = getUrl(
@@ -165,12 +142,8 @@ public class CleanServiceBuilderCommandTest extends BaseCommandTestCase {
 				}
 			}
 		}
-	}
 
-	private void _testCleanServiceBuilder(String prefix, String... tableNames)
-		throws Exception {
-
-		String url = getUrl();
+		url = getUrl();
 
 		File serviceXmlFile = new File(
 			dependenciesDir, prefix + "-service.xml");

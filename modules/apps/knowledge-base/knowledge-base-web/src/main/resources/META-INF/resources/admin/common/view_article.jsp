@@ -130,7 +130,6 @@ if (portletTitleBasedNavigation) {
 						<liferay-ui:ratings
 							className="<%= KBArticle.class.getName() %>"
 							classPK="<%= kbArticle.getResourcePrimKey() %>"
-							inTrash="<%= false %>"
 						/>
 					</div>
 				</c:if>

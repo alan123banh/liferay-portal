@@ -18,17 +18,7 @@
 		</if>
 
 		<execute function="Type" locator1="RSSFeed#FEEDS_TITLE_NAME_FIELD" value1="${feedTitle}" />
-
-		<if>
-			<equals arg1="${feedType}" arg2="file" />
-			<then>
-				<execute function="Type" locator1="RSSFeed#FEEDS_URL_NAME_FIELD" value1="file://" />
-				<execute function="UploadCommonFile" locator1="RSSFeed#FEEDS_URL_NAME_FIELD" value1="${feedUrlLink}" />
-			</then>
-			<else>
-				<execute function="Type" locator1="RSSFeed#FEEDS_URL_NAME_FIELD" value1="${feedUrlLink}" />
-			</else>
-		</if>
+		<execute function="Type" locator1="RSSFeed#FEEDS_URL_NAME_FIELD" value1="${feedUrlLink}" />
 	</command>
 
 	<command name="changeFeedsOrder">
@@ -153,7 +143,7 @@
 		</execute>
 
 		<execute function="AssertElementPresent" locator1="RSSFeed#FEEDS_DEFAULT" />
-		<execute function="AssertTextEquals" locator1="RSSFeed#FEEDS_TITLE_NAME_FIELD" value1="${feedTitle}" />
+		<execute function="AssertTextEquals" locator1="RSSFeed#FEEDS_URL_NAME_FIELD" value1="${feedUrlLink}" />
 	</command>
 
 	<command name="viewPortletConfigurationInfo">

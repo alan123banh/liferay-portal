@@ -40,9 +40,10 @@ public class FirstWorkflowTaskAssigneeSupplier
 				_kaleoTaskInstanceToken.getFirstKaleoTaskAssignmentInstance());
 
 		return kaleoTaskAssignmentInstanceOptional.map(
-			kaleoTaskAssignmentInstance -> new WorkflowTaskAssignee(
-				kaleoTaskAssignmentInstance.getAssigneeClassName(),
-				kaleoTaskAssignmentInstance.getAssigneeClassPK()));
+			kaleoTaskAssignmentInstance ->
+				new WorkflowTaskAssignee(
+					kaleoTaskAssignmentInstance.getAssigneeClassName(),
+					kaleoTaskAssignmentInstance.getAssigneeClassPK()));
 	}
 
 	private final KaleoTaskInstanceToken _kaleoTaskInstanceToken;

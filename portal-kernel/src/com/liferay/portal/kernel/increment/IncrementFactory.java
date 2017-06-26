@@ -51,8 +51,7 @@ public class IncrementFactory {
 						throw new SystemException(
 							counterClass.getName() +
 								" is unable to increment " +
-									ClassUtil.getClassName(value),
-							nsme);
+									ClassUtil.getClassName(value));
 					}
 				}
 			}

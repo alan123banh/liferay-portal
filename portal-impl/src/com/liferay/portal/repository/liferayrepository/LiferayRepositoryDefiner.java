@@ -14,6 +14,7 @@
 
 package com.liferay.portal.repository.liferayrepository;
 
+import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.DocumentRepository;
 import com.liferay.portal.kernel.repository.LocalRepository;
@@ -34,7 +35,6 @@ import com.liferay.portal.kernel.repository.registry.BaseRepositoryDefiner;
 import com.liferay.portal.kernel.repository.registry.CapabilityRegistry;
 import com.liferay.portal.kernel.repository.registry.RepositoryFactoryRegistry;
 import com.liferay.portal.kernel.repository.util.ModelValidatorUtil;
-import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.util.PropsValues;
 
 /**
@@ -62,39 +62,36 @@ public class LiferayRepositoryDefiner extends BaseRepositoryDefiner {
 
 		capabilityRegistry.addExportedCapability(
 			BulkOperationCapability.class,
-			_portalCapabilityLocator.getBulkOperationCapability(
+			portalCapabilityLocator.getBulkOperationCapability(
 				documentRepository));
 
 		if (PropsValues.DL_FILE_ENTRY_COMMENTS_ENABLED) {
 			capabilityRegistry.addExportedCapability(
 				CommentCapability.class,
-				_portalCapabilityLocator.getCommentCapability(
+				portalCapabilityLocator.getCommentCapability(
 					documentRepository));
 		}
 
 		capabilityRegistry.addExportedCapability(
 			RelatedModelCapability.class,
-			_portalCapabilityLocator.getRelatedModelCapability(
+			portalCapabilityLocator.getRelatedModelCapability(
 				documentRepository));
 		capabilityRegistry.addExportedCapability(
 			ThumbnailCapability.class,
-			_portalCapabilityLocator.getThumbnailCapability(
-				documentRepository));
+			portalCapabilityLocator.getThumbnailCapability(documentRepository));
 		capabilityRegistry.addExportedCapability(
 			TrashCapability.class,
-			_portalCapabilityLocator.getTrashCapability(documentRepository));
+			portalCapabilityLocator.getTrashCapability(documentRepository));
 		capabilityRegistry.addExportedCapability(
 			WorkflowCapability.class,
-			_portalCapabilityLocator.getWorkflowCapability(
+			portalCapabilityLocator.getWorkflowCapability(
 				documentRepository, WorkflowCapability.OperationMode.FULL));
 		capabilityRegistry.addSupportedCapability(
 			ProcessorCapability.class,
-			_portalCapabilityLocator.getProcessorCapability(
-				documentRepository,
-				ProcessorCapability.ResourceGenerationStrategy.REUSE));
+			portalCapabilityLocator.getProcessorCapability(documentRepository));
 		capabilityRegistry.addSupportedCapability(
 			SyncCapability.class,
-			_portalCapabilityLocator.getSyncCapability(documentRepository));
+			portalCapabilityLocator.getSyncCapability(documentRepository));
 	}
 
 	@Override
@@ -109,16 +106,8 @@ public class LiferayRepositoryDefiner extends BaseRepositoryDefiner {
 			repositoryFactory);
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
+	@BeanReference(type = PortalCapabilityLocator.class)
 	protected PortalCapabilityLocator portalCapabilityLocator;
-
-	private static volatile PortalCapabilityLocator _portalCapabilityLocator =
-		ServiceProxyFactory.newServiceTrackedInstance(
-			PortalCapabilityLocator.class, LiferayRepositoryDefiner.class,
-			"_portalCapabilityLocator", false);
 
 	private RepositoryFactory _repositoryFactory;
 

@@ -29,8 +29,8 @@ import org.osgi.service.component.annotations.Component;
 @Component(
 	immediate = true, property = "ddm.form.field.type.name=paragraph",
 	service = {
-		DDMFormFieldTemplateContextContributor.class,
-		ParagraphDDMFormFieldTemplateContextContributor.class
+		ParagraphDDMFormFieldTemplateContextContributor.class,
+		DDMFormFieldTemplateContextContributor.class
 	}
 )
 public class ParagraphDDMFormFieldTemplateContextContributor

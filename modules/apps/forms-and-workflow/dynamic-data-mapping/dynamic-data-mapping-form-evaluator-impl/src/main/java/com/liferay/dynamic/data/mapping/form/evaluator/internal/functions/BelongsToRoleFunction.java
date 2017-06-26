@@ -19,9 +19,11 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -36,12 +38,13 @@ public class BelongsToRoleFunction implements DDMExpressionFunction {
 
 	public BelongsToRoleFunction(
 		HttpServletRequest request, long groupId,
-		RoleLocalService roleLocalService,
+		GroupLocalService groupLocalService, RoleLocalService roleLocalService,
 		UserGroupRoleLocalService userGroupRoleLocalService,
 		UserLocalService userLocalService) {
 
 		_request = request;
 		_groupId = groupId;
+		_groupLocalService = groupLocalService;
 		_roleLocalService = roleLocalService;
 		_userGroupRoleLocalService = userGroupRoleLocalService;
 		_userLocalService = userLocalService;
@@ -58,7 +61,11 @@ public class BelongsToRoleFunction implements DDMExpressionFunction {
 			Company company = PortalUtil.getCompany(_request);
 			User user = PortalUtil.getUser(_request);
 
-			boolean belongsTo;
+			if (user == null) {
+				return false;
+			}
+
+			boolean belongsTo = false;
 
 			for (Object parameter : parameters) {
 				String roleName = String.valueOf(parameter);
@@ -70,22 +77,18 @@ public class BelongsToRoleFunction implements DDMExpressionFunction {
 					continue;
 				}
 
-				if (user == null) {
-					if (parameter.equals("Guest")) {
-						return true;
-					}
-
-					continue;
-				}
-
 				if (role.getType() == RoleConstants.TYPE_REGULAR) {
 					belongsTo = _userLocalService.hasRoleUser(
 						company.getCompanyId(), roleName, user.getUserId(),
 						true);
 				}
-				else {
+				else if (role.getType() == RoleConstants.TYPE_SITE) {
 					belongsTo = _userGroupRoleLocalService.hasUserGroupRole(
 						user.getUserId(), _groupId, roleName, true);
+				}
+				else if (role.getType() == RoleConstants.TYPE_ORGANIZATION) {
+					belongsTo = hasUserGroupRole(
+						company, roleName, user.getUserId());
 				}
 
 				if (belongsTo) {
@@ -102,10 +105,32 @@ public class BelongsToRoleFunction implements DDMExpressionFunction {
 		return false;
 	}
 
+	protected boolean hasUserGroupRole(
+			Company company, String roleName, long userId)
+		throws PortalException {
+
+		long[] organizationIds = _groupLocalService.getOrganizationPrimaryKeys(
+			_groupId);
+
+		for (long organizationId : organizationIds) {
+			Group group = _groupLocalService.getOrganizationGroup(
+				company.getCompanyId(), organizationId);
+
+			if (_userGroupRoleLocalService.hasUserGroupRole(
+					userId, group.getGroupId(), roleName, true)) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		BelongsToRoleFunction.class);
 
 	private final long _groupId;
+	private final GroupLocalService _groupLocalService;
 	private final HttpServletRequest _request;
 	private final RoleLocalService _roleLocalService;
 	private final UserGroupRoleLocalService _userGroupRoleLocalService;

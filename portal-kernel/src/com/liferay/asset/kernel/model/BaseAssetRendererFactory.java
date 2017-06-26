@@ -22,14 +22,11 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
-import com.liferay.portal.kernel.portlet.PortletBag;
-import com.liferay.portal.kernel.portlet.PortletBagPool;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.kernel.util.Validator;
@@ -41,7 +38,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
@@ -217,29 +213,7 @@ public abstract class BaseAssetRendererFactory<T>
 
 	@Override
 	public String getTypeName(Locale locale) {
-		String modelResourceNamePrefix =
-			ResourceActionsUtil.getModelResourceNamePrefix();
-
-		String key = modelResourceNamePrefix.concat(getClassName());
-
-		String value = LanguageUtil.get(locale, key, null);
-
-		if (value == null) {
-			PortletBag portletBag = PortletBagPool.get(getPortletId());
-
-			ResourceBundle resourceBundle = portletBag.getResourceBundle(
-				locale);
-
-			if (resourceBundle != null) {
-				value = ResourceBundleUtil.getString(resourceBundle, key);
-			}
-		}
-
-		if (value == null) {
-			value = getClassName();
-		}
-
-		return value;
+		return ResourceActionsUtil.getModelResource(locale, getClassName());
 	}
 
 	/**

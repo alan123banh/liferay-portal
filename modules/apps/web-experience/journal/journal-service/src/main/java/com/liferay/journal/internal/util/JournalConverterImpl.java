@@ -14,6 +14,7 @@
 
 package com.liferay.journal.internal.util;
 
+import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldType;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
@@ -38,7 +39,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
-import com.liferay.portal.kernel.util.Http;
+import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
@@ -275,6 +276,13 @@ public class JournalConverterImpl implements JournalConverter {
 		return XMLUtil.formatXML(document);
 	}
 
+	@Reference(unbind = "-")
+	public void setFieldsToDDMFormValuesConverter(
+		FieldsToDDMFormValuesConverter fieldsToDDMFormValuesConverter) {
+
+		_fieldsToDDMFormValuesConverter = fieldsToDDMFormValuesConverter;
+	}
+
 	protected void addDDMFields(
 			Element dynamicElementElement, DDMStructure ddmStructure,
 			Fields ddmFields, String[] availableLanguageIds,
@@ -387,7 +395,7 @@ public class JournalConverterImpl implements JournalConverter {
 
 	protected String decodeURL(String url) {
 		try {
-			return _http.decodeURL(url);
+			return HttpUtil.decodeURL(url);
 		}
 		catch (IllegalArgumentException iae) {
 			return url;
@@ -643,6 +651,20 @@ public class JournalConverterImpl implements JournalConverter {
 		}
 
 		element.remove(attribute);
+	}
+
+	/**
+	 * @deprecated As of 4.0.0
+	 */
+	@Deprecated
+	@Reference(unbind = "-")
+	protected void setDLAppLocalService(DLAppLocalService dlAppLocalService) {
+		_dlAppLocalService = dlAppLocalService;
+	}
+
+	@Reference(unbind = "-")
+	protected void setGroupLocalService(GroupLocalService groupLocalService) {
+		_groupLocalService = groupLocalService;
 	}
 
 	protected String[] splitFieldsDisplayValue(Field fieldsDisplayField) {
@@ -1081,16 +1103,9 @@ public class JournalConverterImpl implements JournalConverter {
 	private final Map<String, String> _ddmDataTypes;
 	private final Map<String, String> _ddmMetadataAttributes;
 	private final Map<String, String> _ddmTypesToJournalTypes;
-
-	@Reference
+	private DLAppLocalService _dlAppLocalService;
 	private FieldsToDDMFormValuesConverter _fieldsToDDMFormValuesConverter;
-
-	@Reference
 	private GroupLocalService _groupLocalService;
-
-	@Reference
-	private Http _http;
-
 	private final Map<String, String> _journalTypesToDDMTypes;
 
 }

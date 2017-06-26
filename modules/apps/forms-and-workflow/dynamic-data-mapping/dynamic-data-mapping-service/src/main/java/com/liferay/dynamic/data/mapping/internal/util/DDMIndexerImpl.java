@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.BooleanQuery;
@@ -69,7 +70,10 @@ public class DDMIndexerImpl implements DDMIndexer {
 		Document document, DDMStructure ddmStructure,
 		DDMFormValues ddmFormValues) {
 
-		Set<Locale> locales = ddmFormValues.getAvailableLocales();
+		long groupId = GetterUtil.getLong(
+			document.get(com.liferay.portal.kernel.search.Field.GROUP_ID));
+
+		Set<Locale> locales = LanguageUtil.getAvailableLocales(groupId);
 
 		Fields fields = toFields(ddmStructure, ddmFormValues);
 
@@ -162,10 +166,9 @@ public class DDMIndexerImpl implements DDMIndexer {
 							JSONObject jsonObject =
 								JSONFactoryUtil.createJSONObject(valueString);
 
-							double latitude = jsonObject.getDouble(
-								"latitude", 0);
+							double latitude = jsonObject.getDouble("latitude");
 							double longitude = jsonObject.getDouble(
-								"longitude", 0);
+								"longitude");
 
 							document.addGeoLocation(
 								name.concat("_geolocation"), latitude,

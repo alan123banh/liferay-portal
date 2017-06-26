@@ -40,6 +40,15 @@ public class EqualsFunctionTest {
 		Assert.assertFalse(result);
 	}
 
+	@Test
+	public void testEvaluateFalse3() throws Exception {
+		EqualsFunction equalsFunction = new EqualsFunction();
+
+		Boolean result = (Boolean)equalsFunction.evaluate(1, "1");
+
+		Assert.assertFalse(result);
+	}
+
 	@Test(expected = IllegalArgumentException.class)
 	public void testEvaluateInvalid() throws Exception {
 		EqualsFunction equalsFunction = new EqualsFunction();
@@ -62,15 +71,6 @@ public class EqualsFunctionTest {
 		EqualsFunction equalsFunction = new EqualsFunction();
 
 		Boolean result = (Boolean)equalsFunction.evaluate(2, 2);
-
-		Assert.assertTrue(result);
-	}
-
-	@Test
-	public void testEvaluateTrue3() throws Exception {
-		EqualsFunction equalsFunction = new EqualsFunction();
-
-		Boolean result = (Boolean)equalsFunction.evaluate(1, "1");
 
 		Assert.assertTrue(result);
 	}

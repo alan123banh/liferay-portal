@@ -182,8 +182,6 @@ public class AssetCategoryIndexer extends BaseIndexer<AssetCategory> {
 		addLocalizedField(
 			document, Field.TITLE, siteDefaultLocale,
 			assetCategory.getTitleMap());
-		document.addKeyword(
-			"leftCategoryId", assetCategory.getLeftCategoryId());
 
 		if (_log.isDebugEnabled()) {
 			_log.debug("Document " + assetCategory + " indexed successfully");

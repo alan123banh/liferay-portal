@@ -279,8 +279,7 @@ public class JournalServiceVerifyProcess extends VerifyLayout {
 	}
 
 	protected void updateExpirationDate(
-			long groupId, String articleId, Timestamp expirationDate,
-			int status)
+			long groupId, long articleId, Timestamp expirationDate, int status)
 		throws Exception {
 
 		try (PreparedStatement ps = connection.prepareStatement(
@@ -289,7 +288,7 @@ public class JournalServiceVerifyProcess extends VerifyLayout {
 
 			ps.setTimestamp(1, expirationDate);
 			ps.setLong(2, groupId);
-			ps.setString(3, articleId);
+			ps.setLong(3, articleId);
 			ps.setInt(4, status);
 
 			ps.executeUpdate();
@@ -549,7 +548,7 @@ public class JournalServiceVerifyProcess extends VerifyLayout {
 
 				while (rs.next()) {
 					long groupId = rs.getLong("groupId");
-					String articleId = rs.getString("articleId");
+					long articleId = rs.getLong("articleId");
 					Timestamp expirationDate = rs.getTimestamp(
 						"expirationDate");
 					int status = rs.getInt("status");

@@ -988,7 +988,7 @@ public class JournalUtil {
 		catch (Exception e) {
 			throw new LocaleException(
 				LocaleException.TYPE_CONTENT,
-				"The locale " + defaultImportLocale + " is not available", e);
+				"The locale " + defaultImportLocale + " is not available");
 		}
 
 		return content;

@@ -38,6 +38,7 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutSetBranch;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
+import com.liferay.portal.kernel.model.LayoutSetStagingHandler;
 import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -529,11 +530,16 @@ public class StagedLayoutSetStagedModelDataHandler
 		LayoutSet layoutSet = ModelAdapterUtil.adapt(
 			stagedLayoutSet, StagedLayoutSet.class, LayoutSet.class);
 
-		layoutSet = LayoutStagingUtil.mergeLayoutSetRevisionIntoLayoutSet(
-			layoutSet);
+		LayoutSetStagingHandler layoutSetStagingHandler =
+			LayoutStagingUtil.getLayoutSetStagingHandler(layoutSet);
+
+		if (layoutSetStagingHandler == null) {
+			return stagedLayoutSet;
+		}
 
 		return ModelAdapterUtil.adapt(
-			layoutSet, LayoutSet.class, StagedLayoutSet.class);
+			layoutSetStagingHandler.getLayoutSet(), LayoutSet.class,
+			StagedLayoutSet.class);
 	}
 
 	protected void updateLastMergeTime(

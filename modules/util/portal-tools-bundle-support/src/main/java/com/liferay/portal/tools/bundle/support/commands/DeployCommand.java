@@ -52,10 +52,11 @@ public class DeployCommand extends BaseCommand {
 			_outputFileName = fileName;
 		}
 
-		File outputFile = new File(
-			getLiferayHomeDir(), deployDirName + _outputFileName);
+		Path outputPath = getLiferayHomePath();
 
-		FileUtil.copyFile(path, outputFile.toPath());
+		outputPath = outputPath.resolve(deployDirName + _outputFileName);
+
+		FileUtil.copyFile(path, outputPath);
 	}
 
 	public File getFile() {

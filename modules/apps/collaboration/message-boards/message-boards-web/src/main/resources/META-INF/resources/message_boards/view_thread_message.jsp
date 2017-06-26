@@ -137,7 +137,6 @@ MBThread thread = (MBThread)request.getAttribute("edit_message.jsp-thread");
 								<liferay-ui:ratings
 									className="<%= MBMessage.class.getName() %>"
 									classPK="<%= message.getMessageId() %>"
-									inTrash="<%= message.isInTrash() %>"
 								/>
 							</div>
 						</c:if>
@@ -420,6 +419,10 @@ MBThread thread = (MBThread)request.getAttribute("edit_message.jsp-thread");
 							<li class="message-attachment">
 
 								<%
+								Map<String, Object> data = new HashMap<String, Object>();
+
+								data.put("senna-off", "true");
+
 								StringBundler sb = new StringBundler(4);
 
 								sb.append(fileEntry.getTitle());
@@ -434,6 +437,7 @@ MBThread thread = (MBThread)request.getAttribute("edit_message.jsp-thread");
 								%>
 
 								<liferay-ui:icon
+									data="<%= data %>"
 									icon="<%= assetRenderer.getIconCssClass() %>"
 									label="<%= true %>"
 									markupView="lexicon"

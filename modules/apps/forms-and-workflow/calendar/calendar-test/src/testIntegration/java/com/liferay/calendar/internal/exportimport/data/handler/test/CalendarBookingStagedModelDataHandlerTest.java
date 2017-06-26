@@ -135,7 +135,11 @@ public class CalendarBookingStagedModelDataHandlerTest
 		Map<String, List<StagedModel>> dependentStagedModelsMap =
 			new HashMap<>();
 
-		Calendar calendar = CalendarTestUtil.getDefaultCalendar(group);
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(
+				group, TestPropsValues.getUserId());
+
+		Calendar calendar = CalendarTestUtil.addCalendar(group, serviceContext);
 
 		addDependentStagedModel(
 			dependentStagedModelsMap, CalendarResource.class,

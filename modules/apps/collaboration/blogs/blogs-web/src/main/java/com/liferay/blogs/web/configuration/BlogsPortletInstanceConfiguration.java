@@ -50,9 +50,6 @@ public interface BlogsPortletInstanceConfiguration {
 	@Meta.AD(deflt = "true", required = false)
 	public boolean enableRatings();
 
-	@Meta.AD(deflt = "false", required = false)
-	public boolean enableReadingTime();
-
 	@Meta.AD(deflt = "true", required = false)
 	public boolean enableRelatedAssets();
 

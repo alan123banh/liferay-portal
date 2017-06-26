@@ -80,7 +80,9 @@ AUI.add(
 
 						var field = instance.get('field');
 
-						return field.getSettings();
+						var settingsForm = instance.settingsForm;
+
+						return field.getSettings(settingsForm);
 					},
 
 					getPreviousContext: function() {
@@ -170,14 +172,14 @@ AUI.add(
 							'render',
 							function() {
 								settingsFormContainer.one('.navbar-nav').wrap(TPL_NAVBAR_WRAPER);
-
-								settingsForm.getFirstPageField().focus();
-
-								instance._bindSettingsFormEvents();
 							}
 						);
 
+						instance._bindSettingsFormEvents();
+
 						settingsForm.render();
+
+						settingsForm.getFirstPageField().focus();
 					},
 
 					_containsNode: function(node) {
@@ -219,11 +221,7 @@ AUI.add(
 									}
 								);
 
-								var settingsFormContext = settingsForm.get('context');
-
-								field.set('context.settingsContext', settingsFormContext);
-
-								field.saveSettings();
+								field.setAttrs(field.getSettings(settingsForm));
 
 								instance._saveCurrentContext();
 

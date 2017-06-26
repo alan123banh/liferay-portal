@@ -227,7 +227,7 @@ public class CommentAssetRenderer
 			CommentManagerUtil.getDiscussionPermission(permissionChecker);
 
 		return discussionPermission.hasPermission(
-			_workflowableComment, ActionKeys.VIEW);
+			_workflowableComment.getCommentId(), ActionKeys.VIEW);
 	}
 
 	@Override

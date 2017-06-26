@@ -69,7 +69,7 @@ public class WorkflowDefinitionsDataProvider implements DDMDataProvider {
 
 		data.add(
 			new KeyValuePair(
-				"no-workflow", LanguageUtil.get(locale, "no-workflow")));
+				LanguageUtil.get(locale, "no-workflow"), "no-workflow"));
 
 		if (!_workflowEngineManager.isDeployed()) {
 			return DDMDataProviderResponse.of(

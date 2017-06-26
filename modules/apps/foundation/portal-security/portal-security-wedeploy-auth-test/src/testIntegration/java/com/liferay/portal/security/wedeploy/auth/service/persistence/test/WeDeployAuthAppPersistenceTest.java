@@ -136,8 +136,6 @@ public class WeDeployAuthAppPersistenceTest {
 
 		newWeDeployAuthApp.setName(RandomTestUtil.randomString());
 
-		newWeDeployAuthApp.setRedirectURI(RandomTestUtil.randomString());
-
 		newWeDeployAuthApp.setClientId(RandomTestUtil.randomString());
 
 		newWeDeployAuthApp.setClientSecret(RandomTestUtil.randomString());
@@ -162,21 +160,10 @@ public class WeDeployAuthAppPersistenceTest {
 			Time.getShortTimestamp(newWeDeployAuthApp.getModifiedDate()));
 		Assert.assertEquals(existingWeDeployAuthApp.getName(),
 			newWeDeployAuthApp.getName());
-		Assert.assertEquals(existingWeDeployAuthApp.getRedirectURI(),
-			newWeDeployAuthApp.getRedirectURI());
 		Assert.assertEquals(existingWeDeployAuthApp.getClientId(),
 			newWeDeployAuthApp.getClientId());
 		Assert.assertEquals(existingWeDeployAuthApp.getClientSecret(),
 			newWeDeployAuthApp.getClientSecret());
-	}
-
-	@Test
-	public void testCountByRU_CI() throws Exception {
-		_persistence.countByRU_CI(StringPool.BLANK, StringPool.BLANK);
-
-		_persistence.countByRU_CI(StringPool.NULL, StringPool.NULL);
-
-		_persistence.countByRU_CI((String)null, (String)null);
 	}
 
 	@Test
@@ -214,7 +201,7 @@ public class WeDeployAuthAppPersistenceTest {
 		return OrderByComparatorFactoryUtil.create("WeDeployAuth_WeDeployAuthApp",
 			"weDeployAuthAppId", true, "companyId", true, "userId", true,
 			"userName", true, "createDate", true, "modifiedDate", true, "name",
-			true, "redirectURI", true, "clientId", true, "clientSecret", true);
+			true, "clientId", true, "clientSecret", true);
 	}
 
 	@Test
@@ -420,15 +407,6 @@ public class WeDeployAuthAppPersistenceTest {
 		WeDeployAuthApp existingWeDeployAuthApp = _persistence.findByPrimaryKey(newWeDeployAuthApp.getPrimaryKey());
 
 		Assert.assertTrue(Objects.equals(
-				existingWeDeployAuthApp.getRedirectURI(),
-				ReflectionTestUtil.invoke(existingWeDeployAuthApp,
-					"getOriginalRedirectURI", new Class<?>[0])));
-		Assert.assertTrue(Objects.equals(
-				existingWeDeployAuthApp.getClientId(),
-				ReflectionTestUtil.invoke(existingWeDeployAuthApp,
-					"getOriginalClientId", new Class<?>[0])));
-
-		Assert.assertTrue(Objects.equals(
 				existingWeDeployAuthApp.getClientId(),
 				ReflectionTestUtil.invoke(existingWeDeployAuthApp,
 					"getOriginalClientId", new Class<?>[0])));
@@ -454,8 +432,6 @@ public class WeDeployAuthAppPersistenceTest {
 		weDeployAuthApp.setModifiedDate(RandomTestUtil.nextDate());
 
 		weDeployAuthApp.setName(RandomTestUtil.randomString());
-
-		weDeployAuthApp.setRedirectURI(RandomTestUtil.randomString());
 
 		weDeployAuthApp.setClientId(RandomTestUtil.randomString());
 

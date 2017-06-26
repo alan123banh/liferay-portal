@@ -137,11 +137,10 @@ public class MediaWikiImporter implements WikiImporter {
 			moveFrontPage(userId, node, options);
 		}
 		catch (DocumentException de) {
-			throw new ImportFilesException("Invalid XML file provided", de);
+			throw new ImportFilesException("Invalid XML file provided");
 		}
 		catch (IOException ioe) {
-			throw new ImportFilesException(
-				"Error reading the files provided", ioe);
+			throw new ImportFilesException("Error reading the files provided");
 		}
 		catch (PortalException pe) {
 			throw pe;

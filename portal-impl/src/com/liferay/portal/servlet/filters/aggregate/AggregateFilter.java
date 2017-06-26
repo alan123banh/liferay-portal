@@ -313,8 +313,8 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 	}
 
 	protected String getCacheFileName(HttpServletRequest request) {
-		return CacheFileNameGenerator.getCacheFileName(
-			request, AggregateFilter.class.getName());
+		return _cacheFileNameGenerator.getCacheFileName(
+			AggregateFilter.class, request, _REMOVE_PARAMETER_NAMES, null);
 	}
 
 	protected Object getContent(
@@ -421,6 +421,8 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 			processFilter(
 				AggregateFilter.class.getName(), request,
 				bufferCacheServletResponse, filterChain);
+
+			bufferCacheServletResponse.finishResponse(false);
 
 			content = bufferCacheServletResponse.getString();
 
@@ -584,6 +586,8 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 
 	private static final String _JSP_EXTENSION = ".jsp";
 
+	private static final String[] _REMOVE_PARAMETER_NAMES = {"zx"};
+
 	private static final String _TEMP_DIR = "aggregate";
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -592,6 +596,8 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 	private static final Pattern _pattern = Pattern.compile(
 		"^(\\.ie|\\.js\\.ie)([^}]*)}", Pattern.MULTILINE);
 
+	private final CacheFileNameGenerator _cacheFileNameGenerator =
+		new CacheFileNameGenerator();
 	private ServletContext _servletContext;
 	private File _tempDir;
 

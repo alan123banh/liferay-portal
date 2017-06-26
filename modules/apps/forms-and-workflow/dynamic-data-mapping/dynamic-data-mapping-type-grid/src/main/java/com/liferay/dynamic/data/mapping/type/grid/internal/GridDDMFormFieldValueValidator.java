@@ -20,6 +20,7 @@ import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.Value;
+import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -44,7 +45,8 @@ public class GridDDMFormFieldValueValidator
 	implements DDMFormFieldValueValidator {
 
 	@Override
-	public void validate(DDMFormField ddmFormField, Value value)
+	public void validate(
+			DDMFormField ddmFormField, DDMFormFieldValue ddmFormFieldValue)
 		throws DDMFormFieldValueValidationException {
 
 		DDMFormFieldOptions rows =
@@ -67,6 +69,8 @@ public class GridDDMFormFieldValueValidator
 			throw new DDMFormFieldValueValidationException(
 				"Rows and columns must contain at least one alternative each");
 		}
+
+		Value value = ddmFormFieldValue.getValue();
 
 		DDMForm ddmForm = ddmFormField.getDDMForm();
 

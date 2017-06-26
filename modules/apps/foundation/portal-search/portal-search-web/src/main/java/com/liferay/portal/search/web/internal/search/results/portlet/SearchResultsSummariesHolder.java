@@ -19,8 +19,6 @@ import com.liferay.portal.search.web.internal.result.display.context.SearchResul
 
 import java.io.Serializable;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -36,10 +34,6 @@ public class SearchResultsSummariesHolder implements Serializable {
 
 	public SearchResultSummaryDisplayContext get(Document document) {
 		return _map.get(document);
-	}
-
-	public Collection<Document> getDocuments() {
-		return Collections.unmodifiableSet(_map.keySet());
 	}
 
 	public void put(

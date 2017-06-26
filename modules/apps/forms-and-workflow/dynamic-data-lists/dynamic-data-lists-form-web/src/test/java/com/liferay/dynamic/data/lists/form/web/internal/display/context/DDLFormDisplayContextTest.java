@@ -53,14 +53,14 @@ public class DDLFormDisplayContextTest extends PowerMockito {
 	}
 
 	@Test
-	public void testDDMFormRenderingContextLocaleIsThemeDisplayLocale() {
+	public void testDDMFormRenderingContextLocaleIsSiteLocale() {
 		DDMForm ddmForm = createDDMForm(LocaleUtil.BRAZIL);
 
 		DDMFormRenderingContext ddmFormRenderingContext =
 			_ddlFormDisplayContext.createDDMFormRenderingContext(ddmForm);
 
 		Assert.assertEquals(
-			LocaleUtil.SPAIN, ddmFormRenderingContext.getLocale());
+			LocaleUtil.BRAZIL, ddmFormRenderingContext.getLocale());
 	}
 
 	protected DDMForm createDDMForm(Locale locale) {
@@ -74,11 +74,7 @@ public class DDLFormDisplayContextTest extends PowerMockito {
 	protected RenderRequest mockRenderRequest() {
 		RenderRequest renderRequest = new MockRenderRequest();
 
-		ThemeDisplay themeDisplay = new ThemeDisplay();
-
-		themeDisplay.setLocale(LocaleUtil.SPAIN);
-
-		renderRequest.setAttribute(WebKeys.THEME_DISPLAY, themeDisplay);
+		renderRequest.setAttribute(WebKeys.THEME_DISPLAY, new ThemeDisplay());
 
 		return renderRequest;
 	}

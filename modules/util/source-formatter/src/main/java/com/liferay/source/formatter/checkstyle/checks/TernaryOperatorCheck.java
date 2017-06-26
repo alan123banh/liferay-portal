@@ -25,6 +25,9 @@ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
  */
 public class TernaryOperatorCheck extends AbstractCheck {
 
+	public static final String MSG_AVOID_TERNARY_OPERATOR =
+		"ternary.operator.avoid";
+
 	@Override
 	public int[] getDefaultTokens() {
 		return new int[] {TokenTypes.QUESTION};
@@ -35,11 +38,8 @@ public class TernaryOperatorCheck extends AbstractCheck {
 		if (DetailASTUtil.getStartLine(detailAST) !=
 				DetailASTUtil.getEndLine(detailAST)) {
 
-			log(detailAST.getLineNo(), _MSG_AVOID_TERNARY_OPERATOR);
+			log(detailAST.getLineNo(), MSG_AVOID_TERNARY_OPERATOR);
 		}
 	}
-
-	private static final String _MSG_AVOID_TERNARY_OPERATOR =
-		"ternary.operator.avoid";
 
 }

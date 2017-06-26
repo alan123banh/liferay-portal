@@ -36,7 +36,6 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService;
 import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
@@ -201,21 +200,6 @@ public class DDLFormDisplayContext {
 		return recordSetSettings.redirectURL();
 	}
 
-	public boolean isAutosaveEnabled() {
-		if (_autosaveEnabled != null) {
-			return _autosaveEnabled;
-		}
-
-		if (isDefaultUser()) {
-			_autosaveEnabled = Boolean.FALSE;
-		}
-		else {
-			_autosaveEnabled = Boolean.TRUE;
-		}
-
-		return _autosaveEnabled;
-	}
-
 	public boolean isFormAvailable() throws PortalException {
 		if (isPreview()) {
 			return true;
@@ -288,11 +272,7 @@ public class DDLFormDisplayContext {
 			PortalUtil.getHttpServletRequest(_renderRequest));
 		ddmFormRenderingContext.setHttpServletResponse(
 			PortalUtil.getHttpServletResponse(_renderResponse));
-
-		ThemeDisplay themeDisplay = getThemeDisplay();
-
-		ddmFormRenderingContext.setLocale(themeDisplay.getLocale());
-
+		ddmFormRenderingContext.setLocale(ddmForm.getDefaultLocale());
 		ddmFormRenderingContext.setPortletNamespace(
 			_renderResponse.getNamespace());
 
@@ -419,12 +399,6 @@ public class DDLFormDisplayContext {
 		return themeDisplay;
 	}
 
-	protected User getUser() {
-		ThemeDisplay themeDisplay = getThemeDisplay();
-
-		return themeDisplay.getUser();
-	}
-
 	protected long getUserId() {
 		ThemeDisplay themeDisplay = getThemeDisplay();
 
@@ -465,12 +439,6 @@ public class DDLFormDisplayContext {
 		DDLRecordSetSettings recordSetSettings = recordSet.getSettingsModel();
 
 		return recordSetSettings.requireCaptcha();
-	}
-
-	protected boolean isDefaultUser() {
-		User user = getUser();
-
-		return user.isDefaultUser();
 	}
 
 	protected boolean isFormPublished() throws PortalException {
@@ -516,7 +484,6 @@ public class DDLFormDisplayContext {
 	private static final Log _log = LogFactoryUtil.getLog(
 		DDLFormDisplayContext.class);
 
-	private Boolean _autosaveEnabled;
 	private final String _containerId;
 	private final DDLRecordSetService _ddlRecordSetService;
 	private final DDLRecordVersionLocalService _ddlRecordVersionLocalService;

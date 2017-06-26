@@ -21,12 +21,10 @@ import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.search.Document;
-import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.search.QueryConfig;
 import com.liferay.portal.kernel.security.permission.ResourceActions;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Http;
-import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.search.web.internal.display.context.PortletURLFactory;
 import com.liferay.portal.search.web.internal.display.context.PortletURLFactoryImpl;
@@ -35,7 +33,6 @@ import com.liferay.portal.search.web.internal.document.DocumentFormPermissionChe
 import com.liferay.portal.search.web.internal.document.DocumentFormPermissionCheckerImpl;
 import com.liferay.portal.search.web.internal.portlet.shared.search.NullPortletURL;
 import com.liferay.portal.search.web.internal.portlet.shared.task.PortletSharedRequestHelper;
-import com.liferay.portal.search.web.internal.result.display.builder.AssetRendererFactoryLookup;
 import com.liferay.portal.search.web.internal.result.display.builder.SearchResultSummaryDisplayBuilder;
 import com.liferay.portal.search.web.internal.result.display.context.SearchResultSummaryDisplayContext;
 import com.liferay.portal.search.web.internal.search.results.constants.SearchResultsPortletKeys;
@@ -48,7 +45,6 @@ import com.liferay.portal.search.web.search.result.SearchResultImageContributor;
 
 import java.io.IOException;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -149,14 +145,8 @@ public class SearchResultsPortlet
 		SearchResultsPortletDisplayContext searchResultsPortletDisplayContext =
 			new SearchResultsPortletDisplayContext();
 
-		SearchResultsSummariesHolder searchResultsSummariesHolder =
-			buildSummaries(
-				portletSharedSearchResponse, renderRequest, renderResponse);
-
-		List<Document> documents = new ArrayList<>(
-			searchResultsSummariesHolder.getDocuments());
-
-		searchResultsPortletDisplayContext.setDocuments(documents);
+		searchResultsPortletDisplayContext.setDocuments(
+			portletSharedSearchResponse.getDocuments());
 
 		Optional<String> keywordsOptional =
 			portletSharedSearchResponse.getKeywords();
@@ -179,7 +169,8 @@ public class SearchResultsPortlet
 
 		searchResultsPortletDisplayContext.setSearchContainer(
 			buildSearchContainer(
-				documents, portletSharedSearchResponse.getTotalHits(),
+				portletSharedSearchResponse.getDocuments(),
+				portletSharedSearchResponse.getTotalHits(),
 				portletSharedSearchResponse.getPaginationStart(),
 				searchResultsPortletPreferences.
 					getPaginationStartParameterName(),
@@ -189,8 +180,8 @@ public class SearchResultsPortlet
 				renderRequest));
 
 		searchResultsPortletDisplayContext.setSearchResultsSummariesHolder(
-			searchResultsSummariesHolder);
-
+			buildSummaries(
+				portletSharedSearchResponse, renderRequest, renderResponse));
 		searchResultsPortletDisplayContext.setTotalHits(
 			portletSharedSearchResponse.getTotalHits());
 
@@ -268,7 +259,7 @@ public class SearchResultsPortlet
 		SearchResultsSummariesHolder searchResultsSummariesHolder =
 			new SearchResultsSummariesHolder(documents.size());
 
-		PortletURLFactory portletURLFactory = getPortletURLFactory(
+		PortletURLFactory portletURLFactory = new PortletURLFactoryImpl(
 			renderRequest, renderResponse);
 
 		SearchResultPreferences searchResultPreferences =
@@ -282,10 +273,8 @@ public class SearchResultsPortlet
 					renderResponse, themeDisplay, portletURLFactory,
 					searchResultsPortletPreferences, searchResultPreferences);
 
-			if (searchResultSummaryDisplayContext != null) {
-				searchResultsSummariesHolder.put(
-					document, searchResultSummaryDisplayContext);
-			}
+			searchResultsSummariesHolder.put(
+				document, searchResultSummaryDisplayContext);
 		}
 
 		return searchResultsSummariesHolder;
@@ -307,14 +296,11 @@ public class SearchResultsPortlet
 
 		searchResultSummaryDisplayBuilder.setAssetEntryLocalService(
 			assetEntryLocalService);
-		searchResultSummaryDisplayBuilder.setAssetRendererFactoryLookup(
-			assetRendererFactoryLookup);
 		searchResultSummaryDisplayBuilder.setCurrentURL(portletURL.toString());
 		searchResultSummaryDisplayBuilder.setDocument(document);
 		searchResultSummaryDisplayBuilder.setHighlightEnabled(
 			searchResultsPortletPreferences.isHighlightEnabled());
 		searchResultSummaryDisplayBuilder.setImageRequested(true);
-		searchResultSummaryDisplayBuilder.setIndexerRegistry(indexerRegistry);
 		searchResultSummaryDisplayBuilder.setLanguage(language);
 		searchResultSummaryDisplayBuilder.setLocale(themeDisplay.getLocale());
 		searchResultSummaryDisplayBuilder.setPortletURLFactory(
@@ -340,7 +326,7 @@ public class SearchResultsPortlet
 		RenderRequest renderRequest) {
 
 		LiferayPortletRequest liferayPortletRequest =
-			_portal.getLiferayPortletRequest(renderRequest);
+			(LiferayPortletRequest)renderRequest;
 
 		return liferayPortletRequest.getHttpServletRequest();
 	}
@@ -363,12 +349,6 @@ public class SearchResultsPortlet
 		};
 	}
 
-	protected PortletURLFactory getPortletURLFactory(
-		RenderRequest renderRequest, RenderResponse renderResponse) {
-
-		return new PortletURLFactoryImpl(renderRequest, renderResponse);
-	}
-
 	protected String getURLString(
 		RenderRequest renderRequest, String paginationStartParameterName,
 		String paginationDeltaParameterName) {
@@ -376,9 +356,9 @@ public class SearchResultsPortlet
 		String urlString = portletSharedRequestHelper.getCompleteURL(
 			renderRequest);
 
-		urlString = http.removeParameter(
+		urlString = _http.removeParameter(
 			urlString, paginationDeltaParameterName);
-		urlString = http.removeParameter(
+		urlString = _http.removeParameter(
 			urlString, paginationStartParameterName);
 
 		return urlString;
@@ -441,14 +421,6 @@ public class SearchResultsPortlet
 	@Reference
 	protected AssetEntryLocalService assetEntryLocalService;
 
-	protected AssetRendererFactoryLookup assetRendererFactoryLookup;
-
-	@Reference
-	protected Http http;
-
-	@Reference
-	protected IndexerRegistry indexerRegistry;
-
 	@Reference
 	protected Language language;
 
@@ -462,7 +434,7 @@ public class SearchResultsPortlet
 	protected ResourceActions resourceActions;
 
 	@Reference
-	private Portal _portal;
+	private Http _http;
 
 	private final Set<SearchResultImageContributor>
 		_searchResultImageContributors = new HashSet<>();

@@ -23,21 +23,13 @@ import com.liferay.knowledge.base.service.KBCommentLocalServiceUtil;
 import com.liferay.knowledge.base.service.KBTemplateLocalServiceUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
-import com.liferay.portal.kernel.security.permission.BaseModelPermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
-import org.osgi.service.component.annotations.Component;
-
 /**
  * @author Shinn Lok
- * @author Roberto Díaz
  */
-@Component(
-	property = {"model.class.name=com.liferay.knowledge.base.model.KBComment"},
-	service = BaseModelPermissionChecker.class
-)
-public class KBCommentPermission implements BaseModelPermissionChecker {
+public class KBCommentPermission {
 
 	public static void check(
 			PermissionChecker permissionChecker, KBComment kbComment,
@@ -111,15 +103,6 @@ public class KBCommentPermission implements BaseModelPermissionChecker {
 			kbCommentId);
 
 		return contains(permissionChecker, kbComment, actionId);
-	}
-
-	@Override
-	public void checkBaseModel(
-			PermissionChecker permissionChecker, long groupId, long primaryKey,
-			String actionId)
-		throws PortalException {
-
-		check(permissionChecker, primaryKey, actionId);
 	}
 
 }

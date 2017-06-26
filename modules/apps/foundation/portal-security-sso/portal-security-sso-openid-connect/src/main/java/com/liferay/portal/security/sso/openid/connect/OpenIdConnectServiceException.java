@@ -29,27 +29,27 @@ public class OpenIdConnectServiceException extends PortalException {
 		super(msg, cause);
 	}
 
-	public static class AuthenticationException
+	public static class AuthenticationErrorException
 		extends OpenIdConnectServiceException {
 
-		public AuthenticationException(String msg) {
+		public AuthenticationErrorException(String msg) {
 			super(msg);
 		}
 
-		public AuthenticationException(String msg, Throwable cause) {
+		public AuthenticationErrorException(String msg, Throwable cause) {
 			super(msg, cause);
 		}
 
 	}
 
-	public static class NoOpenIdConnectSessionException
+	public static class MissingClientInformationException
 		extends OpenIdConnectServiceException {
 
-		public NoOpenIdConnectSessionException(String msg) {
+		public MissingClientInformationException(String msg) {
 			super(msg);
 		}
 
-		public NoOpenIdConnectSessionException(String msg, Throwable cause) {
+		public MissingClientInformationException(String msg, Throwable cause) {
 			super(msg, cause);
 		}
 
@@ -68,39 +68,40 @@ public class OpenIdConnectServiceException extends PortalException {
 
 	}
 
-	public static class TokenException extends OpenIdConnectServiceException {
+	public static class TokenErrorException
+		extends OpenIdConnectServiceException {
 
-		public TokenException(String msg) {
+		public TokenErrorException(String msg) {
 			super(msg);
 		}
 
-		public TokenException(String msg, Throwable cause) {
+		public TokenErrorException(String msg, Throwable cause) {
 			super(msg, cause);
 		}
 
 	}
 
-	public static class UserInfoException
+	public static class UserInfoErrorException
 		extends OpenIdConnectServiceException {
 
-		public UserInfoException(String msg) {
+		public UserInfoErrorException(String msg) {
 			super(msg);
 		}
 
-		public UserInfoException(String msg, Throwable cause) {
+		public UserInfoErrorException(String msg, Throwable cause) {
 			super(msg, cause);
 		}
 
 	}
 
-	public static class UserMappingException
+	public static class UserInfoMissingException
 		extends OpenIdConnectServiceException {
 
-		public UserMappingException(String msg) {
+		public UserInfoMissingException(String msg) {
 			super(msg);
 		}
 
-		public UserMappingException(String msg, Throwable cause) {
+		public UserInfoMissingException(String msg, Throwable cause) {
 			super(msg, cause);
 		}
 

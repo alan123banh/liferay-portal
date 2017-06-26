@@ -363,9 +363,6 @@ public class SearchPermissionCheckerImpl implements SearchPermissionChecker {
 			if (searchPermissionContextObject == _nullSearchPermissionContext) {
 				return booleanFilter;
 			}
-
-			searchPermissionContext =
-				(SearchPermissionContext)searchPermissionContextObject;
 		}
 		else if (!permissionChecker.isCompanyAdmin(companyId)) {
 			searchPermissionContext = _createSearchPermissionContext(

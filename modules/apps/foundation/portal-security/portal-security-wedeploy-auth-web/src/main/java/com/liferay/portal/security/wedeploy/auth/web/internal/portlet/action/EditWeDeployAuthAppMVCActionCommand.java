@@ -72,13 +72,12 @@ public class EditWeDeployAuthAppMVCActionCommand extends BaseMVCActionCommand {
 			WebKeys.THEME_DISPLAY);
 
 		String name = ParamUtil.getString(actionRequest, "name");
-		String redirectURI = ParamUtil.getString(actionRequest, "redirectURI");
 
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			WeDeployAuthApp.class.getName(), actionRequest);
 
 		_weDeployAuthAppLocalService.addWeDeployAuthApp(
-			themeDisplay.getUserId(), name, redirectURI, serviceContext);
+			themeDisplay.getUserId(), name, serviceContext);
 	}
 
 	protected void deleteWeDeployAuthApp(ActionRequest actionRequest)

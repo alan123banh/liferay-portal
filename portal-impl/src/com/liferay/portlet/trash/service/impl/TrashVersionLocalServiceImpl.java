@@ -15,6 +15,7 @@
 package com.liferay.portlet.trash.service.impl;
 
 import com.liferay.portal.kernel.util.UnicodeProperties;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portlet.trash.service.base.TrashVersionLocalServiceBaseImpl;
 import com.liferay.trash.kernel.model.TrashVersion;
 
@@ -22,10 +23,7 @@ import java.util.List;
 
 /**
  * @author Zsolt Berentey
- * @deprecated As of 7.0.0, replaced by {@link
- *             com.liferay.trash.service.impl.TrashVersionLocalServiceImpl}
  */
-@Deprecated
 public class TrashVersionLocalServiceImpl
 	extends TrashVersionLocalServiceBaseImpl {
 
@@ -34,16 +32,35 @@ public class TrashVersionLocalServiceImpl
 		long trashEntryId, String className, long classPK, int status,
 		UnicodeProperties typeSettingsProperties) {
 
-		throw new UnsupportedOperationException(
-			"This class is deprecate and replaced by " +
-				"com.liferay.trash.service.impl.TrashVersionLocalServiceImpl");
+		long versionId = counterLocalService.increment();
+
+		TrashVersion trashVersion = trashVersionPersistence.create(versionId);
+
+		trashVersion.setEntryId(trashEntryId);
+		trashVersion.setClassName(className);
+		trashVersion.setClassPK(classPK);
+
+		if (typeSettingsProperties != null) {
+			trashVersion.setTypeSettingsProperties(typeSettingsProperties);
+		}
+
+		trashVersion.setStatus(status);
+
+		return trashVersionPersistence.update(trashVersion);
 	}
 
 	@Override
 	public TrashVersion deleteTrashVersion(String className, long classPK) {
-		throw new UnsupportedOperationException(
-			"This class is deprecate and replaced by " +
-				"com.liferay.trash.service.impl.TrashVersionLocalServiceImpl");
+		long classNameId = classNameLocalService.getClassNameId(className);
+
+		TrashVersion trashVersion = trashVersionPersistence.fetchByC_C(
+			classNameId, classPK);
+
+		if (trashVersion != null) {
+			return deleteTrashVersion(trashVersion);
+		}
+
+		return null;
 	}
 
 	/**
@@ -54,30 +71,30 @@ public class TrashVersionLocalServiceImpl
 	public TrashVersion fetchVersion(
 		long entryId, String className, long classPK) {
 
-		throw new UnsupportedOperationException(
-			"This class is deprecate and replaced by " +
-				"com.liferay.trash.service.impl.TrashVersionLocalServiceImpl");
+		return fetchVersion(className, classPK);
 	}
 
 	@Override
 	public TrashVersion fetchVersion(String className, long classPK) {
-		throw new UnsupportedOperationException(
-			"This class is deprecate and replaced by " +
-				"com.liferay.trash.service.impl.TrashVersionLocalServiceImpl");
+		long classNameId = classNameLocalService.getClassNameId(className);
+
+		return trashVersionPersistence.fetchByC_C(classNameId, classPK);
 	}
 
 	@Override
 	public List<TrashVersion> getVersions(long entryId) {
-		throw new UnsupportedOperationException(
-			"This class is deprecate and replaced by " +
-				"com.liferay.trash.service.impl.TrashVersionLocalServiceImpl");
+		return trashVersionPersistence.findByEntryId(entryId);
 	}
 
 	@Override
 	public List<TrashVersion> getVersions(long entryId, String className) {
-		throw new UnsupportedOperationException(
-			"This class is deprecate and replaced by " +
-				"com.liferay.trash.service.impl.TrashVersionLocalServiceImpl");
+		if (Validator.isNull(className)) {
+			return trashVersionPersistence.findByEntryId(entryId);
+		}
+
+		long classNameId = classNameLocalService.getClassNameId(className);
+
+		return trashVersionPersistence.findByE_C(entryId, classNameId);
 	}
 
 }

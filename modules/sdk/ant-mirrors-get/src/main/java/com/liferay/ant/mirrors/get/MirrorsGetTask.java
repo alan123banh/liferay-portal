@@ -62,10 +62,6 @@ public class MirrorsGetTask extends Task {
 		_ignoreErrors = ignoreErrors;
 	}
 
-	public void setSkipChecksum(boolean skipChecksum) {
-		_skipChecksum = skipChecksum;
-	}
-
 	public void setSrc(String src) {
 		Matcher matcher = _pattern.matcher(src);
 
@@ -286,10 +282,6 @@ public class MirrorsGetTask extends Task {
 	}
 
 	protected boolean isValidMD5(File file, URL url) throws IOException {
-		if (_skipChecksum) {
-			return true;
-		}
-
 		if ((file == null) || !file.exists()) {
 			return false;
 		}
@@ -468,7 +460,6 @@ public class MirrorsGetTask extends Task {
 	private boolean _force;
 	private boolean _ignoreErrors;
 	private String _path;
-	private boolean _skipChecksum;
 	private boolean _tryLocalNetwork = true;
 	private boolean _verbose;
 

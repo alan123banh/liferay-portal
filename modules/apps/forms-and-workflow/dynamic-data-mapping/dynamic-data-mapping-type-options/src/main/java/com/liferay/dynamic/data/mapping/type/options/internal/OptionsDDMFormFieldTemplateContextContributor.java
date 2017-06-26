@@ -15,14 +15,13 @@
 package com.liferay.dynamic.data.mapping.type.options.internal;
 
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTemplateContextContributor;
-import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.render.DDMFormFieldRenderingContext;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.LocaleUtil;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
@@ -34,8 +33,8 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	immediate = true, property = "ddm.form.field.type.name=options",
 	service = {
-		DDMFormFieldTemplateContextContributor.class,
-		OptionsDDMFormFieldTemplateContextContributor.class
+		OptionsDDMFormFieldTemplateContextContributor.class,
+		DDMFormFieldTemplateContextContributor.class
 	}
 )
 public class OptionsDDMFormFieldTemplateContextContributor
@@ -52,27 +51,19 @@ public class OptionsDDMFormFieldTemplateContextContributor
 			"allowEmptyOptions",
 			GetterUtil.getBoolean(
 				ddmFormField.getProperty("allowEmptyOptions")));
-
-		DDMForm ddmForm = ddmFormField.getDDMForm();
-
-		parameters.put(
-			"defaultLanguageId",
-			LocaleUtil.toLanguageId(ddmForm.getDefaultLocale()));
-
 		parameters.put(
 			"value", getValue(ddmFormField, ddmFormFieldRenderingContext));
 
 		return parameters;
 	}
 
-	protected Map<String, Object> getValue(
+	protected List<Object> getValue(
 		DDMFormField ddmFormField,
 		DDMFormFieldRenderingContext ddmFormFieldRenderingContext) {
 
 		OptionsDDMFormFieldContextHelper optionsDDMFormFieldContextHelper =
 			new OptionsDDMFormFieldContextHelper(
-				jsonFactory, ddmFormField,
-				ddmFormFieldRenderingContext.getValue());
+				jsonFactory, ddmFormFieldRenderingContext.getValue());
 
 		return optionsDDMFormFieldContextHelper.getValue();
 	}

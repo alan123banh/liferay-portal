@@ -18,11 +18,6 @@ AUI.add(
 		var TextField = A.Component.create(
 			{
 				ATTRS: {
-					autocompleteEnabled: {
-						state: true,
-						value: false
-					},
-
 					displayStyle: {
 						state: true,
 						value: 'singleline'
@@ -98,9 +93,9 @@ AUI.add(
 
 						TextField.superclass.render.apply(instance, arguments);
 
-						var autocompleteEnabled = instance.get('autocompleteEnabled');
+						var options = instance.get('options');
 
-						if (autocompleteEnabled && instance.get('visible')) {
+						if (options.length && instance.get('visible')) {
 							instance._createAutocomplete();
 						}
 
@@ -141,21 +136,19 @@ AUI.add(
 					_afterOptionsChange: function(event) {
 						var instance = this;
 
-						if (instance.get('autocompleteEnabled')) {
-							var autoComplete = instance.getAutoComplete();
+						var autoComplete = instance.getAutoComplete();
 
-							if (!Util.compare(event.newVal, event.prevVal)) {
-								autoComplete.set('source', event.newVal);
+						if (!Util.compare(event.newVal, event.prevVal)) {
+							autoComplete.set('source', event.newVal);
 
-								autoComplete.fire(
-									'query',
-									{
-										inputValue: instance.getValue(),
-										query: instance.getValue(),
-										src: A.AutoCompleteBase.UI_SRC
-									}
-								);
-							}
+							autoComplete.fire(
+								'query',
+								{
+									inputValue: instance.getValue(),
+									query: instance.getValue(),
+									src: A.AutoCompleteBase.UI_SRC
+								}
+							);
 						}
 					},
 

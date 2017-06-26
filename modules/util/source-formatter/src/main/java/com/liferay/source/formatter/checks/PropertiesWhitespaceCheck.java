@@ -35,13 +35,8 @@ public class PropertiesWhitespaceCheck extends WhitespaceCheck {
 				new UnsyncBufferedReader(new UnsyncStringReader(content))) {
 
 			String line = null;
-			String previousLine = StringPool.BLANK;
-
-			int lineCount = 0;
 
 			while ((line = unsyncBufferedReader.readLine()) != null) {
-				lineCount++;
-
 				if (line.startsWith(StringPool.TAB)) {
 					line = line.replace(StringPool.TAB, StringPool.FOUR_SPACES);
 				}
@@ -52,35 +47,6 @@ public class PropertiesWhitespaceCheck extends WhitespaceCheck {
 
 				sb.append(line);
 				sb.append("\n");
-
-				if (!previousLine.matches("\\s+[^\\s#].*[,=]\\\\")) {
-					previousLine = line;
-
-					continue;
-				}
-
-				int leadingSpaceCount = _getLeadingSpaceCount(line);
-
-				int expectedLeadingSpaceCount = _getLeadingSpaceCount(
-					previousLine);
-
-				if (previousLine.endsWith("=\\")) {
-					expectedLeadingSpaceCount += 4;
-				}
-
-				if (leadingSpaceCount != expectedLeadingSpaceCount) {
-					StringBundler sb2 = new StringBundler(5);
-
-					sb2.append("Line starts with '");
-					sb2.append(leadingSpaceCount);
-					sb2.append("' spaces, but '");
-					sb2.append(expectedLeadingSpaceCount);
-					sb2.append("' spaces are expected");
-
-					addMessage(fileName, sb2.toString(), lineCount);
-				}
-
-				previousLine = line;
 			}
 		}
 
@@ -91,18 +57,6 @@ public class PropertiesWhitespaceCheck extends WhitespaceCheck {
 		}
 
 		return super.doProcess(fileName, absolutePath, content);
-	}
-
-	private int _getLeadingSpaceCount(String line) {
-		int leadingSpaceCount = 0;
-
-		while (line.startsWith(StringPool.SPACE)) {
-			line = line.substring(1);
-
-			leadingSpaceCount++;
-		}
-
-		return leadingSpaceCount;
 	}
 
 }

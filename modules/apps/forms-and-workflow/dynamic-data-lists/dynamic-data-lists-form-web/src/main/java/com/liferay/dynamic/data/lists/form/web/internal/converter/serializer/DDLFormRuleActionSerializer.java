@@ -19,7 +19,6 @@ package com.liferay.dynamic.data.lists.form.web.internal.converter.serializer;
  */
 public interface DDLFormRuleActionSerializer {
 
-	public String serialize(
-		DDLFormRuleSerializerContext ddlFormRuleSerializerContext);
+	public String serialize();
 
 }

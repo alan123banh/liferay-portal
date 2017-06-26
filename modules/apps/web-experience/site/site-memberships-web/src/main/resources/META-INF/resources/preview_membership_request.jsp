@@ -94,7 +94,7 @@ renderResponse.setTitle(userName);
 					<div class="nameplate-field">
 						<liferay-ui:user-portrait
 							cssClass="user-icon-xl"
-							user="<%= membershipRequestReplierUser %>"
+							userId="<%= membershipRequestReplierUser.getUserId() %>"
 						/>
 					</div>
 				</c:if>

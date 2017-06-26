@@ -14,7 +14,6 @@
 
 package com.liferay.portlet.documentlibrary.util;
 
-import com.liferay.document.library.kernel.exception.NoSuchFileVersionException;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileEntryMetadata;
 import com.liferay.document.library.kernel.model.DLFileVersion;
@@ -203,8 +202,7 @@ public class DLFileEntryIndexer
 			addRelatedClassNames(contextBooleanFilter, searchContext);
 		}
 
-		if (ArrayUtil.isEmpty(searchContext.getFolderIds()) ||
-			ArrayUtil.contains(
+		if (ArrayUtil.contains(
 				searchContext.getFolderIds(),
 				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID)) {
 
@@ -392,7 +390,7 @@ public class DLFileEntryIndexer
 					}
 					catch (IOException ioe) {
 						throw new SearchException(
-							"Cannot extract text from file" + dlFileEntry, ioe);
+							"Cannot extract text from file" + dlFileEntry);
 					}
 				}
 				else if (_log.isDebugEnabled()) {
@@ -496,10 +494,6 @@ public class DLFileEntryIndexer
 
 		Summary summary = createSummary(document, Field.TITLE, Field.CONTENT);
 
-		if (Validator.isNull(summary.getContent())) {
-			summary = createSummary(document, Field.TITLE, Field.DESCRIPTION);
-		}
-
 		summary.setMaxContentLength(200);
 
 		return summary;
@@ -507,21 +501,7 @@ public class DLFileEntryIndexer
 
 	@Override
 	protected void doReindex(DLFileEntry dlFileEntry) throws Exception {
-		DLFileVersion dlFileVersion = null;
-
-		try {
-			dlFileVersion = dlFileEntry.getFileVersion();
-		}
-		catch (NoSuchFileVersionException nsfve) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(
-					"Unable to get file version for file entry " +
-						dlFileEntry.getFileEntryId(),
-					nsfve);
-			}
-
-			return;
-		}
+		DLFileVersion dlFileVersion = dlFileEntry.getFileVersion();
 
 		if (!dlFileVersion.isApproved() && !dlFileEntry.isInTrash()) {
 			return;

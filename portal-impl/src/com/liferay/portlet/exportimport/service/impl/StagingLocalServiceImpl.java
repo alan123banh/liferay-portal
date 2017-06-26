@@ -45,7 +45,6 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.Folder;
-import com.liferay.portal.kernel.search.IndexStatusManagerThreadLocal;
 import com.liferay.portal.kernel.security.auth.HttpPrincipal;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.auth.RemoteAuthException;
@@ -58,7 +57,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropertiesParamUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -151,10 +149,6 @@ public class StagingLocalServiceImpl extends StagingLocalServiceBaseImpl {
 	public void cleanUpStagingRequest(long stagingRequestId)
 		throws PortalException {
 
-		boolean indexReadOnly = IndexStatusManagerThreadLocal.isIndexReadOnly();
-
-		IndexStatusManagerThreadLocal.setIndexReadOnly(true);
-
 		try {
 			PortletFileRepositoryUtil.deletePortletFolder(stagingRequestId);
 		}
@@ -165,36 +159,23 @@ public class StagingLocalServiceImpl extends StagingLocalServiceBaseImpl {
 					nsfe);
 			}
 		}
-		finally {
-			IndexStatusManagerThreadLocal.setIndexReadOnly(indexReadOnly);
-		}
 	}
 
 	@Override
 	public long createStagingRequest(long userId, long groupId, String checksum)
 		throws PortalException {
 
-		boolean indexReadOnly = IndexStatusManagerThreadLocal.isIndexReadOnly();
+		ServiceContext serviceContext = new ServiceContext();
 
-		IndexStatusManagerThreadLocal.setIndexReadOnly(true);
+		Repository repository = PortletFileRepositoryUtil.addPortletRepository(
+			groupId, _PORTLET_REPOSITORY_ID, serviceContext);
 
-		try {
-			ServiceContext serviceContext = new ServiceContext();
+		Folder folder = PortletFileRepositoryUtil.addPortletFolder(
+			userId, repository.getRepositoryId(),
+			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID, checksum,
+			serviceContext);
 
-			Repository repository =
-				PortletFileRepositoryUtil.addPortletRepository(
-					groupId, _PORTLET_REPOSITORY_ID, serviceContext);
-
-			Folder folder = PortletFileRepositoryUtil.addPortletFolder(
-				userId, repository.getRepositoryId(),
-				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID, checksum,
-				serviceContext);
-
-			return folder.getFolderId();
-		}
-		finally {
-			IndexStatusManagerThreadLocal.setIndexReadOnly(indexReadOnly);
-		}
+		return folder.getFolderId();
 	}
 
 	@Override
@@ -382,20 +363,9 @@ public class StagingLocalServiceImpl extends StagingLocalServiceBaseImpl {
 			}
 		}
 
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
-		User user = permissionChecker.getUser();
-
-		HttpPrincipal httpPrincipal = new HttpPrincipal(
-			remoteURL, user.getLogin(), user.getPassword(),
-			user.getPasswordEncrypted());
-
 		if (!stagedRemotely) {
-			enableRemoteStaging(httpPrincipal, remoteGroupId);
+			enableRemoteStaging(remoteURL, remoteGroupId);
 		}
-
-		Group remoteGroup = fetchRemoteGroup(httpPrincipal, remoteGroupId);
 
 		checkDefaultLayoutSetBranches(
 			userId, stagingGroup, branchingPublic, branchingPrivate, true,
@@ -408,8 +378,6 @@ public class StagingLocalServiceImpl extends StagingLocalServiceBaseImpl {
 		typeSettingsProperties.setProperty("remoteAddress", remoteAddress);
 		typeSettingsProperties.setProperty(
 			"remoteGroupId", String.valueOf(remoteGroupId));
-		typeSettingsProperties.setProperty(
-			"remoteGroupUUID", remoteGroup.getUuid());
 		typeSettingsProperties.setProperty(
 			"remotePathContext", remotePathContext);
 		typeSettingsProperties.setProperty(
@@ -514,20 +482,11 @@ public class StagingLocalServiceImpl extends StagingLocalServiceBaseImpl {
 		Folder folder = PortletFileRepositoryUtil.getPortletFolder(
 			stagingRequestId);
 
-		boolean indexReadOnly = IndexStatusManagerThreadLocal.isIndexReadOnly();
-
-		IndexStatusManagerThreadLocal.setIndexReadOnly(true);
-
-		try {
-			PortletFileRepositoryUtil.addPortletFileEntry(
-				folder.getGroupId(), userId, Group.class.getName(),
-				folder.getGroupId(), _PORTLET_REPOSITORY_ID,
-				folder.getFolderId(), new UnsyncByteArrayInputStream(bytes),
-				fileName, ContentTypes.APPLICATION_ZIP, false);
-		}
-		finally {
-			IndexStatusManagerThreadLocal.setIndexReadOnly(indexReadOnly);
-		}
+		PortletFileRepositoryUtil.addPortletFileEntry(
+			folder.getGroupId(), userId, Group.class.getName(),
+			folder.getGroupId(), _PORTLET_REPOSITORY_ID, folder.getFolderId(),
+			new UnsyncByteArrayInputStream(bytes), fileName,
+			ContentTypes.APPLICATION_ZIP, false);
 	}
 
 	/**
@@ -790,9 +749,17 @@ public class StagingLocalServiceImpl extends StagingLocalServiceBaseImpl {
 		}
 	}
 
-	protected void enableRemoteStaging(
-			HttpPrincipal httpPrincipal, long remoteGroupId)
+	protected void enableRemoteStaging(String remoteURL, long remoteGroupId)
 		throws PortalException {
+
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
+
+		User user = permissionChecker.getUser();
+
+		HttpPrincipal httpPrincipal = new HttpPrincipal(
+			remoteURL, user.getLogin(), user.getPassword(),
+			user.getPasswordEncrypted());
 
 		try {
 			GroupServiceHttp.enableStaging(httpPrincipal, remoteGroupId);
@@ -835,7 +802,7 @@ public class StagingLocalServiceImpl extends StagingLocalServiceBaseImpl {
 				_log.debug(rae, rae);
 			}
 
-			rae.setURL(httpPrincipal.getUrl());
+			rae.setURL(remoteURL);
 
 			throw rae;
 		}
@@ -850,27 +817,9 @@ public class StagingLocalServiceImpl extends StagingLocalServiceBaseImpl {
 			RemoteExportException ree = new RemoteExportException(
 				RemoteExportException.BAD_CONNECTION);
 
-			ree.setURL(httpPrincipal.getUrl());
+			ree.setURL(remoteURL);
 
 			throw ree;
-		}
-	}
-
-	protected Group fetchRemoteGroup(HttpPrincipal httpPrincipal, long groupId)
-		throws PortalException {
-
-		Thread currentThread = Thread.currentThread();
-
-		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
-
-		try {
-			currentThread.setContextClassLoader(
-				PortalClassLoaderUtil.getClassLoader());
-
-			return GroupServiceHttp.getGroup(httpPrincipal, groupId);
-		}
-		finally {
-			currentThread.setContextClassLoader(contextClassLoader);
 		}
 	}
 
@@ -910,10 +859,6 @@ public class StagingLocalServiceImpl extends StagingLocalServiceBaseImpl {
 		if (stagingRequestFileEntry != null) {
 			return stagingRequestFileEntry;
 		}
-
-		boolean indexReadOnly = IndexStatusManagerThreadLocal.isIndexReadOnly();
-
-		IndexStatusManagerThreadLocal.setIndexReadOnly(true);
 
 		FileOutputStream fileOutputStream = null;
 
@@ -975,8 +920,6 @@ public class StagingLocalServiceImpl extends StagingLocalServiceBaseImpl {
 				ioe);
 		}
 		finally {
-			IndexStatusManagerThreadLocal.setIndexReadOnly(indexReadOnly);
-
 			StreamUtil.cleanUp(fileOutputStream);
 
 			FileUtil.delete(tempFile);

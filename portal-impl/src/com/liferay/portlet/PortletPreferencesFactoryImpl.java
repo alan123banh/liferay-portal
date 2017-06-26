@@ -32,7 +32,6 @@ import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.model.PortletPreferencesIds;
 import com.liferay.portal.kernel.portlet.LiferayPortletMode;
 import com.liferay.portal.kernel.portlet.PortalPreferences;
-import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactory;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -259,8 +258,8 @@ public class PortletPreferencesFactoryImpl
 		long ownerId = PortletKeys.PREFS_OWNER_ID_DEFAULT;
 		int ownerType = PortletKeys.PREFS_OWNER_TYPE_LAYOUT;
 
-		if (PortletIdCodec.hasUserId(portletId)) {
-			ownerId = PortletIdCodec.decodeUserId(portletId);
+		if (PortletConstants.hasUserId(portletId)) {
+			ownerId = PortletConstants.getUserId(portletId);
 			ownerType = PortletKeys.PREFS_OWNER_TYPE_USER;
 		}
 
@@ -459,8 +458,8 @@ public class PortletPreferencesFactoryImpl
 			}
 		}
 
-		if (PortletIdCodec.hasUserId(originalPortletId) &&
-			(PortletIdCodec.decodeUserId(originalPortletId) == userId)) {
+		if (PortletConstants.hasUserId(originalPortletId) &&
+			(PortletConstants.getUserId(originalPortletId) == userId)) {
 
 			ownerId = userId;
 			ownerType = PortletKeys.PREFS_OWNER_TYPE_USER;
@@ -470,7 +469,7 @@ public class PortletPreferencesFactoryImpl
 			ownerId = layout.getCompanyId();
 			ownerType = PortletKeys.PREFS_OWNER_TYPE_COMPANY;
 			plid = PortletKeys.PREFS_PLID_SHARED;
-			portletId = PortletIdCodec.decodePortletName(portletId);
+			portletId = PortletConstants.getRootPortletId(portletId);
 		}
 		else {
 			if (portlet.isPreferencesUniquePerLayout()) {
@@ -501,7 +500,7 @@ public class PortletPreferencesFactoryImpl
 				if (portlet.isPreferencesOwnedByGroup()) {
 					ownerId = siteGroupId;
 					ownerType = PortletKeys.PREFS_OWNER_TYPE_GROUP;
-					portletId = PortletIdCodec.decodePortletName(portletId);
+					portletId = PortletConstants.getRootPortletId(portletId);
 				}
 				else {
 					if ((userId <= 0) || modeEditGuest) {
@@ -548,8 +547,8 @@ public class PortletPreferencesFactoryImpl
 			ownerId = PortletKeys.PREFS_OWNER_ID_DEFAULT;
 			ownerType = PortletKeys.PREFS_OWNER_TYPE_LAYOUT;
 
-			if (PortletIdCodec.hasUserId(portletId)) {
-				ownerId = PortletIdCodec.decodeUserId(portletId);
+			if (PortletConstants.hasUserId(portletId)) {
+				ownerId = PortletConstants.getUserId(portletId);
 				ownerType = PortletKeys.PREFS_OWNER_TYPE_USER;
 			}
 		}
@@ -688,8 +687,8 @@ public class PortletPreferencesFactoryImpl
 		long ownerId = PortletKeys.PREFS_OWNER_ID_DEFAULT;
 		int ownerType = PortletKeys.PREFS_OWNER_TYPE_LAYOUT;
 
-		if (PortletIdCodec.hasUserId(portletId)) {
-			ownerId = PortletIdCodec.decodeUserId(portletId);
+		if (PortletConstants.hasUserId(portletId)) {
+			ownerId = PortletConstants.getUserId(portletId);
 			ownerType = PortletKeys.PREFS_OWNER_TYPE_USER;
 		}
 
@@ -822,7 +821,7 @@ public class PortletPreferencesFactoryImpl
 		boolean uniquePerGroup = false;
 
 		if (portlet.isPreferencesCompanyWide()) {
-			portletId = PortletIdCodec.decodePortletName(portletId);
+			portletId = PortletConstants.getRootPortletId(portletId);
 		}
 		else {
 			if (portlet.isPreferencesUniquePerLayout()) {
@@ -835,7 +834,7 @@ public class PortletPreferencesFactoryImpl
 			else {
 				if (portlet.isPreferencesOwnedByGroup()) {
 					uniquePerGroup = true;
-					portletId = PortletIdCodec.decodePortletName(portletId);
+					portletId = PortletConstants.getRootPortletId(portletId);
 				}
 			}
 		}
@@ -849,8 +848,8 @@ public class PortletPreferencesFactoryImpl
 			plid = group.getClassPK();
 		}
 
-		if (PortletIdCodec.hasUserId(originalPortletId)) {
-			ownerId = PortletIdCodec.decodeUserId(originalPortletId);
+		if (PortletConstants.hasUserId(originalPortletId)) {
+			ownerId = PortletConstants.getUserId(originalPortletId);
 			ownerType = PortletKeys.PREFS_OWNER_TYPE_USER;
 		}
 		else if (!uniquePerLayout) {

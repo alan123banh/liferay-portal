@@ -20,7 +20,6 @@ import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletProvider;
@@ -363,24 +362,6 @@ public abstract class BaseDDMDisplay implements DDMDisplay {
 	}
 
 	@Override
-	public boolean isShowAddButton(Group scopeGroup) {
-		String portletId = getPortletId();
-
-		String ddmStructurePortletId = PortletProviderUtil.getPortletId(
-			DDMStructure.class.getName(), PortletProvider.Action.VIEW);
-
-		if (portletId.equals(ddmStructurePortletId)) {
-			return false;
-		}
-
-		if (!scopeGroup.hasLocalOrRemoteStagingGroup()) {
-			return true;
-		}
-
-		return scopeGroup.isStagingGroup();
-	}
-
-	@Override
 	public boolean isShowAddStructureButton() {
 		String portletId = getPortletId();
 
@@ -419,10 +400,6 @@ public abstract class BaseDDMDisplay implements DDMDisplay {
 		return false;
 	}
 
-	/**
-	 * @deprecated As of 3.6.0, with no direct replacement
-	 */
-	@Deprecated
 	protected ResourceBundle getBaseDDMDisplayResourceBundle(
 		String languageId) {
 
@@ -433,10 +410,6 @@ public abstract class BaseDDMDisplay implements DDMDisplay {
 			baseDDMDisplayClazz.getClassLoader());
 	}
 
-	/**
-	 * @deprecated As of 3.6.0, with no direct replacement
-	 */
-	@Deprecated
 	protected ResourceBundle getDDMDisplayResourceBundle(String languageId) {
 		Bundle bundle = FrameworkUtil.getBundle(getClass());
 
@@ -462,10 +435,6 @@ public abstract class BaseDDMDisplay implements DDMDisplay {
 		return LanguageUtil.get(locale, "templates");
 	}
 
-	/**
-	 * @deprecated As of 3.6.0, with no direct replacement
-	 */
-	@Deprecated
 	protected ResourceBundle getPortalResourceBundle(String languageId) {
 		ResourceBundleLoader portalResourceBundleLoader =
 			ResourceBundleLoaderUtil.getPortalResourceBundleLoader();
@@ -474,37 +443,21 @@ public abstract class BaseDDMDisplay implements DDMDisplay {
 	}
 
 	protected ResourceBundle getResourceBundle(Locale locale) {
-		Bundle bundle = FrameworkUtil.getBundle(getClass());
+		String languageId = LocaleUtil.toLanguageId(locale);
 
-		ResourceBundleLoader resourceBundleLoader =
-			ResourceBundleLoaderUtil.
-				getResourceBundleLoaderByBundleSymbolicName(
-					bundle.getSymbolicName());
-
-		ResourceBundle ddmDisplayResourceBundle = null;
-
-		if (resourceBundleLoader != null) {
-			ddmDisplayResourceBundle = resourceBundleLoader.loadResourceBundle(
-				locale);
-		}
-
-		ResourceBundle baseDDMDisplayResourceBundle =
-			ResourceBundleUtil.getBundle(
-				"content.Language", locale,
-				BaseDDMDisplay.class.getClassLoader());
-
-		ResourceBundleLoader portalResourceBundleLoader =
-			ResourceBundleLoaderUtil.getPortalResourceBundleLoader();
+		ResourceBundle ddmDisplayResourceBundle = getDDMDisplayResourceBundle(
+			languageId);
 
 		if (ddmDisplayResourceBundle == null) {
 			return new AggregateResourceBundle(
-				baseDDMDisplayResourceBundle,
-				portalResourceBundleLoader.loadResourceBundle(locale));
+				getBaseDDMDisplayResourceBundle(languageId),
+				getPortalResourceBundle(languageId));
 		}
 
 		return new AggregateResourceBundle(
-			ddmDisplayResourceBundle, baseDDMDisplayResourceBundle,
-			portalResourceBundleLoader.loadResourceBundle(locale));
+			ddmDisplayResourceBundle,
+			getBaseDDMDisplayResourceBundle(languageId),
+			getPortalResourceBundle(languageId));
 	}
 
 	protected String getViewTemplatesURL(

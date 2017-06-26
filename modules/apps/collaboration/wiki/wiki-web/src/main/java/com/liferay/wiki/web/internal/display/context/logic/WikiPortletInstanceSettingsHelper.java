@@ -20,7 +20,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.service.WikiNodeServiceUtil;
 import com.liferay.wiki.util.WikiUtil;
-import com.liferay.wiki.web.configuration.WikiPortletInstanceConfiguration;
+import com.liferay.wiki.web.configuration.WikiPortletInstanceOverriddenConfiguration;
 import com.liferay.wiki.web.internal.display.context.util.WikiRequestHelper;
 
 import java.util.List;
@@ -54,11 +54,14 @@ public class WikiPortletInstanceSettingsHelper {
 
 	public List<WikiNode> getAllPermittedNodes() throws PortalException {
 		if (_allPermittedNodes == null) {
-			WikiPortletInstanceConfiguration wikiPortletInstanceConfiguration =
-				_wikiRequestHelper.getWikiPortletInstanceConfiguration();
+			WikiPortletInstanceOverriddenConfiguration
+				wikiPortletInstanceOverriddenConfiguration =
+					_wikiRequestHelper.
+						getWikiPortletInstanceOverridenConfiguration();
 
 			_allPermittedNodes = WikiUtil.getNodes(
-				getAllNodes(), wikiPortletInstanceConfiguration.hiddenNodes(),
+				getAllNodes(),
+				wikiPortletInstanceOverriddenConfiguration.hiddenNodes(),
 				_wikiRequestHelper.getPermissionChecker());
 		}
 
@@ -70,10 +73,13 @@ public class WikiPortletInstanceSettingsHelper {
 			return _displayStyle;
 		}
 
-		WikiPortletInstanceConfiguration wikiPortletInstanceConfiguration =
-			_wikiRequestHelper.getWikiPortletInstanceConfiguration();
+		WikiPortletInstanceOverriddenConfiguration
+			wikiPortletInstanceOverriddenConfiguration =
+				_wikiRequestHelper.
+					getWikiPortletInstanceOverridenConfiguration();
 
-		_displayStyle = wikiPortletInstanceConfiguration.displayStyle();
+		_displayStyle =
+			wikiPortletInstanceOverriddenConfiguration.displayStyle();
 
 		return _displayStyle;
 	}
@@ -83,11 +89,13 @@ public class WikiPortletInstanceSettingsHelper {
 			return _displayStyleGroupId;
 		}
 
-		WikiPortletInstanceConfiguration wikiPortletInstanceConfiguration =
-			_wikiRequestHelper.getWikiPortletInstanceConfiguration();
+		WikiPortletInstanceOverriddenConfiguration
+			wikiPortletInstanceOverriddenConfiguration =
+				_wikiRequestHelper.
+					getWikiPortletInstanceOverridenConfiguration();
 
 		_displayStyleGroupId =
-			wikiPortletInstanceConfiguration.displayStyleGroupId();
+			wikiPortletInstanceOverriddenConfiguration.displayStyleGroupId();
 
 		if (_displayStyleGroupId <= 0) {
 			ThemeDisplay themeDisplay = _wikiRequestHelper.getThemeDisplay();
@@ -103,10 +111,12 @@ public class WikiPortletInstanceSettingsHelper {
 			return _hiddenNodes;
 		}
 
-		WikiPortletInstanceConfiguration wikiPortletInstanceConfiguration =
-			_wikiRequestHelper.getWikiPortletInstanceConfiguration();
+		WikiPortletInstanceOverriddenConfiguration
+			wikiPortletInstanceOverriddenConfiguration =
+				_wikiRequestHelper.
+					getWikiPortletInstanceOverridenConfiguration();
 
-		_hiddenNodes = wikiPortletInstanceConfiguration.hiddenNodes();
+		_hiddenNodes = wikiPortletInstanceOverriddenConfiguration.hiddenNodes();
 
 		return _hiddenNodes;
 	}
@@ -124,11 +134,13 @@ public class WikiPortletInstanceSettingsHelper {
 			return _enableCommentRatings;
 		}
 
-		WikiPortletInstanceConfiguration wikiPortletInstanceConfiguration =
-			_wikiRequestHelper.getWikiPortletInstanceConfiguration();
+		WikiPortletInstanceOverriddenConfiguration
+			wikiPortletInstanceOverriddenConfiguration =
+				_wikiRequestHelper.
+					getWikiPortletInstanceOverridenConfiguration();
 
 		_enableCommentRatings =
-			wikiPortletInstanceConfiguration.enableCommentRatings();
+			wikiPortletInstanceOverriddenConfiguration.enableCommentRatings();
 
 		return _enableCommentRatings;
 	}
@@ -138,10 +150,13 @@ public class WikiPortletInstanceSettingsHelper {
 			return _enableComments;
 		}
 
-		WikiPortletInstanceConfiguration wikiPortletInstanceConfiguration =
-			_wikiRequestHelper.getWikiPortletInstanceConfiguration();
+		WikiPortletInstanceOverriddenConfiguration
+			wikiPortletInstanceOverriddenConfiguration =
+				_wikiRequestHelper.
+					getWikiPortletInstanceOverridenConfiguration();
 
-		_enableComments = wikiPortletInstanceConfiguration.enableComments();
+		_enableComments =
+			wikiPortletInstanceOverriddenConfiguration.enableComments();
 
 		return _enableComments;
 	}
@@ -151,11 +166,13 @@ public class WikiPortletInstanceSettingsHelper {
 			return _enablePageRatings;
 		}
 
-		WikiPortletInstanceConfiguration wikiPortletInstanceConfiguration =
-			_wikiRequestHelper.getWikiPortletInstanceConfiguration();
+		WikiPortletInstanceOverriddenConfiguration
+			wikiPortletInstanceOverriddenConfiguration =
+				_wikiRequestHelper.
+					getWikiPortletInstanceOverridenConfiguration();
 
 		_enablePageRatings =
-			wikiPortletInstanceConfiguration.enablePageRatings();
+			wikiPortletInstanceOverriddenConfiguration.enablePageRatings();
 
 		return _enablePageRatings;
 	}
@@ -165,11 +182,13 @@ public class WikiPortletInstanceSettingsHelper {
 			return _enableRelatedAssets;
 		}
 
-		WikiPortletInstanceConfiguration wikiPortletInstanceConfiguration =
-			_wikiRequestHelper.getWikiPortletInstanceConfiguration();
+		WikiPortletInstanceOverriddenConfiguration
+			wikiPortletInstanceOverriddenConfiguration =
+				_wikiRequestHelper.
+					getWikiPortletInstanceOverridenConfiguration();
 
 		_enableRelatedAssets =
-			wikiPortletInstanceConfiguration.enableRelatedAssets();
+			wikiPortletInstanceOverriddenConfiguration.enableRelatedAssets();
 
 		return _enableRelatedAssets;
 	}
@@ -180,10 +199,13 @@ public class WikiPortletInstanceSettingsHelper {
 
 		_allNodeNames = WikiUtil.getNodeNames(_allNodes);
 
-		WikiPortletInstanceConfiguration wikiPortletInstanceConfiguration =
-			_wikiRequestHelper.getWikiPortletInstanceConfiguration();
+		WikiPortletInstanceOverriddenConfiguration
+			wikiPortletInstanceOverriddenConfiguration =
+				_wikiRequestHelper.
+					getWikiPortletInstanceOverridenConfiguration();
 
-		_visibleNodeNames = wikiPortletInstanceConfiguration.visibleNodes();
+		_visibleNodeNames =
+			wikiPortletInstanceOverriddenConfiguration.visibleNodes();
 
 		if (ArrayUtil.isNotEmpty(_visibleNodeNames)) {
 			_allNodes = WikiUtil.orderNodes(_allNodes, _visibleNodeNames);

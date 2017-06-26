@@ -28,7 +28,6 @@ import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.util.DDMFormFactory;
 import com.liferay.portal.json.JSONFactoryImpl;
 import com.liferay.portal.kernel.json.JSONFactory;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -67,7 +66,6 @@ public class GetDataProviderParametersSettingsMVCResourceCommandTest {
 		setUpDDMDataProvider();
 		setUpDDMFormValuesJSONDeserializer();
 		setUpGetDataProviderParametersSettingsMVCResourceCommand();
-		setUpJSONFactoryUtil();
 		setUpLanguageUtil();
 		setUpResourceBundleUtil();
 	}
@@ -172,12 +170,6 @@ public class GetDataProviderParametersSettingsMVCResourceCommandTest {
 			_getDataProviderParametersSettingsMVCResourceCommand,
 			_ddmFormValuesJSONDeserializer
 		);
-	}
-
-	protected void setUpJSONFactoryUtil() {
-		JSONFactoryUtil jsonFactoryUtil = new JSONFactoryUtil();
-
-		jsonFactoryUtil.setJSONFactory(_jsonFactory);
 	}
 
 	protected void setUpLanguageUtil() {

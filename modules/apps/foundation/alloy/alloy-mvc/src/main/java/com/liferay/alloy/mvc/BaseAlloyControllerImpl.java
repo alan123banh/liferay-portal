@@ -1010,8 +1010,7 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 		portletResponse = (PortletResponse)request.getAttribute(
 			JavaConstants.JAVAX_PORTLET_RESPONSE);
 
-		liferayPortletResponse = PortalUtil.getLiferayPortletResponse(
-			portletResponse);
+		liferayPortletResponse = (LiferayPortletResponse)portletResponse;
 
 		lifecycle = GetterUtil.getString(
 			(String)request.getAttribute(PortletRequest.LIFECYCLE_PHASE));

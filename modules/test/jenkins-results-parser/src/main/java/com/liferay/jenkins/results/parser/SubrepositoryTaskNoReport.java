@@ -14,8 +14,6 @@
 
 package com.liferay.jenkins.results.parser;
 
-import com.liferay.jenkins.results.parser.failure.message.generator.GenericFailureMessageGenerator;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

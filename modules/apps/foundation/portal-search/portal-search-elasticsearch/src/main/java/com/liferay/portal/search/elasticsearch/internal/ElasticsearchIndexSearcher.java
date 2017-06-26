@@ -505,19 +505,11 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 
 		searchRequestBuilder.setQuery(queryBuilder);
 
-		String searchRequestBuilderString = searchRequestBuilder.toString();
-
-		searchContext.setAttribute("queryString", searchRequestBuilderString);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("Search query " + searchRequestBuilderString);
-		}
-
 		SearchResponse searchResponse = searchRequestBuilder.get();
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
-				"The search engine processed " + searchRequestBuilderString +
+				"The search engine processed " + queryBuilder.toString() +
 					" in " + searchResponse.getTook());
 		}
 

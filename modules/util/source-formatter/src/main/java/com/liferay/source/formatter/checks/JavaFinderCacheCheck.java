@@ -54,8 +54,7 @@ public class JavaFinderCacheCheck extends BaseFileCheck {
 			addMessage(
 				fileName,
 				"Missing override of BasePersistenceImpl." +
-					"fetchByPrimaryKeys(Set<Serializable>)",
-				"finderpath.markdown");
+					"fetchByPrimaryKeys(Set<Serializable>), see LPS-49552");
 		}
 	}
 

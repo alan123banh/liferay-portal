@@ -23,7 +23,6 @@ import java.util.Map;
 
 /**
  * @author Eduardo Garcia
- * @author Marco Leo
  */
 @ProviderType
 public interface FriendlyURLResolver {
@@ -39,25 +38,6 @@ public interface FriendlyURLResolver {
 			String friendlyURL, Map<String, String[]> params,
 			Map<String, Object> requestContext)
 		throws PortalException;
-
-	public default LayoutFriendlyURLSeparatorComposite
-			getLayoutFriendlyURLSeparatorComposite(
-				long companyId, long groupId, boolean privateLayout,
-				String friendlyURL, Map<String, String[]> params,
-				Map<String, Object> requestContext)
-		throws PortalException {
-
-		LayoutFriendlyURLComposite layoutFriendlyURLComposite =
-			getLayoutFriendlyURLComposite(
-				companyId, groupId, privateLayout, friendlyURL, params,
-				requestContext);
-
-		LayoutFriendlyURLSeparatorComposite newLayoutFriendlyURLComposite =
-			new LayoutFriendlyURLSeparatorComposite(
-				layoutFriendlyURLComposite, getURLSeparator());
-
-		return newLayoutFriendlyURLComposite;
-	}
 
 	public String getURLSeparator();
 

@@ -15,8 +15,23 @@
 package com.liferay.portal.util.test;
 
 import com.dumbster.smtp.MailMessage;
+import com.dumbster.smtp.SmtpServer;
+import com.dumbster.smtp.SmtpServerFactory;
+import com.dumbster.smtp.mailstores.RollingMailStore;
 
-import com.liferay.portal.test.mail.impl.MailMessageImpl;
+import com.liferay.mail.kernel.service.MailServiceUtil;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.SocketUtil;
+import com.liferay.portal.kernel.util.SocketUtil.ServerSocketConfigurator;
+
+import java.io.IOException;
+
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.SocketException;
+
+import java.nio.channels.ServerSocketChannel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,59 +39,146 @@ import java.util.List;
 /**
  * @author Manuel de la Peña
  * @author José Manuel Navarro
- * @deprecated As of 2.1.0, replaced by {@link
- *             com.liferay.portal.test.mail.MailServiceTestUtil}
  */
-@Deprecated
 public class MailServiceTestUtil {
 
 	public static void clearMessages() {
-		com.liferay.portal.test.mail.MailServiceTestUtil.clearMessages();
+		_smtpServer.clearMessages();
 	}
 
 	public static int getInboxSize() {
-		return com.liferay.portal.test.mail.MailServiceTestUtil.getInboxSize();
+		return _smtpServer.getEmailCount();
 	}
 
 	public static MailMessage getLastMailMessage() {
-		MailMessageImpl mailMessageImpl =
-			(MailMessageImpl)
-				com.liferay.portal.test.mail.MailServiceTestUtil.
-					getLastMailMessage();
+		MailMessage[] mailMessages = _smtpServer.getMessages();
 
-		return mailMessageImpl.getMailMessage();
+		if (mailMessages.length > 0) {
+			return mailMessages[mailMessages.length - 1];
+		}
+
+		throw new IndexOutOfBoundsException(
+			"There are no messages in the inbox");
 	}
 
 	public static List<MailMessage> getMailMessages(
 		String headerName, String headerValue) {
 
-		List<com.liferay.portal.test.mail.MailMessage> liferayMailMessages =
-			com.liferay.portal.test.mail.MailServiceTestUtil.getMailMessages(
-				headerName, headerValue);
+		List<MailMessage> mailMessages = new ArrayList<>();
 
-		List<MailMessage> mailMessages = new ArrayList<>(
-			liferayMailMessages.size());
+		for (MailMessage mailMessage : _smtpServer.getMessages()) {
+			if (headerName.equals("Body")) {
+				String body = mailMessage.getBody();
 
-		for (com.liferay.portal.test.mail.MailMessage mailMessage :
-				liferayMailMessages) {
+				if (body.equals(headerValue)) {
+					mailMessages.add(mailMessage);
+				}
+			}
+			else {
+				String messageHeaderValue = mailMessage.getFirstHeaderValue(
+					headerName);
 
-			mailMessages.add(((MailMessageImpl)mailMessage).getMailMessage());
+				if (messageHeaderValue.equals(headerValue)) {
+					mailMessages.add(mailMessage);
+				}
+			}
 		}
 
 		return mailMessages;
 	}
 
 	public static boolean lastMailMessageContains(String text) {
-		return com.liferay.portal.test.mail.MailServiceTestUtil.
-			lastMailMessageContains(text);
+		MailMessage mailMessage = getLastMailMessage();
+
+		String bodyMailMessage = mailMessage.getBody();
+
+		return bodyMailMessage.contains(text);
 	}
 
 	public static void start() throws Exception {
-		com.liferay.portal.test.mail.MailServiceTestUtil.start();
+		if (_smtpServer != null) {
+			throw new IllegalStateException("Server is already running");
+		}
+
+		int smtpPort = _getFreePort();
+
+		_prefsPropsTemporarySwapper = new PrefsPropsTemporarySwapper(
+			PropsKeys.MAIL_SESSION_MAIL_SMTP_PORT, smtpPort,
+			PropsKeys.MAIL_SESSION_MAIL, true);
+
+		_smtpServer = new SmtpServer();
+
+		_smtpServer.setMailStore(
+			new RollingMailStore() {
+
+				@Override
+				public void addMessage(MailMessage message) {
+					try {
+						List<MailMessage> receivedMail =
+							ReflectionTestUtil.getFieldValue(
+								this, "receivedMail");
+
+						receivedMail.add(message);
+
+						if (getEmailCount() > 100) {
+							receivedMail.remove(0);
+						}
+					}
+					catch (Exception e) {
+						throw new RuntimeException(e);
+					}
+				}
+
+			});
+		_smtpServer.setPort(smtpPort);
+
+		_smtpServer.setThreaded(false);
+
+		ReflectionTestUtil.invoke(
+			SmtpServerFactory.class, "startServerThread",
+			new Class<?>[] {SmtpServer.class}, _smtpServer);
+
+		MailServiceUtil.clearSession();
 	}
 
 	public static void stop() throws Exception {
-		com.liferay.portal.test.mail.MailServiceTestUtil.stop();
+		if ((_smtpServer != null) && _smtpServer.isStopped()) {
+			throw new IllegalStateException("Server is already stopped");
+		}
+
+		_smtpServer.stop();
+
+		_smtpServer = null;
+
+		_prefsPropsTemporarySwapper.close();
+
+		MailServiceUtil.clearSession();
 	}
+
+	private static int _getFreePort() throws IOException {
+		try (ServerSocketChannel serverSocketChannel =
+				SocketUtil.createServerSocketChannel(
+					InetAddress.getLocalHost(), _START_PORT,
+					new ServerSocketConfigurator() {
+
+						@Override
+						public void configure(ServerSocket serverSocket)
+							throws SocketException {
+
+							serverSocket.setReuseAddress(true);
+						}
+
+					})) {
+
+			ServerSocket serverSocket = serverSocketChannel.socket();
+
+			return serverSocket.getLocalPort();
+		}
+	}
+
+	private static final int _START_PORT = 3241;
+
+	private static PrefsPropsTemporarySwapper _prefsPropsTemporarySwapper;
+	private static SmtpServer _smtpServer;
 
 }

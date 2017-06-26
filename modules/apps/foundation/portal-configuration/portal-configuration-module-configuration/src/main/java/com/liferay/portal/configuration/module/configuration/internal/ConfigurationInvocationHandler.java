@@ -51,7 +51,7 @@ public class ConfigurationInvocationHandler<S> implements InvocationHandler {
 
 		if (_configurationOverrideInstance != null) {
 			try {
-				return _invokeConfigurationOverride(method);
+				return _invokeConfigurationOverride(method, args);
 			}
 			catch (InvocationTargetException ite) {
 				throw ite;
@@ -131,15 +131,15 @@ public class ConfigurationInvocationHandler<S> implements InvocationHandler {
 		return constructor.newInstance(_typedSettings.getValue(key, null));
 	}
 
-	private Object _invokeConfigurationOverride(Method method)
+	private Object _invokeConfigurationOverride(Method method, Object[] args)
 		throws IllegalAccessException, InstantiationException,
 			   InvocationTargetException, NoSuchMethodException {
 
 		Class<?> clazz = _configurationOverrideInstance.getClass();
 
-		method = clazz.getMethod(method.getName());
+		method = clazz.getMethod(method.getName(), method.getParameterTypes());
 
-		return method.invoke(_configurationOverrideInstance);
+		return method.invoke(_configurationOverrideInstance, args);
 	}
 
 	private Object _invokeTypedSettings(Method method)

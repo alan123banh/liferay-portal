@@ -496,24 +496,35 @@ public class KaleoTaskInstanceTokenLocalServiceImpl
 		ServiceContext serviceContext) {
 
 		return search(
-			null, taskName, getAssetTypes(assetType), assetPrimaryKeys,
-			dueDateGT, dueDateLT, completed, searchByUserRoles, andOperator,
-			start, end, orderByComparator, serviceContext);
+			taskName, getAssetTypes(assetType), assetPrimaryKeys, dueDateGT,
+			dueDateLT, completed, searchByUserRoles, andOperator, start, end,
+			orderByComparator, serviceContext);
 	}
 
 	@Override
 	public List<KaleoTaskInstanceToken> search(
-		String assetTitle, String taskName, String[] assetTypes,
-		Long[] assetPrimaryKeys, Date dueDateGT, Date dueDateLT,
-		Boolean completed, Boolean searchByUserRoles, boolean andOperator,
-		int start, int end,
+		String keywords, String[] assetTypes, Boolean completed,
+		Boolean searchByUserRoles, int start, int end,
+		OrderByComparator<KaleoTaskInstanceToken> orderByComparator,
+		ServiceContext serviceContext) {
+
+		return search(
+			keywords, assetTypes, null, null, null, completed,
+			searchByUserRoles, true, start, end, orderByComparator,
+			serviceContext);
+	}
+
+	@Override
+	public List<KaleoTaskInstanceToken> search(
+		String taskName, String[] assetTypes, Long[] assetPrimaryKeys,
+		Date dueDateGT, Date dueDateLT, Boolean completed,
+		Boolean searchByUserRoles, boolean andOperator, int start, int end,
 		OrderByComparator<KaleoTaskInstanceToken> orderByComparator,
 		ServiceContext serviceContext) {
 
 		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery =
 			new KaleoTaskInstanceTokenQuery(serviceContext);
 
-		kaleoTaskInstanceTokenQuery.setAssetTitle(assetTitle);
 		kaleoTaskInstanceTokenQuery.setAssetPrimaryKeys(assetPrimaryKeys);
 		kaleoTaskInstanceTokenQuery.setAssetTypes(assetTypes);
 		kaleoTaskInstanceTokenQuery.setCompleted(completed);
@@ -528,19 +539,6 @@ public class KaleoTaskInstanceTokenLocalServiceImpl
 
 		return kaleoTaskInstanceTokenFinder.findKaleoTaskInstanceTokens(
 			kaleoTaskInstanceTokenQuery);
-	}
-
-	@Override
-	public List<KaleoTaskInstanceToken> search(
-		String keywords, String[] assetTypes, Boolean completed,
-		Boolean searchByUserRoles, int start, int end,
-		OrderByComparator<KaleoTaskInstanceToken> orderByComparator,
-		ServiceContext serviceContext) {
-
-		return search(
-			keywords, keywords, assetTypes, null, null, null, completed,
-			searchByUserRoles, false, start, end, orderByComparator,
-			serviceContext);
 	}
 
 	@Override
@@ -561,22 +559,31 @@ public class KaleoTaskInstanceTokenLocalServiceImpl
 		ServiceContext serviceContext) {
 
 		return searchCount(
-			null, taskName, getAssetTypes(assetType), assetPrimaryKeys,
-			dueDateGT, dueDateLT, completed, searchByUserRoles, andOperator,
+			taskName, getAssetTypes(assetType), assetPrimaryKeys, dueDateGT,
+			dueDateLT, completed, searchByUserRoles, andOperator,
 			serviceContext);
 	}
 
 	@Override
 	public int searchCount(
-		String assetTitle, String taskName, String[] assetTypes,
-		Long[] assetPrimaryKeys, Date dueDateGT, Date dueDateLT,
-		Boolean completed, Boolean searchByUserRoles, boolean andOperator,
+		String keywords, String[] assetTypes, Boolean completed,
+		Boolean searchByUserRoles, ServiceContext serviceContext) {
+
+		return searchCount(
+			keywords, assetTypes, null, null, null, completed,
+			searchByUserRoles, true, serviceContext);
+	}
+
+	@Override
+	public int searchCount(
+		String taskName, String[] assetTypes, Long[] assetPrimaryKeys,
+		Date dueDateGT, Date dueDateLT, Boolean completed,
+		Boolean searchByUserRoles, boolean andOperator,
 		ServiceContext serviceContext) {
 
 		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery =
 			new KaleoTaskInstanceTokenQuery(serviceContext);
 
-		kaleoTaskInstanceTokenQuery.setAssetTitle(assetTitle);
 		kaleoTaskInstanceTokenQuery.setAssetPrimaryKeys(assetPrimaryKeys);
 		kaleoTaskInstanceTokenQuery.setAssetTypes(assetTypes);
 		kaleoTaskInstanceTokenQuery.setCompleted(completed);
@@ -588,16 +595,6 @@ public class KaleoTaskInstanceTokenLocalServiceImpl
 
 		return kaleoTaskInstanceTokenFinder.countKaleoTaskInstanceTokens(
 			kaleoTaskInstanceTokenQuery);
-	}
-
-	@Override
-	public int searchCount(
-		String keywords, String[] assetTypes, Boolean completed,
-		Boolean searchByUserRoles, ServiceContext serviceContext) {
-
-		return searchCount(
-			keywords, keywords, assetTypes, null, null, null, completed,
-			searchByUserRoles, false, serviceContext);
 	}
 
 	@Override

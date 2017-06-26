@@ -538,16 +538,18 @@ public class MetaInfoCacheServletResponseTest {
 
 		Set<Header> headers1 = headers.get("name1");
 
-		Assert.assertEquals(headers1.toString(), 2, headers1.size());
+		Assert.assertEquals(headers1.toString(), 3, headers1.size());
 		Assert.assertTrue(headers1.contains(new Header("value1")));
 		Assert.assertTrue(headers1.contains(new Header("value2")));
+		Assert.assertTrue(headers1.contains(new Header("value3")));
 
 		Set<Header> headers2 = headers.get("name2");
 
-		Assert.assertEquals(headers2.toString(), 1, headers2.size());
+		Assert.assertEquals(headers2.toString(), 2, headers2.size());
 		Assert.assertTrue(headers2.contains(new Header("value1")));
+		Assert.assertTrue(headers2.contains(new Header("value3")));
 
-		outerMetaInfoCacheServletResponse.finishResponse(false);
+		outerMetaInfoCacheServletResponse.finishResponse(true);
 
 		headers = innerMetaInfoCacheServletResponse.getHeaders();
 

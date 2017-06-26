@@ -22,9 +22,11 @@ PortletURL portletURL = renderResponse.createRenderURL();
 portletURL.setParameter("mvcRenderCommandName", "/message_boards/view_banned_users");
 %>
 
-<liferay-util:include page="/message_boards_admin/nav.jsp" servletContext="<%= application %>">
-	<liferay-util:param name="navItemSelected" value="statistics" />
-</liferay-util:include>
+<aui:nav-bar markupView="lexicon">
+	<liferay-util:include page="/message_boards_admin/nav.jsp" servletContext="<%= application %>">
+		<liferay-util:param name="navItemSelected" value="statistics" />
+	</liferay-util:include>
+</aui:nav-bar>
 
 <%
 long categoryId = GetterUtil.getLong(request.getAttribute("view.jsp-categoryId"));

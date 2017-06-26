@@ -137,10 +137,6 @@ public class LayoutRevisionLocalServiceWrapper
 		return _layoutRevisionLocalService.fetchLayoutRevision(layoutRevisionId);
 	}
 
-	/**
-	* @deprecated As of 7.0.0, with no direct replacement
-	*/
-	@Deprecated
 	@Override
 	public com.liferay.portal.kernel.model.LayoutRevision fetchLayoutRevision(
 		long layoutSetBranchId, boolean head, long plid) {
@@ -177,10 +173,6 @@ public class LayoutRevisionLocalServiceWrapper
 			layoutBranchId, plid);
 	}
 
-	/**
-	* @deprecated As of 7.0.0, with no direct replacement
-	*/
-	@Deprecated
 	@Override
 	public com.liferay.portal.kernel.model.LayoutRevision getLayoutRevision(
 		long layoutSetBranchId, long plid, boolean head)
@@ -391,13 +383,6 @@ public class LayoutRevisionLocalServiceWrapper
 		long layoutSetBranchId, long plid) {
 		return _layoutRevisionLocalService.getLayoutRevisions(layoutSetBranchId,
 			plid);
-	}
-
-	@Override
-	public java.util.List<com.liferay.portal.kernel.model.LayoutRevision> getLayoutRevisions(
-		long layoutSetBranchId, long plid, boolean head) {
-		return _layoutRevisionLocalService.getLayoutRevisions(layoutSetBranchId,
-			plid, head);
 	}
 
 	@Override

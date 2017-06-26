@@ -16,8 +16,8 @@ package com.liferay.sync.util;
 
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFolder;
-import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
-import com.liferay.document.library.kernel.service.DLFolderLocalService;
+import com.liferay.document.library.kernel.service.DLFileEntryLocalServiceUtil;
+import com.liferay.document.library.kernel.service.DLFolderLocalServiceUtil;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
@@ -27,24 +27,20 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.sync.constants.SyncDLObjectConstants;
 import com.liferay.sync.model.SyncDLObject;
-import com.liferay.sync.service.SyncDLObjectLocalService;
+import com.liferay.sync.service.SyncDLObjectLocalServiceUtil;
 
 import java.util.Date;
 import java.util.List;
-
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author     Dennis Ju
  * @deprecated As of 1.2.0, with no direct replacement
  */
-@Component(immediate = true, service = VerifyUtil.class)
 @Deprecated
 public class VerifyUtil {
 
@@ -55,7 +51,7 @@ public class VerifyUtil {
 	}
 
 	protected void doVerify() throws Exception {
-		List<Group> groups = _groupLocalService.getGroups(
+		List<Group> groups = GroupLocalServiceUtil.getGroups(
 			QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
 		for (Group group : groups) {
@@ -90,7 +86,7 @@ public class VerifyUtil {
 		_dlFoldersAndFileEntriesCount = 0;
 
 		ActionableDynamicQuery dlFolderActionableDynamicQuery =
-			_dlFolderLocalService.getActionableDynamicQuery();
+			DLFolderLocalServiceUtil.getActionableDynamicQuery();
 
 		dlFolderActionableDynamicQuery.setAddCriteriaMethod(
 			new ActionableDynamicQuery.AddCriteriaMethod() {
@@ -138,14 +134,14 @@ public class VerifyUtil {
 						if (dlFolder.getStatus() ==
 								WorkflowConstants.STATUS_APPROVED) {
 
-							_syncUtil.addSyncDLObject(
-								_syncUtil.toSyncDLObject(
+							SyncUtil.addSyncDLObject(
+								SyncUtil.toSyncDLObject(
 									dlFolder, 0, StringPool.BLANK,
 									SyncDLObjectConstants.EVENT_ADD));
 						}
 						else {
-							_syncUtil.addSyncDLObject(
-								_syncUtil.toSyncDLObject(
+							SyncUtil.addSyncDLObject(
+								SyncUtil.toSyncDLObject(
 									dlFolder, 0, StringPool.BLANK,
 									SyncDLObjectConstants.EVENT_TRASH));
 						}
@@ -158,7 +154,7 @@ public class VerifyUtil {
 			});
 
 		ActionableDynamicQuery dlFileEntryActionableDynamicQuery =
-			_dlFileEntryLocalService.getActionableDynamicQuery();
+			DLFileEntryLocalServiceUtil.getActionableDynamicQuery();
 
 		dlFileEntryActionableDynamicQuery.setGroupId(groupId);
 		dlFileEntryActionableDynamicQuery.setPerformActionMethod(
@@ -184,7 +180,7 @@ public class VerifyUtil {
 
 					try {
 						SyncDLObject syncDLObject =
-							_syncDLObjectLocalService.fetchSyncDLObject(
+							SyncDLObjectLocalServiceUtil.fetchSyncDLObject(
 								SyncDLObjectConstants.TYPE_FILE,
 								dlFileEntry.getFileEntryId());
 
@@ -211,16 +207,16 @@ public class VerifyUtil {
 
 						if (dlFileEntry.isCheckedOut()) {
 							SyncDLObject approvedFileEntrySyncDLObject =
-								_syncUtil.toSyncDLObject(
+								SyncUtil.toSyncDLObject(
 									dlFileEntry, event,
 									!dlFileEntry.isInTrash(), true);
 
-							_syncUtil.addSyncDLObject(
+							SyncUtil.addSyncDLObject(
 								approvedFileEntrySyncDLObject);
 						}
 
-						_syncUtil.addSyncDLObject(
-							_syncUtil.toSyncDLObject(
+						SyncUtil.addSyncDLObject(
+							SyncUtil.toSyncDLObject(
 								dlFileEntry, event, !dlFileEntry.isInTrash()));
 					}
 					catch (Exception e) {
@@ -247,7 +243,7 @@ public class VerifyUtil {
 		_syncDLObjectsCount = 0;
 
 		ActionableDynamicQuery actionableDynamicQuery =
-			_syncDLObjectLocalService.getActionableDynamicQuery();
+			SyncDLObjectLocalServiceUtil.getActionableDynamicQuery();
 
 		actionableDynamicQuery.setAddCriteriaMethod(
 			new ActionableDynamicQuery.AddCriteriaMethod() {
@@ -284,7 +280,7 @@ public class VerifyUtil {
 
 					if (type.equals(SyncDLObjectConstants.TYPE_FILE)) {
 						DLFileEntry dlFileEntry =
-							_dlFileEntryLocalService.fetchDLFileEntry(
+							DLFileEntryLocalServiceUtil.fetchDLFileEntry(
 								syncDLObject.getTypePK());
 
 						if (dlFileEntry == null) {
@@ -293,12 +289,13 @@ public class VerifyUtil {
 							syncDLObject.setModifiedTime(
 								System.currentTimeMillis());
 
-							_syncUtil.addSyncDLObject(syncDLObject);
+							SyncUtil.addSyncDLObject(syncDLObject);
 						}
 					}
 					else if (type.equals(SyncDLObjectConstants.TYPE_FOLDER)) {
-						DLFolder dlFolder = _dlFolderLocalService.fetchDLFolder(
-							syncDLObject.getTypePK());
+						DLFolder dlFolder =
+							DLFolderLocalServiceUtil.fetchDLFolder(
+								syncDLObject.getTypePK());
 
 						if (dlFolder == null) {
 							syncDLObject.setEvent(
@@ -306,7 +303,7 @@ public class VerifyUtil {
 							syncDLObject.setModifiedTime(
 								System.currentTimeMillis());
 
-							_syncUtil.addSyncDLObject(syncDLObject);
+							SyncUtil.addSyncDLObject(syncDLObject);
 						}
 					}
 					else if (type.equals(
@@ -314,14 +311,14 @@ public class VerifyUtil {
 									TYPE_PRIVATE_WORKING_COPY)) {
 
 						DLFileEntry dlFileEntry =
-							_dlFileEntryLocalService.fetchDLFileEntry(
+							DLFileEntryLocalServiceUtil.fetchDLFileEntry(
 								syncDLObject.getTypePK());
 
 						if ((dlFileEntry == null) ||
-							!_dlFileEntryLocalService.isFileEntryCheckedOut(
+							!DLFileEntryLocalServiceUtil.isFileEntryCheckedOut(
 								syncDLObject.getTypePK())) {
 
-							_syncDLObjectLocalService.deleteSyncDLObject(
+							SyncDLObjectLocalServiceUtil.deleteSyncDLObject(
 								syncDLObject);
 						}
 					}
@@ -340,25 +337,9 @@ public class VerifyUtil {
 
 	private static final Log _log = LogFactoryUtil.getLog(VerifyUtil.class);
 
-	@Reference
-	private DLFileEntryLocalService _dlFileEntryLocalService;
-
-	@Reference
-	private DLFolderLocalService _dlFolderLocalService;
-
 	private long _dlFoldersAndFileEntriesCount;
 	private long _dlFoldersAndFileEntriesTotalCount;
-
-	@Reference
-	private GroupLocalService _groupLocalService;
-
-	@Reference
-	private SyncDLObjectLocalService _syncDLObjectLocalService;
-
 	private long _syncDLObjectsCount;
 	private long _syncDLObjectsTotalCount;
-
-	@Reference
-	private SyncUtil _syncUtil;
 
 }

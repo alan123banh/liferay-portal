@@ -70,26 +70,13 @@ for (String previewFileURL : previewFileURLs) {
 	</c:when>
 	<c:when test="<%= supportedVideo %>">
 		<aui:script use="aui-base,aui-video">
-			var playing = false;
-
-			var video = new A.Video(
+			new A.Video(
 				{
 					contentBox: '#<portlet:namespace /><%= randomNamespace %>previewFileContent',
 					fixedAttributes: {
 						allowfullscreen: 'true',
 						bgColor: '#000000',
 						wmode: 'opaque'
-					},
-
-					on: {
-						'pause' : function() {
-							playing = false;
-						},
-						'play': function() {
-							window.parent.Liferay.fire('<portlet:namespace /><%= randomNamespace %>Video:play');
-
-							playing = true;
-						}
 					},
 
 					<c:if test="<%= Validator.isNotNull(ogvPreviewFileURL) %>">
@@ -103,15 +90,6 @@ for (String previewFileURL : previewFileURLs) {
 					</c:if>
 				}
 			).render();
-
-			window.parent.Liferay.on(
-				'<portlet:namespace /><%= randomNamespace %>ImageViewer:currentIndexChange',
-				function() {
-					if (playing) {
-						video.pause();
-					}
-				}
-			);
 		</aui:script>
 	</c:when>
 </c:choose>

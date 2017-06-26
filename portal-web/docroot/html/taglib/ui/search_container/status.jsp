@@ -29,7 +29,7 @@ User statusByUser = UserLocalServiceUtil.fetchUser(statusByUserId);
 		<div class="user-status-tooltip">
 			<span class="user-status-avatar">
 				<liferay-ui:user-portrait
-					user="<%= statusByUser %>"
+					userId="<%= statusByUser.getUserId() %>"
 				/>
 			</span>
 			<span class="user-status-info">

@@ -18,7 +18,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.Props;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.scheduler.configuration.SchedulerEngineHelperConfiguration;
 import com.liferay.portal.verify.VerifyProcess;
@@ -55,8 +54,7 @@ public class SchedulerHelperPropertiesVerifyProcess extends VerifyProcess {
 			}
 
 			Configuration configuration = configurationAdmin.getConfiguration(
-				SchedulerEngineHelperConfiguration.class.getName(),
-				StringPool.QUESTION);
+				SchedulerEngineHelperConfiguration.class.getName());
 
 			Dictionary<String, Object> properties = new HashMapDictionary<>();
 

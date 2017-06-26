@@ -72,10 +72,12 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.ThreadUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.UnsyncPrintWriterPool;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.uuid.PortalUUID;
 import com.liferay.portal.kernel.xuggler.XugglerInstallException;
 import com.liferay.portal.kernel.xuggler.XugglerUtil;
+import com.liferay.portal.upload.UploadServletRequestImpl;
 import com.liferay.portal.util.MaintenanceUtil;
 import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.portal.util.ShutdownUtil;
@@ -83,6 +85,7 @@ import com.liferay.portlet.ActionResponseImpl;
 import com.liferay.portlet.admin.util.CleanUpPermissionsUtil;
 import com.liferay.portlet.admin.util.CleanUpPortletPreferencesUtil;
 
+import java.io.File;
 import java.io.Serializable;
 
 import java.util.Enumeration;
@@ -554,6 +557,10 @@ public class EditServerMVCActionCommand extends BaseMVCActionCommand {
 		String dlFileExtensions = getFileExtensions(
 			actionRequest, "dlFileExtensions");
 		long dlFileMaxSize = ParamUtil.getLong(actionRequest, "dlFileMaxSize");
+		long uploadServletRequestImplMaxSize = ParamUtil.getLong(
+			actionRequest, "uploadServletRequestImplMaxSize");
+		String uploadServletRequestImplTempDir = ParamUtil.getString(
+			actionRequest, "uploadServletRequestImplTempDir");
 
 		portletPreferences.setValue(
 			PropsKeys.DL_FILE_ENTRY_PREVIEWABLE_PROCESSOR_MAX_SIZE,
@@ -568,6 +575,18 @@ public class EditServerMVCActionCommand extends BaseMVCActionCommand {
 			PropsKeys.DL_FILE_EXTENSIONS, dlFileExtensions);
 		portletPreferences.setValue(
 			PropsKeys.DL_FILE_MAX_SIZE, String.valueOf(dlFileMaxSize));
+		portletPreferences.setValue(
+			PropsKeys.UPLOAD_SERVLET_REQUEST_IMPL_MAX_SIZE,
+			String.valueOf(uploadServletRequestImplMaxSize));
+
+		if (Validator.isNotNull(uploadServletRequestImplTempDir)) {
+			portletPreferences.setValue(
+				PropsKeys.UPLOAD_SERVLET_REQUEST_IMPL_TEMP_DIR,
+				uploadServletRequestImplTempDir);
+
+			UploadServletRequestImpl.setTempDir(
+				new File(uploadServletRequestImplTempDir));
+		}
 
 		portletPreferences.store();
 	}

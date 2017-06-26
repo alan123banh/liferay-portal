@@ -228,7 +228,7 @@ public class EditPublishConfigurationMVCActionCommand
 		long backgroundTaskId) {
 
 		LiferayPortletResponse liferayPortletResponse =
-			portal.getLiferayPortletResponse(actionResponse);
+			(LiferayPortletResponse)actionResponse;
 
 		PortletURL renderURL = liferayPortletResponse.createRenderURL();
 

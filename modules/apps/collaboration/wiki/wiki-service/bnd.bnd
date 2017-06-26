@@ -50,7 +50,6 @@ Import-Package:\
 	!org.intabulas.sandler.*,\
 	\
 	!org.jgroups.*,\
-	\
 	*
 Liferay-Releng-Module-Group-Description:
 Liferay-Releng-Module-Group-Title: Wiki

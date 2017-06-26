@@ -25,17 +25,12 @@ public class ErrorTei extends TagExtraInfo {
 
 	@Override
 	public VariableInfo[] getVariableInfo(TagData tagData) {
-		return Concealer._variableInfo;
+		return _variableInfo;
 	}
 
-	private static class Concealer {
-
-		private static final VariableInfo[] _variableInfo = new VariableInfo[] {
-			new VariableInfo(
-				"errorException", Object.class.getName(), true,
-				VariableInfo.NESTED)
-		};
-
-	}
+	private static final VariableInfo[] _variableInfo = new VariableInfo[] {
+		new VariableInfo(
+			"errorException", Object.class.getName(), true, VariableInfo.NESTED)
+	};
 
 }

@@ -21,7 +21,6 @@ import com.liferay.expando.kernel.model.ExpandoRow;
 import com.liferay.expando.kernel.model.ExpandoTable;
 import com.liferay.expando.kernel.model.ExpandoTableConstants;
 import com.liferay.expando.kernel.model.ExpandoValue;
-import com.liferay.expando.kernel.util.ExpandoValueDeleteHandler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -33,8 +32,6 @@ import com.liferay.portal.typeconverter.NumberArrayConverter;
 import com.liferay.portal.typeconverter.NumberConverter;
 import com.liferay.portlet.expando.model.impl.ExpandoValueImpl;
 import com.liferay.portlet.expando.service.base.ExpandoValueLocalServiceBaseImpl;
-import com.liferay.registry.collections.ServiceTrackerCollections;
-import com.liferay.registry.collections.ServiceTrackerList;
 
 import java.io.Serializable;
 
@@ -872,19 +869,6 @@ public class ExpandoValueLocalServiceImpl
 	@Override
 	public void deleteValue(ExpandoValue value) {
 		expandoValuePersistence.remove(value);
-
-		// Notify delete handlers
-
-		ServiceTrackerList<ExpandoValueDeleteHandler> serviceTrackerList =
-			ServiceTrackerCollections.openList(
-				ExpandoValueDeleteHandler.class,
-				"(model.class.name=" + value.getClassName() + ")");
-
-		for (ExpandoValueDeleteHandler expandoValueDeleteHandler :
-				serviceTrackerList) {
-
-			expandoValueDeleteHandler.deletedExpandoValue(value.getClassPK());
-		}
 
 		List<ExpandoValue> values = expandoValuePersistence.findByRowId(
 			value.getRowId());

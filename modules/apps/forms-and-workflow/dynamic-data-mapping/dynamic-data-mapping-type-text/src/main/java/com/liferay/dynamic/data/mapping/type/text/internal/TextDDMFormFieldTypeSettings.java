@@ -84,19 +84,14 @@ public interface TextDDMFormFieldTypeSettings
 	@DDMFormField(
 		label = "%create-list",
 		optionLabels = {"%manually", "%from-data-provider"},
-		optionValues = {"manual", "data-provider"},
+		optionValues = {"manual", "data-provider"}, predefinedValue = "manual",
 		properties = {"showLabel=false"}, type = "radio",
 		visibilityExpression = "TRUE"
 	)
 	public String dataSourceType();
 
 	@DDMFormField(
-		label = "%choose-a-data-provider",
-		properties = {
-			"dataSourceType=data-provider",
-			"ddmDataProviderInstanceId=getDataProviderInstances"
-		},
-		type = "select",
+		label = "%choose-a-data-provider", type = "select",
 		visibilityExpression = "equals(dataSourceType, \"data-provider\")"
 	)
 	public long ddmDataProviderInstanceId();

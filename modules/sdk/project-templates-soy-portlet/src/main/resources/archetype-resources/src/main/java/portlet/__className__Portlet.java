@@ -1,7 +1,5 @@
 package ${package}.portlet;
 
-import ${package}.constants.${className}PortletKeys;
-
 import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.portlet.bridge.soy.SoyPortlet;
 
@@ -27,7 +25,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.display-name=${artifactId} Portlet",
 		"javax.portlet.init-param.template-path=/",
 		"javax.portlet.init-param.view-template=View",
-		"javax.portlet.name=" + ${className}PortletKeys.${className},
+		"javax.portlet.name=${portletName}",
 		"javax.portlet.resource-bundle=content.Language",
 		"javax.portlet.security-role-ref=power-user,user"
 	},

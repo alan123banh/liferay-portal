@@ -1,14 +1,15 @@
 AUI.add(
 	'liferay-ddl-form-builder-modal-support',
 	function(A) {
-		var Settings = Liferay.DDL.Settings;
-
 		var FormBuilderModalSupport = function() {
 		};
 
 		FormBuilderModalSupport.ATTRS = {
 			centered: {
 				valueFn: '_valueCentered'
+			},
+
+			portletNamespace: {
 			},
 
 			zIndex: {
@@ -64,7 +65,7 @@ AUI.add(
 			_valueCentered: function() {
 				var instance = this;
 
-				var portletNode = A.one('#p_p_id' + Settings.portletNamespace);
+				var portletNode = A.one('#p_p_id' + instance.get('portletNamespace'));
 
 				instance.set('centered', portletNode);
 			}

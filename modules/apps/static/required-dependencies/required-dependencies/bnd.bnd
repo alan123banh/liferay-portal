@@ -1,4 +1,3 @@
-Bundle-Name: Liferay Required Dependencies
 Bundle-SymbolicName: com.liferay.required.dependencies
 Bundle-Version: 1.0.0
 -fixupmessages:\

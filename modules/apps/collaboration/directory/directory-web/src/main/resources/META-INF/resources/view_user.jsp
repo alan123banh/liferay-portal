@@ -38,9 +38,7 @@ request.setAttribute("websites.className", Contact.class.getName());
 request.setAttribute("websites.classPK", selContact.getContactId());
 %>
 
-<liferay-util:include page="/tabs1.jsp" servletContext="<%= application %>">
-	<liferay-util:param name="showSearch" value="<%= Boolean.FALSE.toString() %>" />
-</liferay-util:include>
+<liferay-util:include page="/tabs1.jsp" servletContext="<%= application %>" />
 
 <div class="user-information">
 	<div class="entity-details section">

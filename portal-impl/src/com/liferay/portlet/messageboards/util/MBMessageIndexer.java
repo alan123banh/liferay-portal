@@ -360,9 +360,8 @@ public class MBMessageIndexer
 		}
 		catch (Exception e) {
 			_log.error(
-				"Unable to parse message " + message.getMessageId() + ": " +
-					e.getMessage(),
-				e);
+				"Could not parse message " + message.getMessageId() + ": " +
+					e.getMessage());
 		}
 
 		content = HtmlUtil.extractText(content);

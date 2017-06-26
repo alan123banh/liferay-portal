@@ -25,7 +25,6 @@ import com.liferay.gradle.util.copy.RenameDependencyClosure;
 import java.io.File;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -35,8 +34,6 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.artifacts.DependencySet;
-import org.gradle.api.artifacts.ProjectDependency;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.plugins.BasePlugin;
@@ -46,7 +43,6 @@ import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetOutput;
 import org.gradle.api.tasks.TaskContainer;
-import org.gradle.api.tasks.TaskDependency;
 
 /**
  * @author Andrea Di Giorgi
@@ -177,16 +173,10 @@ public class JSTranspilerPlugin implements Plugin<Project> {
 		RenameDependencyClosure renameDependencyClosure =
 			new RenameDependencyClosure(project, configuration.getName());
 
-		Iterable<TaskDependency> taskDependencies = _getTaskDependencies(
-			configuration);
-
 		for (File file : configuration) {
 			Copy copy = _addTaskExpandCompileDependency(
 				project, file, npmInstallTask.getNodeModulesDir(),
 				"expandJSCompileDependency", renameDependencyClosure);
-
-			copy.dependsOn(taskDependencies);
-			copy.mustRunAfter(npmInstallTask);
 
 			transpileJSTask.dependsOn(copy);
 		}
@@ -200,15 +190,10 @@ public class JSTranspilerPlugin implements Plugin<Project> {
 		RenameDependencyClosure renameDependencyClosure =
 			new RenameDependencyClosure(project, configuration.getName());
 
-		Iterable<TaskDependency> taskDependencies = _getTaskDependencies(
-			configuration);
-
 		for (File file : configuration) {
 			Copy copy = _addTaskExpandCompileDependency(
 				project, file, project.getBuildDir(),
 				"expandSoyCompileDependency", renameDependencyClosure);
-
-			copy.dependsOn(taskDependencies);
 
 			transpileJSTask.dependsOn(copy);
 
@@ -360,22 +345,6 @@ public class JSTranspilerPlugin implements Plugin<Project> {
 		Iterator<File> iterator = srcDirs.iterator();
 
 		return iterator.next();
-	}
-
-	private Iterable<TaskDependency> _getTaskDependencies(
-		Configuration configuration) {
-
-		Set<TaskDependency> taskDependencies = new HashSet<>();
-
-		DependencySet dependencySet = configuration.getAllDependencies();
-
-		for (ProjectDependency projectDependency : dependencySet.withType(
-				ProjectDependency.class)) {
-
-			taskDependencies.add(projectDependency.getBuildDependencies());
-		}
-
-		return taskDependencies;
 	}
 
 	private static final String _METAL_CLI_VERSION = "1.3.1";

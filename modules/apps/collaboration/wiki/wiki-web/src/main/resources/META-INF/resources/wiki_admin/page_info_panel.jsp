@@ -165,7 +165,6 @@ if (wikiPageInfoPanelDisplayContext.isSinglePageSelection()) {
 						<liferay-ui:ratings
 							className="<%= WikiPage.class.getName() %>"
 							classPK="<%= wikiPage.getResourcePrimKey() %>"
-							inTrash="<%= wikiPage.isInTrash() %>"
 						/>
 					</c:if>
 

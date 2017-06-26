@@ -10,7 +10,6 @@ Import-Package:\
 	!javax.print.*,\
 	\
 	!javax.swing.*,\
-	\
 	*
 Liferay-Releng-Module-Group-Description:
 Liferay-Releng-Module-Group-Title: Runtime

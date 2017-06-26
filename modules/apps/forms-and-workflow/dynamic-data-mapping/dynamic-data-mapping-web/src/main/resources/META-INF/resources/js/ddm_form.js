@@ -809,8 +809,6 @@ AUI.add(
 						}
 						else if (currentTarget.hasClass('lfr-ddm-repeatable-delete-button')) {
 							instance.remove();
-
-							instance.syncRepeatablelUI();
 						}
 
 						event.stopPropagation();
@@ -1096,7 +1094,7 @@ AUI.add(
 
 						var portletNamespace = instance.get('portletNamespace');
 
-						var portletURL = Liferay.PortletURL.createURL(themeDisplay.getURLControlPanel());
+						var portletURL = Liferay.PortletURL.createURL(themeDisplay.getLayoutRelativeURL());
 
 						portletURL.setParameter('criteria', criteria);
 						portletURL.setParameter('itemSelectedEventName', portletNamespace + 'selectDocumentLibrary');
@@ -1141,7 +1139,7 @@ AUI.add(
 					getUploadURL: function() {
 						var instance = this;
 
-						var portletURL = Liferay.PortletURL.createURL(themeDisplay.getURLControlPanel());
+						var portletURL = Liferay.PortletURL.createURL(themeDisplay.getLayoutRelativeURL());
 
 						portletURL.setLifecycle(Liferay.PortletURL.ACTION_PHASE);
 						portletURL.setParameter('cmd', 'add_temp');
@@ -2418,7 +2416,7 @@ AUI.add(
 
 						var portletNamespace = instance.get('portletNamespace');
 
-						var portletURL = Liferay.PortletURL.createURL(themeDisplay.getURLControlPanel());
+						var portletURL = Liferay.PortletURL.createURL(themeDisplay.getLayoutRelativeURL());
 
 						portletURL.setParameter('criteria', criteria);
 						portletURL.setParameter('itemSelectedEventName', portletNamespace + 'selectDocumentLibrary');
@@ -2970,10 +2968,7 @@ AUI.add(
 							repeatableInstance.add(field.get('container'));
 						}
 
-						var drag = A.DD.DDM.getDrag(field.get('container'));
-
-						drag.addInvalid('.alloy-editor');
-						drag.addInvalid('.lfr-source-editor');
+						A.DD.DDM.getDrag(field.get('container')).addInvalid('.alloy-editor');
 					},
 
 					toJSON: function() {
@@ -3066,11 +3061,7 @@ AUI.add(
 							else if (event.type === 'liferay-ddm-field:remove') {
 								delete validatorRules[field.getInputName()];
 
-								var inputNode = field.getInputNode();
-
-								if (inputNode) {
-									liferayForm.formValidator.resetField(inputNode);
-								}
+								liferayForm.formValidator.resetField(field.getInputNode());
 
 								if (field.get('repeatable')) {
 									instance.unregisterRepeatable(field);

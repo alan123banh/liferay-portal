@@ -485,7 +485,7 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 		repository.checkInFileEntry(
 			getUserId(), fileEntryId, majorVersion, changeLog, serviceContext);
 
-		FileEntry fileEntry = repository.getFileEntry(fileEntryId);
+		FileEntry fileEntry = getFileEntry(fileEntryId);
 
 		FileVersion fileVersion = fileEntry.getLatestFileVersion();
 
@@ -527,7 +527,7 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 		repository.checkInFileEntry(
 			getUserId(), fileEntryId, lockUuid, serviceContext);
 
-		FileEntry fileEntry = repository.getFileEntry(fileEntryId);
+		FileEntry fileEntry = getFileEntry(fileEntryId);
 
 		FileVersion fileVersion = fileEntry.getLatestFileVersion();
 
@@ -2220,7 +2220,7 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 		repository.revertFileEntry(
 			getUserId(), fileEntryId, version, serviceContext);
 
-		FileEntry fileEntry = repository.getFileEntry(fileEntryId);
+		FileEntry fileEntry = getFileEntry(fileEntryId);
 
 		dlAppHelperLocalService.updateFileEntry(
 			getUserId(), fileEntry, null, fileEntry.getFileVersion(),
@@ -2616,14 +2616,12 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 		Repository repository = repositoryProvider.getFileEntryRepository(
 			fileEntryId);
 
-		repository.updateFileEntry(
+		FileEntry fileEntry = repository.updateFileEntry(
 			getUserId(), fileEntryId, sourceFileName, mimeType, title,
 			description, changeLog, majorVersion, file, serviceContext);
 
 		repository.checkInFileEntry(
 			getUserId(), fileEntryId, majorVersion, changeLog, serviceContext);
-
-		FileEntry fileEntry = repository.getFileEntry(fileEntryId);
 
 		dlAppHelperLocalService.updateFileEntry(
 			getUserId(), fileEntry, null, fileEntry.getFileVersion(),
@@ -2643,14 +2641,12 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 		Repository repository = repositoryProvider.getFileEntryRepository(
 			fileEntryId);
 
-		repository.updateFileEntry(
+		FileEntry fileEntry = repository.updateFileEntry(
 			getUserId(), fileEntryId, sourceFileName, mimeType, title,
 			description, changeLog, majorVersion, is, size, serviceContext);
 
 		repository.checkInFileEntry(
 			getUserId(), fileEntryId, majorVersion, changeLog, serviceContext);
-
-		FileEntry fileEntry = repository.getFileEntry(fileEntryId);
 
 		dlAppHelperLocalService.updateFileEntry(
 			getUserId(), fileEntry, null, fileEntry.getFileVersion(),

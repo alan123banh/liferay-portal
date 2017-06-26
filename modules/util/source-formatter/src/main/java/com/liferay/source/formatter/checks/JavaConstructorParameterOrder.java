@@ -95,8 +95,7 @@ public class JavaConstructorParameterOrder extends BaseJavaTermCheck {
 			sb.append(parameterName);
 			sb.append(";' to match order of constructor parameters");
 
-			addMessage(
-				fileName, sb.toString(), "constructor_parameters.markdown");
+			addMessage(fileName, sb.toString());
 
 			return;
 		}

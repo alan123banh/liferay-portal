@@ -18,10 +18,7 @@ import java.io.Serializable;
 
 /**
  * @author Brian Wing Shun Chan
- * @deprecated As of 7.0.0, replaced by {@link
- *             com.liferay.trash.model.TrashEntryList}
  */
-@Deprecated
 public class TrashEntryList implements Serializable {
 
 	public TrashEntryList() {

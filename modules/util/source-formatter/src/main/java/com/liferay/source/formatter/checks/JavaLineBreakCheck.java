@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 /**
  * @author Hugo Huijser
  */
-public class JavaLineBreakCheck extends LineBreakCheck {
+public class JavaLineBreakCheck extends BaseFileCheck {
 
 	@Override
 	protected String doProcess(
@@ -55,11 +55,21 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 				}
 
 				if (!trimmedLine.startsWith(StringPool.DOUBLE_SLASH) &&
-					!trimmedLine.startsWith(StringPool.STAR) &&
-					trimmedLine.startsWith(StringPool.PERIOD)) {
+					!trimmedLine.startsWith(StringPool.STAR)) {
 
-					addMessage(
-						fileName, "Line should not start with '.'", lineCount);
+					if (trimmedLine.startsWith(StringPool.PERIOD)) {
+						addMessage(
+							fileName, "Line should not start with '.'",
+							lineCount);
+					}
+
+					if (previousLine.endsWith(StringPool.OPEN_PARENTHESIS) &&
+						trimmedLine.startsWith(StringPool.CLOSE_PARENTHESIS)) {
+
+						addMessage(
+							fileName, "Line should not start with ')'",
+							lineCount);
+					}
 				}
 
 				int lineLength = getLineLength(line);
@@ -76,7 +86,7 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 			}
 		}
 
-		content = _fixIncorrectLineBreaksInsideChains(content, fileName);
+		_checkIncorrectLineBreaksInsideChains(content, fileName);
 
 		content = _fixIncorrectLineBreaks(content, fileName);
 
@@ -88,9 +98,52 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 
 		content = _fixClassLineLineBreaks(content);
 
-		content = fixRedundantCommaInsideArray(content);
-
 		return content;
+	}
+
+	private void _checkIncorrectLineBreaksInsideChains(
+		String content, String fileName) {
+
+		Matcher matcher = _incorrectLineBreakInsideChainPattern.matcher(
+			content);
+
+		while (matcher.find()) {
+			int x = matcher.end();
+
+			while (true) {
+				x = content.indexOf(StringPool.CLOSE_PARENTHESIS, x + 1);
+
+				if (x == -1) {
+					return;
+				}
+
+				if (ToolsUtil.isInsideQuotes(content, x)) {
+					continue;
+				}
+
+				String s = content.substring(matcher.end(), x);
+
+				if (getLevel(s) != 0) {
+					continue;
+				}
+
+				char c = content.charAt(x - 1);
+
+				if (c == CharPool.TAB) {
+					break;
+				}
+
+				int y = content.lastIndexOf(StringPool.TAB, x);
+
+				s = content.substring(y + 1, x);
+
+				addMessage(
+					fileName, "There should be a line break after '" + s + "'",
+					getLineCount(content, x));
+
+				break;
+			}
+		}
 	}
 
 	private void _checkLambdaLineBreaks(
@@ -128,8 +181,6 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 	private void _checkLineBreaks(
 		String line, String previousLine, String fileName, int lineCount) {
 
-		checkLineBreaks(line, previousLine, fileName, lineCount);
-
 		String trimmedLine = StringUtil.trimLeading(line);
 
 		if (previousLine.contains("\t/*") || trimmedLine.startsWith("//") |
@@ -143,6 +194,19 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 		if (trimmedLine.startsWith("},") && !trimmedLine.equals("},")) {
 			addMessage(
 				fileName, "There should be a line break after '},'", lineCount);
+		}
+
+		int lineLeadingTabCount = getLeadingTabCount(line);
+		int previousLineLeadingTabCount = getLeadingTabCount(previousLine);
+
+		if (previousLine.endsWith(StringPool.COMMA) &&
+			previousLine.contains(StringPool.OPEN_PARENTHESIS) &&
+			!previousLine.contains("for (") &&
+			(lineLeadingTabCount > previousLineLeadingTabCount)) {
+
+			addMessage(
+				fileName, "There should be a line break after '('",
+				lineCount - 1);
 		}
 
 		if (previousLine.endsWith(StringPool.PERIOD)) {
@@ -159,7 +223,18 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 
 		String strippedQuotesLine = stripQuotes(trimmedLine);
 
-		if (line.matches(".*(\\(|->( \\{)?)")) {
+		int strippedQuotesLineOpenParenthesisCount = StringUtil.count(
+			strippedQuotesLine, CharPool.OPEN_PARENTHESIS);
+
+		if (!trimmedLine.startsWith(StringPool.OPEN_PARENTHESIS) &&
+			trimmedLine.endsWith(") {") &&
+			(strippedQuotesLineOpenParenthesisCount > 0) &&
+			(getLevel(trimmedLine) > 0)) {
+
+			addMessage(fileName, "Incorrect line break", lineCount);
+		}
+
+		if (line.endsWith(StringPool.OPEN_PARENTHESIS)) {
 			int x = line.lastIndexOf(" && ");
 			int y = line.lastIndexOf(" || ");
 
@@ -186,10 +261,8 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 						lineCount);
 				}
 			}
-		}
 
-		if (line.matches(".*(\\(|\\^|\\&|\\||->( \\{)?)")) {
-			int x = trimmedLine.length() + 1;
+			x = trimmedLine.length() + 1;
 
 			while (true) {
 				x = trimmedLine.lastIndexOf(StringPool.COMMA, x - 1);
@@ -202,12 +275,9 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 					continue;
 				}
 
-				String linePart = trimmedLine.substring(
-					x, trimmedLine.length() - 1);
+				String linePart = trimmedLine.substring(x);
 
-				linePart = StringUtil.removeSubstring(linePart, "->");
-
-				if ((getLevel(linePart) == 0) &&
+				if ((getLevel(linePart) == 1) &&
 					(getLevel(linePart, "<", ">") == 0)) {
 
 					addMessage(
@@ -219,6 +289,16 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 					break;
 				}
 			}
+		}
+
+		if (trimmedLine.matches("\\)\\..*\\([^)].*")) {
+			int pos = trimmedLine.indexOf(StringPool.OPEN_PARENTHESIS);
+
+			addMessage(
+				fileName,
+				"There should be a line break after '" +
+					trimmedLine.substring(0, pos + 1) + "'",
+				lineCount);
 		}
 
 		if (trimmedLine.matches("^[^(].*\\+$") && (getLevel(trimmedLine) > 0)) {
@@ -280,6 +360,29 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 				}
 			}
 		}
+		else if (trimmedLine.endsWith(StringPool.COMMA) &&
+				 !trimmedLine.startsWith("for (")) {
+
+			if (getLevel(trimmedLine) > 0) {
+				addMessage(fileName, "Incorrect line break", lineCount);
+			}
+		}
+
+		if (line.endsWith(" +") || line.endsWith(" -") || line.endsWith(" *") ||
+			line.endsWith(" /")) {
+
+			x = line.indexOf(" = ");
+
+			if (x != -1) {
+				int y = line.indexOf(CharPool.QUOTE);
+
+				if ((y == -1) || (x < y)) {
+					addMessage(
+						fileName, "There should be a line break after '='",
+						lineCount);
+				}
+			}
+		}
 
 		if (line.endsWith(" throws") ||
 			((previousLine.endsWith(StringPool.COMMA) ||
@@ -324,8 +427,8 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 
 		while (matcher.find()) {
 			String newLine =
-				matcher.group(4) + matcher.group(2) + matcher.group(5) +
-					matcher.group(6);
+				matcher.group(3) + matcher.group(2) + matcher.group(4) +
+					matcher.group(5);
 
 			if (getLineLength(newLine) <= getMaxLineLength()) {
 				return StringUtil.replace(
@@ -434,6 +537,16 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 				}
 			}
 
+			matcher = _redundantCommaPattern.matcher(content);
+
+			if (matcher.find()) {
+				content = StringUtil.replaceFirst(
+					content, StringPool.COMMA, StringPool.BLANK,
+					matcher.start());
+
+				continue;
+			}
+
 			break;
 		}
 
@@ -448,64 +561,6 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 					"There should be a line break before '" + matcher.group(1) +
 						"'",
 					lineCount);
-			}
-		}
-
-		return content;
-	}
-
-	private String _fixIncorrectLineBreaksInsideChains(
-		String content, String fileName) {
-
-		Matcher matcher = _incorrectLineBreakInsideChainPattern1.matcher(
-			content);
-
-		while (matcher.find()) {
-			String linePart = matcher.group(2);
-
-			if (linePart.matches("\\)[^\\)]+[\\(;]")) {
-				return StringUtil.insert(
-					content, "\n" + matcher.group(1), matcher.start(2));
-			}
-		}
-
-		matcher = _incorrectLineBreakInsideChainPattern2.matcher(content);
-
-		while (matcher.find()) {
-			int x = matcher.end();
-
-			while (true) {
-				x = content.indexOf(StringPool.CLOSE_PARENTHESIS, x + 1);
-
-				if (x == -1) {
-					return content;
-				}
-
-				if (ToolsUtil.isInsideQuotes(content, x)) {
-					continue;
-				}
-
-				String s = content.substring(matcher.end(), x);
-
-				if (getLevel(s) != 0) {
-					continue;
-				}
-
-				char c = content.charAt(x - 1);
-
-				if (c == CharPool.TAB) {
-					break;
-				}
-
-				int y = content.lastIndexOf(StringPool.TAB, x);
-
-				s = content.substring(y + 1, x);
-
-				addMessage(
-					fileName, "There should be a line break after '" + s + "'",
-					getLineCount(content, x));
-
-				break;
 			}
 		}
 
@@ -684,20 +739,18 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 	}
 
 	private final Pattern _arrayPattern = Pattern.compile(
-		"(\n\t*.* =) ((new \\w*\\[\\] )?\\{)\n(\t*)(.+)\n\t*(\\};?)\n");
+		"(\n\t*.* =) (new \\w*\\[\\] \\{)\n(\t*)(.+)\n\t*(\\};)\n");
 	private final Pattern _classPattern = Pattern.compile(
 		"(\n(\t*)(private|protected|public) ((abstract|static) )*" +
 			"(class|enum|interface) ([\\s\\S]*?) \\{)\n(\\s*)(\\S)");
-	private final Pattern _incorrectLineBreakInsideChainPattern1 =
-		Pattern.compile("\n(\t*)\\).*?\\((.+)");
-	private final Pattern _incorrectLineBreakInsideChainPattern2 =
+	private final Pattern _incorrectLineBreakInsideChainPattern =
 		Pattern.compile("\t\\)\\..*\\(\n");
 	private final Pattern _incorrectLineBreakPattern1 = Pattern.compile(
 		"\n(\t*)(.*\\) \\{)([\t ]*\\}\n)");
 	private final Pattern _incorrectLineBreakPattern2 = Pattern.compile(
 		"\n(\t*).*\\}\n(\t*)\\);");
 	private final Pattern _incorrectLineBreakPattern3 = Pattern.compile(
-		"\n(\t*)\\{.+(?<!\\}\\){0,10}(,|;)?)\n");
+		"\n(\t*)\\{.+(?<!\\}(,|;)?)\n");
 	private final Pattern _incorrectLineBreakPattern4 = Pattern.compile(
 		"\n(\t+\\{)\n(.*[^;])\n\t+(\\},?)");
 	private final Pattern _incorrectLineBreakPattern5 = Pattern.compile(
@@ -708,5 +761,6 @@ public class JavaLineBreakCheck extends LineBreakCheck {
 		"(\n\t*/\\*)\n\t*(.*?)\n\t*(\\*/\n)", Pattern.DOTALL);
 	private final Pattern _lineStartingWithOpenParenthesisPattern =
 		Pattern.compile("(.)\n+(\t+)\\)[^.].*\n");
+	private final Pattern _redundantCommaPattern = Pattern.compile(",\n\t+\\}");
 
 }

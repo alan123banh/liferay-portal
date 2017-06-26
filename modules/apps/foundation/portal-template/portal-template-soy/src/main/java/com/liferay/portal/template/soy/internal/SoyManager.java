@@ -14,8 +14,6 @@
 
 package com.liferay.portal.template.soy.internal;
 
-import com.liferay.portal.kernel.cache.PortalCache;
-import com.liferay.portal.kernel.cache.SingleVMPool;
 import com.liferay.portal.kernel.template.Template;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.template.TemplateManager;
@@ -24,18 +22,11 @@ import com.liferay.portal.template.BaseMultiTemplateManager;
 import com.liferay.portal.template.RestrictedTemplate;
 import com.liferay.portal.template.TemplateContextHelper;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.wiring.BundleCapability;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.util.tracker.BundleTracker;
 
 /**
  * @author Bruno Basto
@@ -43,7 +34,7 @@ import org.osgi.util.tracker.BundleTracker;
 @Component(
 	immediate = true,
 	property = {"language.type=" + TemplateConstants.LANG_TYPE_SOY},
-	service = {SoyManager.class, TemplateManager.class}
+	service = TemplateManager.class
 )
 public class SoyManager extends BaseMultiTemplateManager {
 
@@ -59,10 +50,6 @@ public class SoyManager extends BaseMultiTemplateManager {
 		templateContextHelper.removeHelperUtilities(classLoader);
 	}
 
-	public List<TemplateResource> getAllTemplateResources() {
-		return _soyCapabilityBundleTrackerCustomizer.getAllTemplateResources();
-	}
-
 	@Override
 	public String getName() {
 		return TemplateConstants.LANG_TYPE_SOY;
@@ -70,13 +57,6 @@ public class SoyManager extends BaseMultiTemplateManager {
 
 	@Override
 	public void init() {
-	}
-
-	@Reference(unbind = "-")
-	public void setSingleVMPool(SingleVMPool singleVMPool) {
-		_soyTofuCacheHandler = new SoyTofuCacheHandler(
-			(PortalCache<HashSet<TemplateResource>, SoyTofuCacheBag>)
-				singleVMPool.getPortalCache(SoyTemplate.class.getName()));
 	}
 
 	@Override
@@ -87,25 +67,6 @@ public class SoyManager extends BaseMultiTemplateManager {
 		super.setTemplateContextHelper(templateContextHelper);
 	}
 
-	@Activate
-	protected void activate(BundleContext bundleContext) {
-		int stateMask = Bundle.ACTIVE | Bundle.RESOLVED;
-
-		_soyCapabilityBundleTrackerCustomizer =
-			new SoyCapabilityBundleTrackerCustomizer(
-				_soyTofuCacheHandler, _soyProviderCapabilityBundleRegister);
-
-		_bundleTracker = new BundleTracker<>(
-			bundleContext, stateMask, _soyCapabilityBundleTrackerCustomizer);
-
-		_bundleTracker.open();
-	}
-
-	@Deactivate
-	protected void deactivate() {
-		_bundleTracker.close();
-	}
-
 	@Override
 	protected Template doGetTemplate(
 		List<TemplateResource> templateResources,
@@ -114,8 +75,7 @@ public class SoyManager extends BaseMultiTemplateManager {
 
 		Template template = new SoyTemplate(
 			templateResources, errorTemplateResource, helperUtilities,
-			(SoyTemplateContextHelper)templateContextHelper, privileged,
-			_soyTofuCacheHandler);
+			(SoyTemplateContextHelper)templateContextHelper, privileged);
 
 		if (restricted) {
 			template = new RestrictedTemplate(
@@ -124,26 +84,5 @@ public class SoyManager extends BaseMultiTemplateManager {
 
 		return template;
 	}
-
-	@Reference(unbind = "-")
-	protected void setSoyProviderCapabilityBundleRegister(
-		SoyProviderCapabilityBundleRegister
-			soyProviderCapabilityBundleRegister) {
-
-		_soyProviderCapabilityBundleRegister =
-			soyProviderCapabilityBundleRegister;
-	}
-
-	@Reference(unbind = "-")
-	protected void setSoyTemplateBundleResourceParser(
-		SoyTemplateBundleResourceParser soyTemplateBundleResourceParser) {
-	}
-
-	private BundleTracker<List<BundleCapability>> _bundleTracker;
-	private SoyCapabilityBundleTrackerCustomizer
-		_soyCapabilityBundleTrackerCustomizer;
-	private SoyProviderCapabilityBundleRegister
-		_soyProviderCapabilityBundleRegister;
-	private SoyTofuCacheHandler _soyTofuCacheHandler;
 
 }

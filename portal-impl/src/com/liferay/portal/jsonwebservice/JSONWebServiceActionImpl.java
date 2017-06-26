@@ -257,12 +257,7 @@ public class JSONWebServiceActionImpl implements JSONWebServiceAction {
 							null, parameterType);
 					}
 					catch (Exception e2) {
-						ClassCastException cce = new ClassCastException(
-							e1.getMessage());
-
-						cce.addSuppressed(e2);
-
-						throw cce;
+						throw new ClassCastException(e1.getMessage());
 					}
 
 					BeanCopy beanCopy = BeanCopy.beans(value, parameterValue);

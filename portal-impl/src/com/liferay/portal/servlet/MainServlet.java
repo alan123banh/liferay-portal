@@ -109,7 +109,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TimeZone;
 
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletContext;
@@ -242,17 +241,15 @@ public class MainServlet extends ActionServlet {
 				_log.warn(sb.toString());
 			}
 
-			TimeZone timeZone = TimeZone.getDefault();
+			String userTimeZone = System.getProperty("user.timezone");
 
-			String timeZoneID = timeZone.getID();
-
-			if (!Objects.equals("UTC", timeZoneID) &&
-				!Objects.equals("GMT", timeZoneID)) {
+			if (!Objects.equals("UTC", userTimeZone) &&
+				!Objects.equals("GMT", userTimeZone)) {
 
 				StringBundler sb = new StringBundler(4);
 
 				sb.append("The default JVM time zone \"");
-				sb.append(timeZoneID);
+				sb.append(userTimeZone);
 				sb.append("\" is not UTC or GMT. Please review the JVM ");
 				sb.append("property \"user.timezone\".");
 
@@ -1216,16 +1213,6 @@ public class MainServlet extends ActionServlet {
 			StrutsUtil.forward(
 				PropsValues.SERVLET_SERVICE_EVENTS_PRE_ERROR_PAGE,
 				servletContext, request, response);
-
-			if (e == request.getAttribute(PageContext.EXCEPTION)) {
-				request.removeAttribute(PageContext.EXCEPTION);
-				request.removeAttribute(RequestDispatcher.ERROR_EXCEPTION);
-				request.removeAttribute(RequestDispatcher.ERROR_EXCEPTION_TYPE);
-				request.removeAttribute(RequestDispatcher.ERROR_MESSAGE);
-				request.removeAttribute(RequestDispatcher.ERROR_REQUEST_URI);
-				request.removeAttribute(RequestDispatcher.ERROR_SERVLET_NAME);
-				request.removeAttribute(RequestDispatcher.ERROR_STATUS_CODE);
-			}
 
 			return true;
 		}

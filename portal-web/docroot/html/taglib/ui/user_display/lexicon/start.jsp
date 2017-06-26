@@ -19,7 +19,7 @@
 <liferay-util:buffer var="html">
 	<liferay-ui:user-portrait
 		imageCssClass="<%= imageCssClass %>"
-		user="<%= userDisplay %>"
+		userId="<%= (userDisplay != null) ? userDisplay.getUserId() : 0 %>"
 		userName="<%= (userDisplay != null) ? userDisplay.getFullName() : userName %>"
 	/>
 </liferay-util:buffer>
@@ -35,13 +35,6 @@
 				<c:if test="<%= showUserName %>">
 					<div class="nameplate-content">
 						<div class="heading4">
-
-							<%
-							if (Validator.isNull(url) && (userDisplay != null)) {
-								url = userDisplay.getDisplayURL(themeDisplay);
-							}
-							%>
-
 							<aui:a href="<%= showLink ? url : null %>">
 								<%= (userDisplay != null) ? HtmlUtil.escape(userDisplay.getFullName()) : HtmlUtil.escape(userName) %>
 							</aui:a>

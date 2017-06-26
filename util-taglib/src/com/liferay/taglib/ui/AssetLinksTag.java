@@ -15,16 +15,12 @@
 package com.liferay.taglib.ui;
 
 import com.liferay.asset.kernel.model.AssetEntry;
-import com.liferay.asset.kernel.model.AssetLink;
 import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
-import com.liferay.asset.kernel.service.AssetLinkLocalServiceUtil;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.taglib.util.IncludeTag;
-
-import java.util.List;
 
 import javax.portlet.PortletURL;
 
@@ -73,21 +69,16 @@ public class AssetLinksTag extends IncludeTag {
 		_assetEntryId = 0;
 		_className = StringPool.BLANK;
 		_classPK = 0;
-		_page = _PAGE;
 		_portletURL = null;
 	}
 
 	@Override
 	protected String getPage() {
-		return _page;
+		return _PAGE;
 	}
 
 	@Override
 	protected void setAttributes(HttpServletRequest request) {
-		if (_page == null) {
-			return;
-		}
-
 		if ((_assetEntryId <= 0) && (_classPK > 0)) {
 			try {
 				AssetEntry assetEntry = AssetEntryLocalServiceUtil.fetchEntry(
@@ -107,26 +98,9 @@ public class AssetLinksTag extends IncludeTag {
 			}
 		}
 
-		if (_assetEntryId <= 0) {
-			_page = null;
-
-			return;
-		}
-
-		List<AssetLink> assetLinks = AssetLinkLocalServiceUtil.getDirectLinks(
-			_assetEntryId);
-
-		if (assetLinks.isEmpty()) {
-			_page = null;
-
-			return;
-		}
-
 		request.setAttribute(
 			"liferay-ui:asset-links:assetEntryId",
 			String.valueOf(_assetEntryId));
-
-		request.setAttribute("liferay-ui:asset-links:assetLinks", assetLinks);
 
 		request.setAttribute("liferay-ui:asset-links:portletURL", _portletURL);
 	}
@@ -138,7 +112,6 @@ public class AssetLinksTag extends IncludeTag {
 	private long _assetEntryId;
 	private String _className = StringPool.BLANK;
 	private long _classPK;
-	private String _page = _PAGE;
 	private PortletURL _portletURL;
 
 }

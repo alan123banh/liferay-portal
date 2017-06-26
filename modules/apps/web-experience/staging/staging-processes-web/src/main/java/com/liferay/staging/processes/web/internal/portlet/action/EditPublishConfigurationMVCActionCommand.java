@@ -21,10 +21,10 @@ import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationService;
-import com.liferay.exportimport.kernel.staging.Staging;
+import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskConstants;
-import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManager;
+import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManagerUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -174,7 +174,7 @@ public class EditPublishConfigurationMVCActionCommand
 			actionRequest, BackgroundTaskConstants.BACKGROUND_TASK_ID);
 
 		BackgroundTask backgroundTask =
-			_backgroundTaskManager.getBackgroundTask(backgroundTaskId);
+			BackgroundTaskManagerUtil.getBackgroundTask(backgroundTaskId);
 
 		Map<String, Serializable> taskContextMap =
 			backgroundTask.getTaskContextMap();
@@ -190,13 +190,13 @@ public class EditPublishConfigurationMVCActionCommand
 		if (exportImportConfiguration.getType() ==
 				ExportImportConfigurationConstants.TYPE_PUBLISH_LAYOUT_LOCAL) {
 
-			_staging.publishLayouts(userId, exportImportConfiguration);
+			StagingUtil.publishLayouts(userId, exportImportConfiguration);
 		}
 		else if (exportImportConfiguration.getType() ==
 					ExportImportConfigurationConstants.
 						TYPE_PUBLISH_LAYOUT_REMOTE) {
 
-			_staging.copyRemoteLayouts(exportImportConfiguration);
+			StagingUtil.copyRemoteLayouts(exportImportConfiguration);
 		}
 	}
 
@@ -304,9 +304,6 @@ public class EditPublishConfigurationMVCActionCommand
 	private static final Log _log = LogFactoryUtil.getLog(
 		EditPublishConfigurationMVCActionCommand.class);
 
-	@Reference
-	private BackgroundTaskManager _backgroundTaskManager;
-
 	private ExportImportConfigurationLocalService
 		_exportImportConfigurationLocalService;
 	private ExportImportConfigurationService _exportImportConfigurationService;
@@ -314,9 +311,6 @@ public class EditPublishConfigurationMVCActionCommand
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private Staging _staging;
 
 	private TrashEntryService _trashEntryService;
 

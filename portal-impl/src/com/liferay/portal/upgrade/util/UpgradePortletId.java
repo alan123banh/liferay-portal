@@ -19,8 +19,8 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.LayoutTypePortletConstants;
 import com.liferay.portal.kernel.model.PortletConstants;
+import com.liferay.portal.kernel.model.PortletInstance;
 import com.liferay.portal.kernel.model.ResourceConstants;
-import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -89,17 +89,17 @@ public class UpgradePortletId extends UpgradeProcess {
 					continue;
 				}
 
-				String rootPortletId = PortletIdCodec.decodePortletName(
+				String rootPortletId = PortletConstants.getRootPortletId(
 					portletId);
 
 				if (!rootPortletId.equals(oldRootPortletId)) {
 					continue;
 				}
 
-				long userId = PortletIdCodec.decodeUserId(portletId);
-				String instanceId = PortletIdCodec.decodeInstanceId(portletId);
+				long userId = PortletConstants.getUserId(portletId);
+				String instanceId = PortletConstants.getInstanceId(portletId);
 
-				portletIds[j] = PortletIdCodec.encode(
+				portletIds[j] = PortletConstants.assemblePortletId(
 					newRootPortletId, userId, instanceId);
 			}
 
@@ -406,12 +406,13 @@ public class UpgradePortletId extends UpgradeProcess {
 						String portletId = primKey.substring(
 							pos + PortletConstants.LAYOUT_SEPARATOR.length());
 
-						String instanceId = PortletIdCodec.decodeInstanceId(
+						String instanceId = PortletConstants.getInstanceId(
 							portletId);
-						long userId = PortletIdCodec.decodeUserId(portletId);
+						long userId = PortletConstants.getUserId(portletId);
 
-						String newPortletId = PortletIdCodec.encode(
-							newRootPortletId, userId, instanceId);
+						String newPortletId =
+							PortletConstants.assemblePortletId(
+								newRootPortletId, userId, instanceId);
 
 						primKey = PortletPermissionUtil.getPrimaryKey(
 							plid, newPortletId);
@@ -484,7 +485,10 @@ public class UpgradePortletId extends UpgradeProcess {
 			String[] uninstanceablePortletIds = getUninstanceablePortletIds();
 
 			for (String portletId : uninstanceablePortletIds) {
-				if (PortletIdCodec.hasInstanceId(portletId)) {
+				PortletInstance portletInstance =
+					PortletInstance.fromPortletInstanceKey(portletId);
+
+				if (portletInstance.hasInstanceId()) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Portlet " + portletId +
@@ -494,9 +498,11 @@ public class UpgradePortletId extends UpgradeProcess {
 					continue;
 				}
 
-				PortletIdCodec.validatePortletName(portletId);
+				PortletInstance newPortletInstance = new PortletInstance(
+					portletId);
 
-				String newPortletInstanceKey = PortletIdCodec.encode(portletId);
+				String newPortletInstanceKey =
+					newPortletInstance.getPortletInstanceKey();
 
 				updateInstanceablePortletPreferences(
 					portletId, newPortletInstanceKey);

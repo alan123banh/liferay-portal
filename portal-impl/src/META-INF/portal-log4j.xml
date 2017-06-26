@@ -312,10 +312,6 @@
 		<priority value="ERROR" />
 	</category>
 
-	<category name="com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet">
-		<priority value="WARN" />
-	</category>
-
 	<category name="com.liferay.portal.kernel.process">
 		<priority value="INFO" />
 	</category>

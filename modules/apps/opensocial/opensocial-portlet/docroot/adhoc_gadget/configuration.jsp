@@ -70,18 +70,12 @@ Map<String, OAuthService> oAuthServices = (Map<String, OAuthService>)renderReque
 
 	<c:choose>
 		<c:when test='<%= tabs2.equals("gadget") || tabs2Names.equals("gadget") %>'>
-			<div class="portlet-configuration-body-content">
-				<div class="container-fluid-1280">
-					<div class="card card-row-padded main-content-card">
-						<aui:fieldset>
-							<aui:input label="url" name="preferences--url--" type="text" value="<%= url %>" wrapperCssClass="lfr-input-text-container" />
-						</aui:fieldset>
-					</div>
-				</div>
-			</div>
+			<aui:fieldset>
+				<aui:input label="url" name="preferences--url--" type="text" value="<%= url %>" wrapperCssClass="lfr-input-text-container" />
+			</aui:fieldset>
 
 			<aui:button-row>
-				<aui:button cssClass="btn-lg" type="submit" />
+				<aui:button type="submit" />
 			</aui:button-row>
 		</c:when>
 		<c:when test='<%= tabs2.equals("manage-oauth") %>'>

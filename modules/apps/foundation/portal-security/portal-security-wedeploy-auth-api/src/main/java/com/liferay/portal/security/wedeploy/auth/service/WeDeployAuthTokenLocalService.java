@@ -81,13 +81,13 @@ public interface WeDeployAuthTokenLocalService extends BaseLocalService,
 		throws PortalException;
 
 	public WeDeployAuthToken addAccessWeDeployAuthToken(
-		java.lang.String redirectURI, java.lang.String clientId,
-		java.lang.String clientSecret, java.lang.String authorizationToken,
-		int type, ServiceContext serviceContext) throws PortalException;
+		java.lang.String clientId, java.lang.String clientSecret,
+		java.lang.String authorizationToken, int type,
+		ServiceContext serviceContext) throws PortalException;
 
 	public WeDeployAuthToken addAuthorizationWeDeployAuthToken(long userId,
-		java.lang.String redirectURI, java.lang.String clientId,
-		ServiceContext serviceContext) throws PortalException;
+		java.lang.String clientId, ServiceContext serviceContext)
+		throws PortalException;
 
 	/**
 	* Adds the we deploy auth token to the database. Also notifies the appropriate model listeners.
@@ -134,10 +134,6 @@ public interface WeDeployAuthTokenLocalService extends BaseLocalService,
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public WeDeployAuthToken fetchWeDeployAuthToken(long weDeployAuthTokenId);
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public WeDeployAuthToken getWeDeployAuthToken(java.lang.String token,
-		int type) throws PortalException;
 
 	/**
 	* Returns the we deploy auth token with the primary key.

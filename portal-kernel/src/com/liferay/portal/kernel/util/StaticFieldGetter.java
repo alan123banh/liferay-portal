@@ -39,7 +39,7 @@ public class StaticFieldGetter {
 			obj = field.get(objClass);
 		}
 		catch (Exception e) {
-			_log.error("Unable to access static field", e);
+			_log.error(e);
 		}
 
 		return obj;

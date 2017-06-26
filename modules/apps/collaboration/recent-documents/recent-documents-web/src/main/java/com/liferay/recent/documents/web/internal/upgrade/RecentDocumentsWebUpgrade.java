@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
 import com.liferay.portal.kernel.upgrade.UpgradeException;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
 import com.liferay.portal.upgrade.release.BaseUpgradeWebModuleRelease;
+import com.liferay.recent.documents.web.internal.constants.RecentDocumentsPortletKeys;
 import com.liferay.recent.documents.web.internal.upgrade.v1_0_0.UpgradePortletId;
 
 import org.osgi.service.component.annotations.Component;
@@ -40,7 +41,9 @@ public class RecentDocumentsWebUpgrade implements UpgradeStepRegistrator {
 
 				@Override
 				protected String[] getPortletIds() {
-					return new String[] {"64"};
+					return new String[] {
+						"64", RecentDocumentsPortletKeys.RECENT_DOCUMENTS
+					};
 				}
 
 			};

@@ -30,26 +30,21 @@ public class DefineObjectsTei extends TagExtraInfo {
 
 	@Override
 	public VariableInfo[] getVariableInfo(TagData data) {
-		return Concealer._variableInfo;
+		return _variableInfo;
 	}
 
-	private static class Concealer {
-
-		private static final VariableInfo[] _variableInfo = new VariableInfo[] {
-			new VariableInfo(
-				"currentURL", String.class.getName(), true,
-				VariableInfo.AT_END),
-			new VariableInfo(
-				"currentURLObj", PortletURL.class.getName(), true,
-				VariableInfo.AT_END),
-			new VariableInfo(
-				"resourceBundle", ResourceBundle.class.getName(), true,
-				VariableInfo.AT_END),
-			new VariableInfo(
-				"windowState", WindowState.class.getName(), true,
-				VariableInfo.AT_END)
-		};
-
-	}
+	private static final VariableInfo[] _variableInfo = new VariableInfo[] {
+		new VariableInfo(
+			"currentURL", String.class.getName(), true, VariableInfo.AT_END),
+		new VariableInfo(
+			"currentURLObj", PortletURL.class.getName(), true,
+			VariableInfo.AT_END),
+		new VariableInfo(
+			"resourceBundle", ResourceBundle.class.getName(), true,
+			VariableInfo.AT_END),
+		new VariableInfo(
+			"windowState", WindowState.class.getName(), true,
+			VariableInfo.AT_END)
+	};
 
 }

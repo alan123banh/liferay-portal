@@ -23,9 +23,6 @@ BlogsEntry entry = (BlogsEntry)request.getAttribute("view_entry_content.jsp-entr
 
 AssetEntry assetEntry = (AssetEntry)request.getAttribute("view_entry_content.jsp-assetEntry");
 
-RatingsEntry ratingsEntry = (RatingsEntry)request.getAttribute("view_entry_content.jsp-ratingsEntry");
-RatingsStats ratingsStats = (RatingsStats)request.getAttribute("view_entry_content.jsp-ratingsStats");
-
 String socialBookmarksDisplayPosition = blogsPortletInstanceConfiguration.socialBookmarksDisplayPosition();
 %>
 
@@ -82,18 +79,15 @@ String socialBookmarksDisplayPosition = blogsPortletInstanceConfiguration.social
 						<span class="hide-accessible"><liferay-ui:message key="published-date" /></span>
 						<%= dateFormatDate.format(entry.getDisplayDate()) %>
 
-						<c:if test="<%= blogsPortletInstanceConfiguration.enableReadingTime() %>">
+						<%
+						int readingTimeInMinutes = com.liferay.blogs.web.internal.util.BlogsUtil.getReadingTimeMinutes(entry.getContent());
+						%>
 
-							<%
-							int readingTimeInMinutes = com.liferay.blogs.web.internal.util.BlogsUtil.getReadingTimeMinutes(entry.getContent());
-							%>
-
-							<c:if test="<%= readingTimeInMinutes > 0 %>">
-								<span> - </span>
-								<span>
-									<liferay-ui:message arguments="<%= readingTimeInMinutes %>" key="x-minutes-read" translateArguments="<%= false %>" />
-								</span>
-							</c:if>
+						<c:if test="<%= readingTimeInMinutes > 0 %>">
+							<span> - </span>
+							<span>
+								<liferay-ui:message arguments="<%= readingTimeInMinutes %>" key="x-minutes-read" translateArguments="<%= false %>" />
+							</span>
 						</c:if>
 					</small>
 
@@ -293,9 +287,6 @@ String socialBookmarksDisplayPosition = blogsPortletInstanceConfiguration.social
 							<liferay-ui:ratings
 								className="<%= BlogsEntry.class.getName() %>"
 								classPK="<%= entry.getEntryId() %>"
-								inTrash="<%= entry.isInTrash() %>"
-								ratingsEntry="<%= ratingsEntry %>"
-								ratingsStats="<%= ratingsStats %>"
 							/>
 						</div>
 					</c:if>

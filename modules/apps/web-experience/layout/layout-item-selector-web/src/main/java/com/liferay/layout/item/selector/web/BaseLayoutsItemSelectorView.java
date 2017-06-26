@@ -20,7 +20,6 @@ import com.liferay.item.selector.criteria.URLItemSelectorReturnType;
 import com.liferay.item.selector.criteria.UUIDItemSelectorReturnType;
 import com.liferay.layout.item.selector.criterion.LayoutItemSelectorCriterion;
 import com.liferay.layout.item.selector.view.LayoutItemSelectorView;
-import com.liferay.layout.item.selector.web.internal.constants.LayoutsItemSelectorWebKeys;
 import com.liferay.layout.item.selector.web.internal.display.context.LayoutItemSelectorViewDisplayContext;
 import com.liferay.portal.kernel.util.ListUtil;
 
@@ -82,8 +81,7 @@ public abstract class BaseLayoutsItemSelectorView
 					itemSelectedEventName, isPrivateLayout());
 
 		request.setAttribute(
-			LayoutsItemSelectorWebKeys.
-				LAYOUT_ITEM_SELECTOR_VIEW_DISPLAY_CONTEXT,
+			LAYOUT_ITEM_SELECTOR_VIEW_DISPLAY_CONTEXT,
 			layoutItemSelectorViewDisplayContext);
 
 		ServletContext servletContext = getServletContext();

@@ -19,7 +19,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Tuple;
-import com.liferay.source.formatter.checks.util.SourceUtil;
+import com.liferay.source.formatter.checks.util.JavaSourceUtil;
 import com.liferay.source.formatter.util.SourceFormatterUtil;
 import com.liferay.source.formatter.util.ThreadSafeClassLibrary;
 
@@ -50,6 +50,8 @@ import java.util.List;
  * @author Hugo Huijser
  */
 public class MissingOverrideCheck extends AbstractCheck {
+
+	public static final String MSG_MISSING_OVERRIDE = "override.missing";
 
 	@Override
 	public int[] getDefaultTokens() {
@@ -91,7 +93,7 @@ public class MissingOverrideCheck extends AbstractCheck {
 				_isOverrideMethod(
 					javaClass, javaMethod, ancestorJavaClassTuples)) {
 
-				log(javaMethod.getLineNumber(), _MSG_MISSING_OVERRIDE);
+				log(javaMethod.getLineNumber(), MSG_MISSING_OVERRIDE);
 			}
 		}
 	}
@@ -186,7 +188,7 @@ public class MissingOverrideCheck extends AbstractCheck {
 		JavaDocBuilder javaDocBuilder = new JavaDocBuilder(
 			new DefaultDocletTagFactory(), new ThreadSafeClassLibrary());
 
-		String absolutePath = SourceUtil.getAbsolutePath(fileName);
+		String absolutePath = JavaSourceUtil.getAbsolutePath(fileName);
 
 		while (true) {
 			int x = absolutePath.lastIndexOf("/");
@@ -213,7 +215,7 @@ public class MissingOverrideCheck extends AbstractCheck {
 
 			try {
 				javaDocBuilder.addSource(
-					new File(SourceUtil.getAbsolutePath(curFileName)));
+					new File(JavaSourceUtil.getAbsolutePath(curFileName)));
 			}
 			catch (Exception e) {
 			}
@@ -403,8 +405,6 @@ public class MissingOverrideCheck extends AbstractCheck {
 	};
 
 	private static final double _LOWEST_SUPPORTED_JAVA_VERSION = 1.7;
-
-	private static final String _MSG_MISSING_OVERRIDE = "override.missing";
 
 	private JavaDocBuilder _javaDocBuilder;
 

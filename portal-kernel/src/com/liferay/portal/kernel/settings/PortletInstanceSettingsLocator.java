@@ -14,11 +14,12 @@
 
 package com.liferay.portal.kernel.settings;
 
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.portlet.PortletIdCodec;
-import com.liferay.portal.kernel.service.PortletPreferencesLocalServiceUtil;
+import com.liferay.portal.kernel.model.PortletConstants;
+import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
-import com.liferay.portal.kernel.util.PrefsPropsUtil;
 
 /**
  * @author Ivan Zaera
@@ -32,7 +33,7 @@ public class PortletInstanceSettingsLocator implements SettingsLocator {
 		_layout = layout;
 		_portletInstanceKey = portletInstanceKey;
 
-		_configurationPid = PortletIdCodec.decodePortletName(
+		_configurationPid = PortletConstants.getRootPortletId(
 			portletInstanceKey);
 	}
 
@@ -44,35 +45,32 @@ public class PortletInstanceSettingsLocator implements SettingsLocator {
 		_configurationPid = configurationPid;
 	}
 
-	public long getOwnerId() {
-		if (isEmbeddedPortlet()) {
-			return _layout.getGroupId();
-		}
-
-		return PortletKeys.PREFS_OWNER_ID_DEFAULT;
-	}
-
-	public long getPlid() {
-		if (isEmbeddedPortlet()) {
-			return PortletKeys.PREFS_PLID_SHARED;
-		}
-
-		return _layout.getPlid();
-	}
-
 	@Override
 	public Settings getSettings() throws SettingsException {
+		long companyId = getCompanyId(_layout.getGroupId());
+
 		Settings configurationBeanSettings =
 			_settingsLocatorHelper.getConfigurationBeanSettings(
 				_configurationPid);
 
-		Settings portalPreferencesSettings = new PortletPreferencesSettings(
-			PrefsPropsUtil.getPreferences(_layout.getCompanyId()),
-			configurationBeanSettings);
+		Settings portalPreferencesSettings =
+			_settingsLocatorHelper.getPortalPreferencesSettings(
+				companyId, configurationBeanSettings);
 
-		return PortletPreferencesLocalServiceUtil.getPortletInstanceSettings(
-			_layout.getCompanyId(), _layout.getGroupId(), _portletInstanceKey,
-			this, portalPreferencesSettings);
+		Settings companyPortletPreferencesSettings =
+			_settingsLocatorHelper.getCompanyPortletPreferencesSettings(
+				companyId, _portletInstanceKey, portalPreferencesSettings);
+
+		Settings groupPortletPreferencesSettings =
+			_settingsLocatorHelper.getGroupPortletPreferencesSettings(
+				_layout.getGroupId(), _portletInstanceKey,
+				companyPortletPreferencesSettings);
+
+		return
+			_settingsLocatorHelper.getPortletInstancePortletPreferencesSettings(
+				_layout.getCompanyId(), getOwnerId(),
+				PortletKeys.PREFS_OWNER_TYPE_LAYOUT, getPlid(),
+				_portletInstanceKey, groupPortletPreferencesSettings);
 	}
 
 	@Override
@@ -80,12 +78,31 @@ public class PortletInstanceSettingsLocator implements SettingsLocator {
 		return _portletInstanceKey;
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	protected long getCompanyId(long groupId) {
-		return _layout.getCompanyId();
+	protected long getCompanyId(long groupId) throws SettingsException {
+		try {
+			Group group = GroupLocalServiceUtil.getGroup(groupId);
+
+			return group.getCompanyId();
+		}
+		catch (PortalException pe) {
+			throw new SettingsException(pe);
+		}
+	}
+
+	protected long getOwnerId() {
+		if (isEmbeddedPortlet()) {
+			return _layout.getGroupId();
+		}
+
+		return PortletKeys.PREFS_OWNER_ID_DEFAULT;
+	}
+
+	protected long getPlid() {
+		if (isEmbeddedPortlet()) {
+			return PortletKeys.PREFS_PLID_SHARED;
+		}
+
+		return _layout.getPlid();
 	}
 
 	protected boolean isEmbeddedPortlet() {

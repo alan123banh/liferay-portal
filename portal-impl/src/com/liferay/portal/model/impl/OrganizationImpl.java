@@ -101,7 +101,7 @@ public class OrganizationImpl extends OrganizationBaseImpl {
 			}
 		}
 		catch (Exception e) {
-			_log.error("Unable to get address", e);
+			_log.error(e);
 		}
 
 		if (address == null) {
@@ -190,7 +190,7 @@ public class OrganizationImpl extends OrganizationBaseImpl {
 					getCompanyId(), getOrganizationId());
 			}
 			catch (Exception e) {
-				_log.error("Unable to get organization group", e);
+				_log.error(e);
 			}
 		}
 

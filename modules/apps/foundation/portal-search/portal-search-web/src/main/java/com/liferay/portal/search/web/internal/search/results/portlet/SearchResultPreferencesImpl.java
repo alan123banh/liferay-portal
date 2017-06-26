@@ -44,11 +44,6 @@ public class SearchResultPreferencesImpl implements SearchResultPreferences {
 	}
 
 	@Override
-	public boolean isHighlightEnabled() {
-		return _searchResultsPortletPreferences.isHighlightEnabled();
-	}
-
-	@Override
 	public boolean isViewInContext() {
 		return _searchResultsPortletPreferences.isViewInContext();
 	}

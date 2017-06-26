@@ -122,8 +122,9 @@ public class AutoBatchPreparedStatementUtilTest {
 	}
 
 	@AdviseWith(
-		adviceClasses =
-			{PortalExecutorManagerUtilAdvice.class, PropsUtilAdvice.class}
+		adviceClasses = {
+			PortalExecutorManagerUtilAdvice.class, PropsUtilAdvice.class
+		}
 	)
 	@Test
 	public void testConcurrentExecutionException() {
@@ -134,8 +135,9 @@ public class AutoBatchPreparedStatementUtilTest {
 	}
 
 	@AdviseWith(
-		adviceClasses =
-			{PortalExecutorManagerUtilAdvice.class, PropsUtilAdvice.class}
+		adviceClasses = {
+			PortalExecutorManagerUtilAdvice.class, PropsUtilAdvice.class
+		}
 	)
 	@Test
 	public void testConcurrentWaitingForFutures() throws SQLException {
@@ -162,8 +164,9 @@ public class AutoBatchPreparedStatementUtilTest {
 	}
 
 	@AdviseWith(
-		adviceClasses =
-			{PortalExecutorManagerUtilAdvice.class, PropsUtilAdvice.class}
+		adviceClasses = {
+			PortalExecutorManagerUtilAdvice.class, PropsUtilAdvice.class
+		}
 	)
 	@Test
 	public void testNotSupportBatchUpdates() throws Exception {
@@ -174,8 +177,9 @@ public class AutoBatchPreparedStatementUtilTest {
 	}
 
 	@AdviseWith(
-		adviceClasses =
-			{PortalExecutorManagerUtilAdvice.class, PropsUtilAdvice.class}
+		adviceClasses = {
+			PortalExecutorManagerUtilAdvice.class, PropsUtilAdvice.class
+		}
 	)
 	@Test
 	public void testSupportBatchUpdates() throws Exception {

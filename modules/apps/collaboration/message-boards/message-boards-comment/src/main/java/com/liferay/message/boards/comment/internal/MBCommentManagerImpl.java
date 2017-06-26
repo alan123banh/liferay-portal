@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.comment.DuplicateCommentException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Function;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringPool;
@@ -48,7 +47,6 @@ import com.liferay.ratings.kernel.service.RatingsStatsLocalService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -346,37 +344,22 @@ public class MBCommentManagerImpl implements CommentManager {
 
 		List<MBMessage> messages = treeWalker.getMessages();
 
-		List<Long> classPKs = new ArrayList<>();
+		List<RatingsEntry> ratingsEntries = Collections.emptyList();
+		List<RatingsStats> ratingsStats = Collections.emptyList();
 
 		if (messages.size() > 1) {
+			List<Long> classPKs = new ArrayList<>();
+
 			for (MBMessage curMessage : messages) {
 				if (!curMessage.isRoot()) {
 					classPKs.add(curMessage.getMessageId());
 				}
 			}
-		}
 
-		if (classPKs.isEmpty()) {
-			return new MBDiscussionCommentImpl(
-				treeWalker.getRoot(), treeWalker,
-				Collections.<Long, RatingsEntry>emptyMap(),
-				Collections.<Long, RatingsStats>emptyMap());
-		}
-
-		long[] classPKsArray = ArrayUtil.toLongArray(classPKs);
-
-		Map<Long, RatingsEntry> ratingsEntries = null;
-		Map<Long, RatingsStats> ratingsStats =
-			_ratingsStatsLocalService.getStats(
-				CommentConstants.getDiscussionClassName(), classPKsArray);
-
-		if (ratingsStats.isEmpty()) {
-			ratingsEntries = Collections.emptyMap();
-		}
-		else {
 			ratingsEntries = _ratingsEntryLocalService.getEntries(
-				userId, CommentConstants.getDiscussionClassName(),
-				classPKsArray);
+				userId, CommentConstants.getDiscussionClassName(), classPKs);
+			ratingsStats = _ratingsStatsLocalService.getStats(
+				CommentConstants.getDiscussionClassName(), classPKs);
 		}
 
 		return new MBDiscussionCommentImpl(

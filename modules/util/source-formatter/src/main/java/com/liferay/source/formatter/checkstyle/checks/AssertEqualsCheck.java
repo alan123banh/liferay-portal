@@ -27,6 +27,9 @@ import java.util.List;
  */
 public class AssertEqualsCheck extends AbstractCheck {
 
+	public static final String MSG_ASSERT_ADD_INFORMATION =
+		"assert.add.information";
+
 	@Override
 	public int[] getDefaultTokens() {
 		return new int[] {TokenTypes.METHOD_DEF};
@@ -60,7 +63,7 @@ public class AssertEqualsCheck extends AbstractCheck {
 
 				if ((typeAST != null) && _isHits(typeAST)) {
 					log(
-						methodCallAST.getLineNo(), _MSG_ASSERT_ADD_INFORMATION,
+						methodCallAST.getLineNo(), MSG_ASSERT_ADD_INFORMATION,
 						variableName + ".toString()");
 				}
 
@@ -75,7 +78,7 @@ public class AssertEqualsCheck extends AbstractCheck {
 
 				if ((typeAST != null) && DetailASTUtil.isArray(typeAST)) {
 					log(
-						methodCallAST.getLineNo(), _MSG_ASSERT_ADD_INFORMATION,
+						methodCallAST.getLineNo(), MSG_ASSERT_ADD_INFORMATION,
 						"Arrays.toString(" + variableName + ")");
 				}
 
@@ -90,7 +93,7 @@ public class AssertEqualsCheck extends AbstractCheck {
 
 				if ((typeAST != null) && DetailASTUtil.isCollection(typeAST)) {
 					log(
-						methodCallAST.getLineNo(), _MSG_ASSERT_ADD_INFORMATION,
+						methodCallAST.getLineNo(), MSG_ASSERT_ADD_INFORMATION,
 						variableName + ".toString()");
 				}
 			}
@@ -145,8 +148,5 @@ public class AssertEqualsCheck extends AbstractCheck {
 
 		return false;
 	}
-
-	private static final String _MSG_ASSERT_ADD_INFORMATION =
-		"assert.add.information";
 
 }

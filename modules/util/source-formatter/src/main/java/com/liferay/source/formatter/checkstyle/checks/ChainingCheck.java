@@ -32,17 +32,25 @@ import java.util.List;
  */
 public class ChainingCheck extends AbstractCheck {
 
+	public static final String MSG_AVOID_CHAINING = "chaining.avoid";
+
+	public static final String MSG_AVOID_CHAINING_MULTIPLE =
+		"chaining.avoid.multiple";
+
+	public static final String MSG_AVOID_TOO_MANY_CONCAT =
+		"concat.avoid.too.many";
+
 	@Override
 	public int[] getDefaultTokens() {
 		return new int[] {TokenTypes.CTOR_DEF, TokenTypes.METHOD_DEF};
 	}
 
-	public void setAllowedClassNames(String allowedClassNames) {
-		_allowedClassNames = StringUtil.split(allowedClassNames);
-	}
-
 	public void setAllowedMethodNames(String allowedMethodNames) {
 		_allowedMethodNames = StringUtil.split(allowedMethodNames);
+	}
+
+	public void setAllowedVariableNames(String allowedVariableNames) {
+		_allowedVariableNames = StringUtil.split(allowedVariableNames);
 	}
 
 	@Override
@@ -59,6 +67,7 @@ public class ChainingCheck extends AbstractCheck {
 		List<DetailAST> methodCallASTList = DetailASTUtil.getAllChildTokens(
 			detailAST, true, TokenTypes.METHOD_CALL);
 
+		outerLoop:
 		for (DetailAST methodCallAST : methodCallASTList) {
 			DetailAST dotAST = methodCallAST.findFirstToken(TokenTypes.DOT);
 
@@ -81,14 +90,6 @@ public class ChainingCheck extends AbstractCheck {
 				continue;
 			}
 
-			if (_isAllowedChainingMethodCall(
-					detailAST, methodCallAST, chainedMethodNames)) {
-
-				_checkStyling(methodCallAST);
-
-				continue;
-			}
-
 			_checkMethodName(
 				chainedMethodNames, "getClass", methodCallAST, detailAST);
 
@@ -100,7 +101,7 @@ public class ChainingCheck extends AbstractCheck {
 				chainedMethodNames, "concat");
 
 			if (concatsCount > 2) {
-				log(methodCallAST.getLineNo(), _MSG_AVOID_TOO_MANY_CONCAT);
+				log(methodCallAST.getLineNo(), MSG_AVOID_TOO_MANY_CONCAT);
 
 				continue;
 			}
@@ -109,8 +110,26 @@ public class ChainingCheck extends AbstractCheck {
 				continue;
 			}
 
+			for (String allowedMethodName : _allowedMethodNames) {
+				if (chainedMethodNames.contains(allowedMethodName)) {
+					continue outerLoop;
+				}
+			}
+
+			if (dotAST != null) {
+				DetailAST nameAST = dotAST.findFirstToken(TokenTypes.IDENT);
+
+				String classOrVariableName = nameAST.getText();
+
+				for (String allowedVariableName : _allowedVariableNames) {
+					if (classOrVariableName.matches(allowedVariableName)) {
+						continue outerLoop;
+					}
+				}
+			}
+
 			log(
-				methodCallAST.getLineNo(), _MSG_AVOID_CHAINING_MULTIPLE,
+				methodCallAST.getLineNo(), MSG_AVOID_CHAINING_MULTIPLE,
 				DetailASTUtil.getMethodName(methodCallAST));
 		}
 	}
@@ -124,26 +143,8 @@ public class ChainingCheck extends AbstractCheck {
 		if (firstMethodName.equals(methodName) &&
 			!_isInsideConstructorThisCall(methodCallAST, detailAST)) {
 
-			log(methodCallAST.getLineNo(), _MSG_AVOID_CHAINING, methodName);
+			log(methodCallAST.getLineNo(), MSG_AVOID_CHAINING, methodName);
 		}
-	}
-
-	private void _checkStyling(DetailAST methodCallAST) {
-		FileContents fileContents = getFileContents();
-
-		for (int i = DetailASTUtil.getStartLine(methodCallAST) + 1;
-			 i <= DetailASTUtil.getEndLine(methodCallAST); i++) {
-
-			String line = StringUtil.trim(fileContents.getLine(i - 1));
-
-			if (line.startsWith(").")) {
-				return;
-			}
-		}
-
-		log(
-			methodCallAST.getLineNo(), _MSG_INCORRECT_STYLING,
-			DetailASTUtil.getMethodName(methodCallAST));
 	}
 
 	private List<String> _getChainedMethodNames(DetailAST methodCallAST) {
@@ -166,97 +167,6 @@ public class ChainingCheck extends AbstractCheck {
 
 			chainedMethodNames.add(DetailASTUtil.getMethodName(methodCallAST));
 		}
-	}
-
-	private DetailAST _getClassAST(DetailAST detailAST) {
-		DetailAST parentAST = detailAST.getParent();
-
-		while (true) {
-			if (parentAST.getParent() == null) {
-				break;
-			}
-
-			return parentAST.getParent();
-		}
-
-		return null;
-	}
-
-	private String _getVariableType(DetailAST detailAST, String variableName) {
-		List<DetailAST> definitionASTList = new ArrayList<>();
-
-		if (variableName.matches("_[a-z].*")) {
-			definitionASTList = DetailASTUtil.getAllChildTokens(
-				_getClassAST(detailAST), true, TokenTypes.PARAMETER_DEF,
-				TokenTypes.VARIABLE_DEF);
-		}
-		else if (variableName.matches("[a-z].*")) {
-			definitionASTList = DetailASTUtil.getAllChildTokens(
-				detailAST, true, TokenTypes.PARAMETER_DEF,
-				TokenTypes.VARIABLE_DEF);
-		}
-
-		for (DetailAST definitionAST : definitionASTList) {
-			DetailAST nameAST = definitionAST.findFirstToken(TokenTypes.IDENT);
-
-			if (nameAST == null) {
-				continue;
-			}
-
-			String name = nameAST.getText();
-
-			if (name.equals(variableName)) {
-				DetailAST typeAST = definitionAST.findFirstToken(
-					TokenTypes.TYPE);
-
-				nameAST = typeAST.findFirstToken(TokenTypes.IDENT);
-
-				if (nameAST == null) {
-					return null;
-				}
-
-				return nameAST.getText();
-			}
-		}
-
-		return null;
-	}
-
-	private boolean _isAllowedChainingMethodCall(
-		DetailAST detailAST, DetailAST methodCallAST,
-		List<String> chainedMethodNames) {
-
-		for (String allowedMethodName : _allowedMethodNames) {
-			if (chainedMethodNames.contains(allowedMethodName)) {
-				return true;
-			}
-		}
-
-		DetailAST dotAST = methodCallAST.findFirstToken(TokenTypes.DOT);
-
-		if (dotAST == null) {
-			return false;
-		}
-
-		DetailAST nameAST = dotAST.findFirstToken(TokenTypes.IDENT);
-
-		String classOrVariableName = nameAST.getText();
-
-		if (classOrVariableName.matches(".*[Bb]uilder")) {
-			return true;
-		}
-
-		String variableType = _getVariableType(detailAST, classOrVariableName);
-
-		if (variableType != null) {
-			for (String allowedClassName : _allowedClassNames) {
-				if (variableType.matches(allowedClassName)) {
-					return true;
-				}
-			}
-		}
-
-		return false;
 	}
 
 	private boolean _isInsideConstructorThisCall(
@@ -283,17 +193,7 @@ public class ChainingCheck extends AbstractCheck {
 		return false;
 	}
 
-	private static final String _MSG_AVOID_CHAINING = "chaining.avoid";
-
-	private static final String _MSG_AVOID_CHAINING_MULTIPLE =
-		"chaining.avoid.multiple";
-
-	private static final String _MSG_AVOID_TOO_MANY_CONCAT =
-		"concat.avoid.too.many";
-
-	private static final String _MSG_INCORRECT_STYLING = "styling.incorrect";
-
-	private String[] _allowedClassNames = new String[0];
 	private String[] _allowedMethodNames = new String[0];
+	private String[] _allowedVariableNames = new String[0];
 
 }

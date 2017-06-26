@@ -104,7 +104,6 @@ public class WeDeployAuthorizeUserMVCActionCommand
 			ActionRequest actionRequest, ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		String redirectURI = ParamUtil.getString(actionRequest, "redirectURI");
 		String clientId = ParamUtil.getString(actionRequest, "clientId");
 
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
@@ -112,8 +111,7 @@ public class WeDeployAuthorizeUserMVCActionCommand
 
 		WeDeployAuthToken weDeployAuthRequestToken =
 			_weDeployAuthTokenLocalService.addAuthorizationWeDeployAuthToken(
-				themeDisplay.getUserId(), redirectURI, clientId,
-				serviceContext);
+				themeDisplay.getUserId(), clientId, serviceContext);
 
 		return weDeployAuthRequestToken.getToken();
 	}

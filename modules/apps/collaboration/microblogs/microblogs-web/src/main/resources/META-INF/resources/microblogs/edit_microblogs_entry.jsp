@@ -154,7 +154,7 @@ if (comment) {
 			<span class="thumbnail">
 				<liferay-ui:user-portrait
 					cssClass="user-icon-xs"
-					user="<%= user %>"
+					userId="<%= user.getUserId() %>"
 				/>
 			</span>
 		</c:if>
@@ -255,8 +255,7 @@ if (comment) {
 
 	var REGEX_USER_NAME = /@(.*[^\s]+)$/;
 
-	var TPL_SEARCH_RESULTS =
-		'<div class="microblogs-autocomplete">' +
+	var TPL_SEARCH_RESULTS = '<div class="microblogs-autocomplete">' +
 			'<div class="thumbnail">' +
 				'<img alt="{fullName}" src="{portraitURL}" />' +
 			'</div>' +

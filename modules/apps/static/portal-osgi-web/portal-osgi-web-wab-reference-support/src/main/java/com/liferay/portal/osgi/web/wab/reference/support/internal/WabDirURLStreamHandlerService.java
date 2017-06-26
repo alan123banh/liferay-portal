@@ -14,9 +14,6 @@
 
 package com.liferay.portal.osgi.web.wab.reference.support.internal;
 
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Jar;
-
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.FileUtil;
@@ -35,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -67,36 +65,19 @@ public class WabDirURLStreamHandlerService
 	@Override
 	public URLConnection openConnection(URL url) {
 		try {
-			Map<String, String[]> parameters = new HashMap<>();
+			String contextName = _http.getParameter(
+				url.toExternalForm(), "Web-ContextPath");
 
 			URI uri = new URI(url.getPath());
 
 			File warDir = new File(uri);
 
-			String bundleSymbolicName = _http.getParameter(
-				url.toExternalForm(), Constants.BUNDLE_SYMBOLICNAME);
-
-			if (bundleSymbolicName.equals(StringPool.BLANK)) {
-				bundleSymbolicName = _getNameFromDirectory(warDir);
-			}
-
-			if (bundleSymbolicName.equals(StringPool.BLANK)) {
-				bundleSymbolicName = _getNameFromXMLFile(warDir);
-			}
-
-			parameters.put(
-				Constants.BUNDLE_SYMBOLICNAME,
-				new String[] {bundleSymbolicName});
-
-			String contextName = _http.getParameter(
-				url.toExternalForm(), "Web-ContextPath");
-
 			if (contextName.equals(StringPool.BLANK)) {
-				contextName = _getNameFromDirectory(warDir);
+				contextName = _getContextNameFromDirectory(warDir);
 			}
 
 			if (contextName.equals(StringPool.BLANK)) {
-				contextName = _getNameFromXMLFile(warDir);
+				contextName = _getContextNameFromXMLFile(warDir);
 			}
 
 			if (contextName.equals(StringPool.BLANK)) {
@@ -104,18 +85,11 @@ public class WabDirURLStreamHandlerService
 					"Unable to determine context name from " + url);
 			}
 
-			if (!contextName.startsWith(StringPool.SLASH)) {
-				contextName = StringPool.SLASH.concat(contextName);
-			}
+			Map<String, String[]> parameters = new HashMap<>();
 
 			parameters.put("Web-ContextPath", new String[] {contextName});
 
-			File generatedJarFile = _wabGenerator.generate(
-				_classLoader, warDir, parameters);
-
-			try (Jar generatedJar = new Jar(generatedJarFile)) {
-				generatedJar.expand(warDir);
-			}
+			_wabGenerator.generate(_classLoader, warDir, parameters);
 
 			uri = warDir.toURI();
 
@@ -124,7 +98,7 @@ public class WabDirURLStreamHandlerService
 
 			return wabDirHandler.openConnection(url);
 		}
-		catch (Exception e) {
+		catch (IOException | URISyntaxException e) {
 			_log.error("Unable to open connection", e);
 		}
 
@@ -145,17 +119,17 @@ public class WabDirURLStreamHandlerService
 		_classLoader = clazz.getClassLoader();
 	}
 
-	private String _getNameFromDirectory(File warDir) {
+	private String _getContextNameFromDirectory(File warDir) {
 		Matcher matcher = _pattern.matcher(warDir.getAbsolutePath());
 
 		if (matcher.matches()) {
 			return matcher.group(1);
 		}
 
-		return StringPool.BLANK;
+		return null;
 	}
 
-	private String _getNameFromXMLFile(File warDir) throws IOException {
+	private String _getContextNameFromXMLFile(File warDir) throws IOException {
 		File lookAndFeelXmlFile = new File(
 			warDir, "WEB-INF/liferay-look-and-feel.xml");
 
@@ -179,7 +153,7 @@ public class WabDirURLStreamHandlerService
 			return themeId + "-theme";
 		}
 
-		return StringPool.BLANK;
+		return null;
 	}
 
 	private Document _readDocument(File file) throws IOException {
@@ -197,7 +171,7 @@ public class WabDirURLStreamHandlerService
 		WabDirURLStreamHandlerService.class);
 
 	private static final Pattern _pattern = Pattern.compile(
-		".*\\/(.*-(T|t)heme)\\/?.*");
+		".*\\/(.*-(T|t)heme)\\/.*");
 
 	private ClassLoader _classLoader;
 

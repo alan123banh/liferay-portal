@@ -19,8 +19,6 @@ AUI.add(
 
 		var STR_DOT = '.';
 
-		var STR_DRAG_START = 'dragstart';
-
 		var STR_ERROR_MESSAGE = 'errorMessage';
 
 		var STR_IMAGE_DATA = 'imageData';
@@ -143,8 +141,6 @@ AUI.add(
 						instance._eventHandles = [
 							instance._fileEntryImageNode.on('load', instance._onImageLoaded, instance),
 							instance.rootNode.delegate(STR_CLICK, instance._onBrowseClick, '.browse-image', instance),
-							instance.rootNode.delegate(STR_DRAG_START, instance._onContentDragStart, '.drag-drop-label', instance),
-							instance.rootNode.delegate(STR_DRAG_START, instance._onContentDragStart, '.file-validation-info', instance),
 							instance.one('#removeImage').on(STR_CLICK, instance._onDeleteClick, instance),
 							instance.one('#cancelUpload').on(STR_CLICK, instance._cancelUpload, instance)
 						];
@@ -239,10 +235,6 @@ AUI.add(
 						itemSelectorDialog.open();
 
 						instance._cancelTimer();
-					},
-
-					_onContentDragStart: function(event) {
-						event.preventDefault();
 					},
 
 					_onDeleteClick: function(event) {

@@ -83,7 +83,7 @@ describe(
 		describe(
 			'.getValue()',
 			function() {
-				xit(
+				it(
 					'should return an array of values based on options values and keys',
 					function(done) {
 						optionsField = createOptionsField(
@@ -135,7 +135,7 @@ describe(
 		describe(
 			'.moveOption(oldIndex, newIndex)',
 			function() {
-				xit(
+				it(
 					'should make the value refect the moved option',
 					function(done) {
 						optionsField = createOptionsField(
@@ -184,7 +184,7 @@ describe(
 					}
 				);
 
-				xit(
+				it(
 					'should render in correct order after moving an option',
 					function(done) {
 						optionsField = createOptionsField(
@@ -242,17 +242,6 @@ describe(
 			'LPS-70570',
 			function() {
 				it(
-					'should create the field',
-					function(done) {
-						optionsField = createOptionsField();
-
-						assert.ok(optionsField);
-
-						done();
-					}
-				);
-
-				xit(
 					'should not allow the same name for different options',
 					function(done) {
 						optionsField = createOptionsField(
@@ -275,7 +264,7 @@ describe(
 					}
 				);
 
-				xit(
+				it(
 					'should allow deleting options',
 					function(done) {
 						optionsField = createOptionsField(
@@ -320,7 +309,7 @@ describe(
 					}
 				);
 
-				xit(
+				it(
 					'should allow deleting options on the UI',
 					function(done) {
 						optionsField = createOptionsField(
@@ -345,7 +334,7 @@ describe(
 					}
 				);
 
-				xit(
+				it(
 					'should allow generation of keys after changing the value',
 					function(done) {
 						optionsField = createOptionsField();
@@ -366,7 +355,7 @@ describe(
 					}
 				);
 
-				xit(
+				it(
 					'should lock the generation of keys after changing the value with items with labels different than the value',
 					function(done) {
 						optionsField = createOptionsField();

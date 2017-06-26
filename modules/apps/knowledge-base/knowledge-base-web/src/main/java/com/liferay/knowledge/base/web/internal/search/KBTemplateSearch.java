@@ -82,8 +82,7 @@ public class KBTemplateSearch extends SearchContainer<KBTemplate> {
 			setOrderByComparator(orderByComparator);
 		}
 		catch (Exception e) {
-			_log.error(
-				"Unable to initialize knowledge base template search", e);
+			_log.error(e);
 		}
 	}
 

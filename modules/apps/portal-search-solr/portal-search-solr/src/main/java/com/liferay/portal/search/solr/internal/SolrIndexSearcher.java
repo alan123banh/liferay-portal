@@ -469,19 +469,11 @@ public class SolrIndexSearcher extends BaseIndexSearcher {
 				filterQueries.toArray(new String[filterQueries.size()]));
 		}
 
-		String solrQueryString = solrQuery.toString();
-
-		searchContext.setAttribute("queryString", solrQueryString);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("Search query " + solrQueryString);
-		}
-
 		QueryResponse queryResponse = executeSearchRequest(solrQuery);
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
-				"The search engine processed " + solrQueryString + " in " +
+				"The search engine processed " + solrQuery.getQuery() + " in " +
 					queryResponse.getElapsedTime() + " ms");
 		}
 

@@ -102,7 +102,6 @@ AUI.add(
 					{
 						multiple: instance.get('multiple'),
 						options: options,
-						strings: instance.get('strings'),
 						value: instance.getValueSelected()
 					}
 				);

@@ -16,7 +16,6 @@ package com.liferay.dynamic.data.lists.form.web.internal.converter.model.action;
 
 import com.liferay.dynamic.data.lists.form.web.internal.converter.model.DDLFormRuleAction;
 import com.liferay.dynamic.data.lists.form.web.internal.converter.serializer.DDLFormRuleActionSerializer;
-import com.liferay.dynamic.data.lists.form.web.internal.converter.serializer.DDLFormRuleSerializerContext;
 import com.liferay.dynamic.data.lists.form.web.internal.converter.serializer.DefaultDDLFormRuleActionSerializer;
 import com.liferay.portal.kernel.util.HashUtil;
 
@@ -74,14 +73,11 @@ public class DefaultDDLFormRuleAction implements DDLFormRuleAction {
 	}
 
 	@Override
-	public String serialize(
-		DDLFormRuleSerializerContext ddlFormRuleSerializerContext) {
-
+	public String serialize() {
 		DDLFormRuleActionSerializer ddlFormRuleActionSerializer =
 			new DefaultDDLFormRuleActionSerializer(this);
 
-		return ddlFormRuleActionSerializer.serialize(
-			ddlFormRuleSerializerContext);
+		return ddlFormRuleActionSerializer.serialize();
 	}
 
 	public void setAction(String action) {

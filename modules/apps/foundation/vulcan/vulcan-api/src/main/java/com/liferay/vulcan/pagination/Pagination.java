@@ -16,6 +16,8 @@ package com.liferay.vulcan.pagination;
 
 import aQute.bnd.annotation.ProviderType;
 
+import java.util.Collection;
+
 /**
  * @author Alejandro Hernández
  * @author Carlos Sierra Andrés
@@ -23,6 +25,8 @@ import aQute.bnd.annotation.ProviderType;
  */
 @ProviderType
 public interface Pagination {
+
+	public <T> Page<T> createPage(Collection<T> items, int totalCount);
 
 	public int getEndPosition();
 

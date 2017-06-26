@@ -695,6 +695,11 @@ public class LocalGitSyncUtil {
 			String upstreamBranchName =
 				gitWorkingDirectory.getUpstreamBranchName();
 
+			if (!pullRequest) {
+				upstreamBranchSHA = gitWorkingDirectory.getBranchSHA(
+					upstreamBranchName, upstreamRemoteConfig);
+			}
+
 			List<RemoteConfig> localGitRemoteConfigs = null;
 
 			try {

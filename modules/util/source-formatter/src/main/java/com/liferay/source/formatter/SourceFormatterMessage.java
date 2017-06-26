@@ -64,12 +64,8 @@ public class SourceFormatterMessage
 		return _lineCount;
 	}
 
-	public String getMarkdownFilePath() {
-		if (_markdownFileName == null) {
-			return null;
-		}
-
-		return _DOCUMENTATION_URL + _markdownFileName;
+	public String getMarkdownFileName() {
+		return _markdownFileName;
 	}
 
 	public String getMessage() {
@@ -78,16 +74,9 @@ public class SourceFormatterMessage
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(8);
+		StringBundler sb = new StringBundler(5);
 
 		sb.append(_message);
-
-		if (_markdownFileName != null) {
-			sb.append(", see ");
-			sb.append(_DOCUMENTATION_URL);
-			sb.append(_markdownFileName);
-		}
-
 		sb.append(": ");
 		sb.append(_fileName);
 
@@ -98,10 +87,6 @@ public class SourceFormatterMessage
 
 		return sb.toString();
 	}
-
-	private static final String _DOCUMENTATION_URL =
-		"https://github.com/liferay/liferay-portal/blob/master/modules/util" +
-			"/source-formatter/documentation/";
 
 	private final String _fileName;
 	private final int _lineCount;

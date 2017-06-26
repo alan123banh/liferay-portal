@@ -17,7 +17,6 @@ package com.liferay.document.library.item.selector.web.internal.resolver;
 import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.item.selector.ItemSelectorReturnTypeResolver;
 import com.liferay.item.selector.criteria.URLItemSelectorReturnType;
-import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.StringPool;
@@ -49,15 +48,9 @@ public class FileEntryURLItemSelectorReturnTypeResolver
 	public String getValue(FileEntry fileEntry, ThemeDisplay themeDisplay)
 		throws Exception {
 
-		if (fileEntry.getGroupId() == fileEntry.getRepositoryId()) {
-			return DLUtil.getPreviewURL(
-				fileEntry, fileEntry.getFileVersion(), themeDisplay,
-				StringPool.BLANK, false, false);
-		}
-		else {
-			return PortletFileRepositoryUtil.getPortletFileEntryURL(
-				themeDisplay, fileEntry, StringPool.BLANK, false);
-		}
+		return DLUtil.getPreviewURL(
+			fileEntry, fileEntry.getFileVersion(), themeDisplay,
+			StringPool.BLANK, false, false);
 	}
 
 }

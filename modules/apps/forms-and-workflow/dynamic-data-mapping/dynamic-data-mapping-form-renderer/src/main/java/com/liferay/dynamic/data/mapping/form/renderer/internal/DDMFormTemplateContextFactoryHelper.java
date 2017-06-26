@@ -29,7 +29,6 @@ import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -204,16 +203,9 @@ public class DDMFormTemplateContextFactoryHelper {
 		Map<String, DDMFormField> ddmFormFields = ddmForm.getDDMFormFieldsMap(
 			true);
 
-		Stream<DDMFormRule> ddmFormRulesStream = ddmFormRules.stream();
-
-		Stream<String> actionsStream = ddmFormRulesStream.flatMap(
-			ddmFormRule -> {
-				List<String> actions = ddmFormRule.getActions();
-
-				return actions.stream();
-			});
-
-		actionsStream.filter(
+		ddmFormRules.stream().flatMap(
+			ddmFormRule -> ddmFormRule.getActions().stream()
+		).filter(
 			this::isAutofillAction
 		).forEach(
 			action -> extractDataProviderSettings(
@@ -228,13 +220,10 @@ public class DDMFormTemplateContextFactoryHelper {
 		Map<String, DDMFormField> ddmFormFields = ddmForm.getDDMFormFieldsMap(
 			true);
 
-		Collection<DDMFormField> ddmFormFieldsCollection =
-			ddmFormFields.values();
+		Stream<DDMFormField> ddmFormFieldStream =
+			ddmFormFields.values().stream();
 
-		Stream<DDMFormField> ddmFormFieldsStream =
-			ddmFormFieldsCollection.stream();
-
-		ddmFormFieldsStream.filter(
+		ddmFormFieldStream.filter(
 			this::hasDataProviderSettings
 		).forEach(
 			ddmFormField -> extractDataProviderSettings(

@@ -44,7 +44,7 @@ public class BlogsRootResource {
 			blogsEntry = _blogsEntryService.getEntry(entryId);
 		}
 		catch (NoSuchEntryException nsee) {
-			throw new NotFoundException(nsee);
+			throw new NotFoundException();
 		}
 
 		return new BlogsEntryResource(blogsEntry);

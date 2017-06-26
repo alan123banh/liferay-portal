@@ -60,16 +60,6 @@ public class LayoutStagingUtil {
 		return _layoutStaging.isBranchingLayoutSet(group, privateLayout);
 	}
 
-	public static Layout mergeLayoutRevisionIntoLayout(Layout layout) {
-		return _layoutStaging.mergeLayoutRevisionIntoLayout(layout);
-	}
-
-	public static LayoutSet mergeLayoutSetRevisionIntoLayoutSet(
-		LayoutSet layoutSet) {
-
-		return _layoutStaging.mergeLayoutSetRevisionIntoLayoutSet(layoutSet);
-	}
-
 	public static boolean prepareLayoutStagingHandler(
 		PortletDataContext portletDataContext, Layout layout) {
 

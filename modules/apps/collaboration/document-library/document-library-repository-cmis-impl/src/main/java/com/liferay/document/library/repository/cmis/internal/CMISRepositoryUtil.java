@@ -85,11 +85,11 @@ public class CMISRepositoryUtil {
 		}
 		catch (CmisPermissionDeniedException cpde) {
 			throw new PrincipalException.MustBeAuthenticated(
-				parameters.get(SessionParameter.USER), cpde);
+				parameters.get(SessionParameter.USER));
 		}
 		catch (CmisUnauthorizedException cue) {
 			throw new PrincipalException.MustBeAuthenticated(
-				parameters.get(SessionParameter.USER), cue);
+				parameters.get(SessionParameter.USER));
 		}
 		catch (Exception e) {
 			throw new RepositoryException(e);

@@ -75,8 +75,10 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 	import ${packagePath}.model.impl.${entity.name}Impl;
 </#if>
 
-<#if entity.localizedEntity??>
-	import ${apiPackagePath}.model.${entity.name}Localization;
+<#if entity.hasLocalizationColumns()>
+	<#assign localizationEntity = entity.toLocalizationEntity() />
+
+	import ${apiPackagePath}.model.${localizationEntity.name};
 </#if>
 
 <#list referenceList as tempEntity>
@@ -970,31 +972,29 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 		</#list>
 	</#if>
 
-	<#if stringUtil.equals(sessionTypeName, "Local") && (entity.localizedEntity??)>
-		<#assign
-			localizedEntity = entity.localizedEntity
-			localizedColumns = entity.localizedColumns
-			pkColumn = entity.getPKList()?first
-		/>
+	<#if stringUtil.equals(sessionTypeName, "Local") && entity.hasLocalizationColumns()>
+		<#assign localizationEntity = entity.toLocalizationEntity() />
 
 		@Override
-		public ${localizedEntity.name} fetch${localizedEntity.name}(${entity.PKClassName} ${entity.PKVarName}, String languageId) {
-			return ${localizedEntity.varName}Persistence.fetchBy${pkColumn.methodName}_LanguageId(${entity.PKVarName}, languageId);
+		public ${localizationEntity.name} fetch${localizationEntity.name}(${entity.PKClassName} ${entity.PKVarName}, String languageId) {
+			return ${localizationEntity.varName}Persistence.fetchBy${localizationEntity.localizationFinderName}(${entity.PKVarName}, languageId);
 		}
 
 		@Override
-		public ${localizedEntity.name} get${localizedEntity.name}(${entity.PKClassName} ${entity.PKVarName}, String languageId) throws PortalException {
-			return ${localizedEntity.varName}Persistence.findBy${pkColumn.methodName}_LanguageId(${entity.PKVarName}, languageId);
+		public ${localizationEntity.name} get${localizationEntity.name}(${entity.PKClassName} ${entity.PKVarName}, String languageId) throws PortalException {
+			return ${localizationEntity.varName}Persistence.findBy${localizationEntity.localizationFinderName}(${entity.PKVarName}, languageId);
 		}
 
 		@Override
-		public List<${localizedEntity.name}> get${localizedEntity.names}(${entity.PKClassName} ${entity.PKVarName}) {
-			return ${localizedEntity.varName}Persistence.findBy${pkColumn.methodName}(${entity.PKVarName});
+		public List<${localizationEntity.name}> get${localizationEntity.names}(${entity.PKClassName} ${entity.PKVarName}) {
+			return ${localizationEntity.varName}Persistence.findBy${entity.name}PK(${entity.PKVarName});
 		}
 
-		protected ${localizedEntity.name} update${localizedEntity.name}(
+		<#assign localizationColumns = entity.localizationColumns />
+
+		protected ${localizationEntity.name} update${localizationEntity.name}(
 			${entity.name} ${entity.varName}, String languageId,
-			<#list localizedColumns as column>
+			<#list localizationColumns as column>
 				String ${column.name}
 
 				<#if column?has_next>
@@ -1003,33 +1003,31 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 			</#list>
 			) throws PortalException {
 
-			${localizedEntity.name} ${localizedEntity.varName} = ${localizedEntity.varName}Persistence.fetchBy${pkColumn.methodName}_LanguageId(${entity.varName}.get${pkColumn.methodName}(), languageId);
+			${localizationEntity.name} ${localizationEntity.varName} = ${localizationEntity.varName}Persistence.fetchBy${localizationEntity.localizationFinderName}(${entity.varName}.getPrimaryKey(), languageId);
 
-			if (${localizedEntity.varName} == null) {
-				long ${localizedEntity.varName}Id = counterLocalService.increment();
+			if (${localizationEntity.varName} == null) {
+				long ${localizationEntity.varName}Id = counterLocalService.increment();
 
-				${localizedEntity.varName} = ${localizedEntity.varName}Persistence.create(${localizedEntity.varName}Id);
+				${localizationEntity.varName} = ${localizationEntity.varName}Persistence.create(${localizationEntity.varName}Id);
 
-				${localizedEntity.varName}.set${pkColumn.methodName}(${entity.varName}.get${pkColumn.methodName}());
-				${localizedEntity.varName}.setLanguageId(languageId);
+				<#if entity.hasColumn("companyId")>
+					${localizationEntity.varName}.setCompanyId(${entity.varName}.getCompanyId());
+				</#if>
+
+				${localizationEntity.varName}.set${localizationEntity.primaryKeyMethodName}(${entity.varName}.getPrimaryKey());
+				${localizationEntity.varName}.setLanguageId(languageId);
 			}
 
-			<#list entity.columnList as entityColumn>
-				<#if localizedEntity.hasColumn(entityColumn.name) && !stringUtil.equals(entityColumn.name, "mvccVersion") && !stringUtil.equals(entityColumn.name, pkColumn.name)>
-					${localizedEntity.varName}.set${entityColumn.methodName}(${entity.varName}.get${entityColumn.methodName}());
-				</#if>
+			<#list localizationColumns as column>
+				${localizationEntity.varName}.set${column.methodName}(${column.name});
 			</#list>
 
-			<#list localizedColumns as column>
-				${localizedEntity.varName}.set${column.methodName}(${column.name});
-			</#list>
-
-			return ${localizedEntity.varName}Persistence.update(${localizedEntity.varName});
+			return ${localizationEntity.varName}Persistence.update(${localizationEntity.varName});
 		}
 
-		protected List<${localizedEntity.name}> update${localizedEntity.names}(
+		protected List<${localizationEntity.name}> update${localizationEntity.names}(
 			${entity.name} ${entity.varName},
-			<#list localizedColumns as column>
+			<#list localizationColumns as column>
 				Map<String, String> ${column.name}Map
 
 				<#if column?has_next>
@@ -1040,14 +1038,14 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 
 			Map<String, String[]> localizedValuesMap = new HashMap<String, String[]>();
 
-			<#list localizedColumns as column>
+			<#list localizationColumns as column>
 				for (Map.Entry<String, String> entry : ${column.name}Map.entrySet()) {
 					String languageId = entry.getKey();
 
 					String[] localizedValues = localizedValuesMap.get(languageId);
 
 					if (localizedValues == null) {
-						localizedValues = new String[${localizedColumns?size}];
+						localizedValues = new String[${localizationColumns?size}];
 
 						localizedValuesMap.put(languageId, localizedValues);
 					}
@@ -1056,26 +1054,20 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				}
 			</#list>
 
-			List<${localizedEntity.name}> ${localizedEntity.varNames} = new ArrayList<${localizedEntity.name}>(localizedValuesMap.size());
+			List<${localizationEntity.name}> ${localizationEntity.varNames} = new ArrayList<${localizationEntity.name}>(localizedValuesMap.size());
 
-			for (${localizedEntity.name} ${localizedEntity.varName} : ${localizedEntity.varName}Persistence.findBy${pkColumn.methodName}(${entity.varName}.get${pkColumn.methodName}())) {
-				String[] localizedValues = localizedValuesMap.remove(${localizedEntity.varName}.getLanguageId());
+			for (${localizationEntity.name} ${localizationEntity.varName} : ${localizationEntity.varName}Persistence.findBy${entity.name}PK(${entity.varName}.getPrimaryKey())) {
+				String[] localizedValues = localizedValuesMap.remove(${localizationEntity.varName}.getLanguageId());
 
 				if (localizedValues == null) {
-					${localizedEntity.varName}Persistence.remove(${localizedEntity.varName});
+					${localizationEntity.varName}Persistence.remove(${localizationEntity.varName});
 				}
 				else {
-					<#list entity.columnList as entityColumn>
-						<#if localizedEntity.hasColumn(entityColumn.name) && !stringUtil.equals(entityColumn.name, "mvccVersion") && !stringUtil.equals(entityColumn.name, pkColumn.name)>
-							${localizedEntity.varName}.set${entityColumn.methodName}(${entity.varName}.get${entityColumn.methodName}());
-						</#if>
+					<#list localizationColumns as column>
+						${localizationEntity.varName}.set${column.methodName}(localizedValues[${column?index}]);
 					</#list>
 
-					<#list localizedColumns as column>
-						${localizedEntity.varName}.set${column.methodName}(localizedValues[${column?index}]);
-					</#list>
-
-					${localizedEntity.varNames}.add(${localizedEntity.varName}Persistence.update(${localizedEntity.varName}));
+					${localizationEntity.varNames}.add(${localizationEntity.varName}Persistence.update(${localizationEntity.varName}));
 				}
 			}
 
@@ -1083,26 +1075,25 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				String languageId = entry.getKey();
 				String[] localizedValues = entry.getValue();
 
-				long ${localizedEntity.PKVarName} = counterLocalService.increment();
+				long ${localizationEntity.PKVarName} = counterLocalService.increment();
 
-				${localizedEntity.name} ${localizedEntity.varName} = ${localizedEntity.varName}Persistence.create(${localizedEntity.PKVarName});
+				${localizationEntity.name} ${localizationEntity.varName} = ${localizationEntity.varName}Persistence.create(${localizationEntity.PKVarName});
 
-				<#list entity.columnList as entityColumn>
-					<#if localizedEntity.hasColumn(entityColumn.name) && !stringUtil.equals(entityColumn.name, "mvccVersion")>
-						${localizedEntity.varName}.set${entityColumn.methodName}(${entity.varName}.get${entityColumn.methodName}());
-					</#if>
+				<#if localizationEntity.hasColumn("companyId")>
+					${localizationEntity.varName}.setCompanyId(${entity.varName}.getCompanyId());
+				</#if>
+
+				${localizationEntity.varName}.set${localizationEntity.primaryKeyMethodName}(${entity.varName}.getPrimaryKey());
+				${localizationEntity.varName}.setLanguageId(languageId);
+
+				<#list localizationColumns as column>
+					${localizationEntity.varName}.set${column.methodName}(localizedValues[${column?index}]);
 				</#list>
 
-				${localizedEntity.varName}.setLanguageId(languageId);
-
-				<#list localizedColumns as column>
-					${localizedEntity.varName}.set${column.methodName}(localizedValues[${column?index}]);
-				</#list>
-
-				${localizedEntity.varNames}.add(${localizedEntity.varName}Persistence.update(${localizedEntity.varName}));
+				${localizationEntity.varNames}.add(${localizationEntity.varName}Persistence.update(${localizationEntity.varName}));
 			}
 
-			return ${localizedEntity.varNames};
+			return ${localizationEntity.varNames};
 		}
 	</#if>
 

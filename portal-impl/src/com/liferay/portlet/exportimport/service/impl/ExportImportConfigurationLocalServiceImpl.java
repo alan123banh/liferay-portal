@@ -152,6 +152,10 @@ public class ExportImportConfigurationLocalServiceImpl
 
 		exportImportConfigurationPersistence.remove(exportImportConfiguration);
 
+		trashEntryLocalService.deleteEntry(
+			ExportImportConfiguration.class.getName(),
+			exportImportConfiguration.getExportImportConfigurationId());
+
 		return exportImportConfiguration;
 	}
 

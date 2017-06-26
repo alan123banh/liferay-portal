@@ -18,21 +18,13 @@ import com.liferay.knowledge.base.model.KBTemplate;
 import com.liferay.knowledge.base.service.KBTemplateLocalServiceUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
-import com.liferay.portal.kernel.security.permission.BaseModelPermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
-
-import org.osgi.service.component.annotations.Component;
 
 /**
  * @author Peter Shin
  * @author Brian Wing Shun Chan
- * @author Roberto Díaz
  */
-@Component(
-	property = {"model.class.name=com.liferay.knowledge.base.model.KBTemplate"},
-	service = BaseModelPermissionChecker.class
-)
-public class KBTemplatePermission implements BaseModelPermissionChecker {
+public class KBTemplatePermission {
 
 	public static void check(
 			PermissionChecker permissionChecker, KBTemplate kbTemplate,
@@ -80,15 +72,6 @@ public class KBTemplatePermission implements BaseModelPermissionChecker {
 			kbTemplateId);
 
 		return contains(permissionChecker, kbTemplate, actionId);
-	}
-
-	@Override
-	public void checkBaseModel(
-			PermissionChecker permissionChecker, long groupId, long primaryKey,
-			String actionId)
-		throws PortalException {
-
-		check(permissionChecker, primaryKey, actionId);
 	}
 
 }

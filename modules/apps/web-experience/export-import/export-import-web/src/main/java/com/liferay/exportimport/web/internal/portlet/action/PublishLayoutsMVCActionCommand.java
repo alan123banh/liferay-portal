@@ -17,7 +17,7 @@ package com.liferay.exportimport.web.internal.portlet.action;
 import com.liferay.exportimport.constants.ExportImportPortletKeys;
 import com.liferay.exportimport.kernel.exception.RemoteExportException;
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
-import com.liferay.exportimport.kernel.staging.Staging;
+import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.portal.kernel.exception.LayoutPrototypeException;
 import com.liferay.portal.kernel.exception.RemoteOptionsException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -81,7 +81,7 @@ public class PublishLayoutsMVCActionCommand extends BaseMVCActionCommand {
 			if (cmd.equals("copy_from_live")) {
 				setLayoutIdMap(actionRequest);
 
-				_staging.copyFromLive(actionRequest);
+				StagingUtil.copyFromLive(actionRequest);
 			}
 			else if (cmd.equals(Constants.PUBLISH_TO_LIVE)) {
 				hideDefaultSuccessMessage(actionRequest);
@@ -90,7 +90,7 @@ public class PublishLayoutsMVCActionCommand extends BaseMVCActionCommand {
 
 				setRedirect(
 					actionRequest, actionResponse,
-					_staging.publishToLive(actionRequest));
+					StagingUtil.publishToLive(actionRequest));
 			}
 			else if (cmd.equals(Constants.PUBLISH_TO_REMOTE)) {
 				hideDefaultSuccessMessage(actionRequest);
@@ -99,31 +99,31 @@ public class PublishLayoutsMVCActionCommand extends BaseMVCActionCommand {
 
 				setRedirect(
 					actionRequest, actionResponse,
-					_staging.publishToRemote(actionRequest));
+					StagingUtil.publishToRemote(actionRequest));
 			}
 			else if (cmd.equals("schedule_copy_from_live")) {
 				setLayoutIdMap(actionRequest);
 
-				_staging.scheduleCopyFromLive(actionRequest);
+				StagingUtil.scheduleCopyFromLive(actionRequest);
 			}
 			else if (cmd.equals("schedule_publish_to_live")) {
 				setLayoutIdMap(actionRequest);
 
-				_staging.schedulePublishToLive(actionRequest);
+				StagingUtil.schedulePublishToLive(actionRequest);
 			}
 			else if (cmd.equals("schedule_publish_to_remote")) {
 				setLayoutIdMap(actionRequest);
 
-				_staging.schedulePublishToRemote(actionRequest);
+				StagingUtil.schedulePublishToRemote(actionRequest);
 			}
 			else if (cmd.equals("unschedule_copy_from_live")) {
-				_staging.unscheduleCopyFromLive(actionRequest);
+				StagingUtil.unscheduleCopyFromLive(actionRequest);
 			}
 			else if (cmd.equals("unschedule_publish_to_live")) {
-				_staging.unschedulePublishToLive(actionRequest);
+				StagingUtil.unschedulePublishToLive(actionRequest);
 			}
 			else if (cmd.equals("unschedule_publish_to_remote")) {
-				_staging.unschedulePublishToRemote(actionRequest);
+				StagingUtil.unschedulePublishToRemote(actionRequest);
 			}
 
 			sendRedirect(actionRequest, actionResponse);
@@ -182,7 +182,7 @@ public class PublishLayoutsMVCActionCommand extends BaseMVCActionCommand {
 		long backgroundTaskId) {
 
 		LiferayPortletResponse liferayPortletResponse =
-			_portal.getLiferayPortletResponse(actionResponse);
+			(LiferayPortletResponse)actionResponse;
 
 		PortletURL renderURL = liferayPortletResponse.createRenderURL();
 
@@ -195,8 +195,5 @@ public class PublishLayoutsMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private Staging _staging;
 
 }

@@ -7,6 +7,10 @@ AUI.add(
 		};
 
 		FormTemplateSupport.ATTRS = {
+			context: {
+				valueFn: '_valueContext'
+			},
+
 			templateNamespace: {
 				getter: '_getTemplateNamespace'
 			}

@@ -70,8 +70,7 @@ public class SearchResultUtilJournalArticleTest
 			_indexer
 		).getSummary(
 			(Document)Matchers.any(), Matchers.anyString(),
-			(PortletRequest)Matchers.any(), (PortletResponse)Matchers.any()
-		);
+			(PortletRequest)Matchers.any(), (PortletResponse)Matchers.any());
 
 		Mockito.when(
 			_indexerRegistry.getIndexer(Mockito.anyString())

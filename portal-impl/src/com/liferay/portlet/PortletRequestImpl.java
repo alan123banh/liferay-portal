@@ -613,7 +613,7 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 			}
 		}
 		catch (Exception e) {
-			_log.error("Unable to check if a user is in role " + role, e);
+			_log.error(e);
 		}
 
 		return _request.isUserInRole(role);
@@ -674,7 +674,8 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 		PortletApp portletApp = portlet.getPortletApp();
 
 		Map<String, String[]> publicRenderParametersMap =
-			PublicRenderParametersPool.get(request, plid);
+			PublicRenderParametersPool.get(
+				request, plid, portletApp.isWARFile());
 
 		if (invokerPortlet != null) {
 			if (invokerPortlet.isStrutsPortlet() ||
@@ -882,7 +883,7 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 				}
 			}
 			catch (Exception e) {
-				_log.error("Unable to get user", e);
+				_log.error(e);
 			}
 		}
 		else {

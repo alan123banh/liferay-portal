@@ -63,9 +63,6 @@ public interface DDMExpression<T> {
 	public void setNumberVariableValue(
 		String variableName, Number variableValue);
 
-	public void setObjectVariableValue(
-		String variableName, Object variableValue);
-
 	public void setStringVariableValue(
 			String variableName, String variableValue)
 		throws DDMExpressionException;

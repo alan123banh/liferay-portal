@@ -24,7 +24,6 @@ import com.liferay.contacts.model.Entry;
 import com.liferay.contacts.service.EntryLocalService;
 import com.liferay.contacts.util.ContactsUtil;
 import com.liferay.contacts.web.internal.constants.ContactsPortletKeys;
-import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.bean.BeanParamUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -60,6 +59,7 @@ import com.liferay.portal.kernel.model.EmailAddress;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Phone;
+import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
@@ -68,10 +68,8 @@ import com.liferay.portal.kernel.model.Website;
 import com.liferay.portal.kernel.notifications.UserNotificationManagerUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
-import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
-import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
@@ -81,7 +79,6 @@ import com.liferay.portal.kernel.service.UserService;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
-import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -101,7 +98,6 @@ import com.liferay.users.admin.configuration.UserFileUploadsConfiguration;
 import com.liferay.users.admin.kernel.util.UsersAdminUtil;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -435,7 +431,7 @@ public class ContactsCenterPortlet extends MVCPortlet {
 			String portletId = portal.getPortletId(actionRequest);
 
 			extraDataJSONObject.put(
-				"portletId", PortletIdCodec.decodePortletName(portletId));
+				"portletId", PortletConstants.getRootPortletId(portletId));
 
 			SocialRequest socialRequest = socialRequestLocalService.addRequest(
 				themeDisplay.getUserId(), 0, User.class.getName(),
@@ -988,7 +984,7 @@ public class ContactsCenterPortlet extends MVCPortlet {
 		jsonObject.put("redirect", redirect);
 
 		LiferayPortletResponse liferayPortletResponse =
-			portal.getLiferayPortletResponse(portletResponse);
+			(LiferayPortletResponse)portletResponse;
 
 		PortletURL viewSummaryURL = liferayPortletResponse.createRenderURL();
 
@@ -1084,7 +1080,7 @@ public class ContactsCenterPortlet extends MVCPortlet {
 		jsonObject.put("portraitURL", user.getPortraitURL(themeDisplay));
 
 		LiferayPortletResponse liferayPortletResponse =
-			portal.getLiferayPortletResponse(portletResponse);
+			(LiferayPortletResponse)portletResponse;
 
 		PortletURL viewSummaryURL = liferayPortletResponse.createRenderURL();
 
@@ -1189,16 +1185,8 @@ public class ContactsCenterPortlet extends MVCPortlet {
 
 		boolean deleteLogo = ParamUtil.getBoolean(actionRequest, "deleteLogo");
 
-		byte[] portraitBytes = null;
-
-		long fileEntryId = ParamUtil.getLong(actionRequest, "fileEntryId");
-
-		if (!deleteLogo && (fileEntryId > 0)) {
-			FileEntry fileEntry = dlAppLocalService.getFileEntry(fileEntryId);
-
-			try (InputStream inputStream = fileEntry.getContentStream()) {
-				portraitBytes = FileUtil.getBytes(inputStream);
-			}
+		if (deleteLogo) {
+			userService.deletePortrait(user.getUserId());
 		}
 
 		String comments = BeanParamUtil.getString(
@@ -1245,7 +1233,7 @@ public class ContactsCenterPortlet extends MVCPortlet {
 			user.getPasswordUnencrypted(), user.getPasswordUnencrypted(),
 			user.getPasswordReset(), user.getReminderQueryQuestion(),
 			user.getReminderQueryAnswer(), screenName, emailAddress,
-			user.getFacebookId(), user.getOpenId(), !deleteLogo, portraitBytes,
+			user.getFacebookId(), user.getOpenId(), true, null,
 			user.getLanguageId(), user.getTimeZoneId(), user.getGreeting(),
 			comments, firstName, middleName, lastName, contact.getPrefixId(),
 			contact.getSuffixId(), user.isMale(), birthdayMonth, birthdayDay,
@@ -1273,9 +1261,6 @@ public class ContactsCenterPortlet extends MVCPortlet {
 	@Reference
 	protected AnnouncementsDeliveryLocalService
 		announcementsDeliveryLocalService;
-
-	@Reference
-	protected DLAppLocalService dlAppLocalService;
 
 	@Reference
 	protected EntryLocalService entryLocalService;

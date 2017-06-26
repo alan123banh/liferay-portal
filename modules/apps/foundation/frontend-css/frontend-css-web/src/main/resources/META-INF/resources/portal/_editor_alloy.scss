@@ -16,10 +16,6 @@
 		overflow: hidden;
 
 		&.alloy-editor-placeholder {
-			&:before {
-				pointer-events: none;
-			}
-
 			&.ae-placeholder:empty {
 				min-height: 1.5em;
 			}

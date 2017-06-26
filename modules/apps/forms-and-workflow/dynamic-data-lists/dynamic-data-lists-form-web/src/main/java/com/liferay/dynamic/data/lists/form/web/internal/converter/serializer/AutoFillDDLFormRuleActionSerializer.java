@@ -37,9 +37,7 @@ public class AutoFillDDLFormRuleActionSerializer
 	}
 
 	@Override
-	public String serialize(
-		DDLFormRuleSerializerContext ddlFormRuleSerializerContext) {
-
+	public String serialize() {
 		return String.format(
 			_functionCallTernaryExpressionFormat, "call",
 			StringUtil.quote(

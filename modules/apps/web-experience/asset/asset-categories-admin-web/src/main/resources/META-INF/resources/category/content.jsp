@@ -20,8 +20,6 @@
 long categoryId = ParamUtil.getLong(request, "categoryId");
 
 AssetCategory category = AssetCategoryLocalServiceUtil.fetchCategory(categoryId);
-
-long parentCategoryId = BeanParamUtil.getLong(category, request, "parentCategoryId");
 %>
 
 <aui:model-context bean="<%= category %>" model="<%= AssetCategory.class %>" />
@@ -29,9 +27,3 @@ long parentCategoryId = BeanParamUtil.getLong(category, request, "parentCategory
 <aui:input autoFocus="<%= true %>" label="name" name="title" placeholder="name" />
 
 <aui:input name="description" placeholder="description" />
-
-<c:if test="<%= assetCategoriesDisplayContext.isFlattenedNavigationAllowed() %>">
-	<aui:field-wrapper label="parent-category">
-		<liferay-asset:asset-categories-selector categoryIds="<%= String.valueOf(parentCategoryId) %>" hiddenInput="parentCategoryId" singleSelect="<%= true %>" />
-	</aui:field-wrapper>
-</c:if>

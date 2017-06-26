@@ -35,6 +35,7 @@ import com.liferay.portal.kernel.model.PortletCategory;
 import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.model.PortletFilter;
 import com.liferay.portal.kernel.model.PortletInfo;
+import com.liferay.portal.kernel.model.PortletInstance;
 import com.liferay.portal.kernel.model.PortletPreferences;
 import com.liferay.portal.kernel.model.PortletURLListener;
 import com.liferay.portal.kernel.model.PublicRenderParameter;
@@ -47,7 +48,6 @@ import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletConfigFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletContextFactoryUtil;
-import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletInstanceFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletLayoutListener;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
@@ -112,13 +112,11 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 import javax.portlet.PortletMode;
 import javax.portlet.PreferencesValidator;
@@ -242,7 +240,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 	public void deletePortlet(long companyId, String portletId, long plid)
 		throws PortalException {
 
-		String rootPortletId = PortletIdCodec.decodePortletName(portletId);
+		String rootPortletId = PortletConstants.getRootPortletId(portletId);
 
 		resourceLocalService.deleteResource(
 			companyId, rootPortletId, ResourceConstants.SCOPE_INDIVIDUAL,
@@ -410,7 +408,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 
 		Map<String, Portlet> companyPortletsMap = getPortletsMap(companyId);
 
-		String rootPortletId = PortletIdCodec.decodePortletName(portletId);
+		String rootPortletId = PortletConstants.getRootPortletId(portletId);
 
 		if (portletId.equals(rootPortletId)) {
 			return companyPortletsMap.get(portletId);
@@ -580,7 +578,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			portlet.setPortletInfo(
 				new PortletInfo(portletId, portletId, portletId, portletId));
 
-			if (PortletIdCodec.hasInstanceId(portletId)) {
+			if (PortletConstants.hasInstanceId(portletId)) {
 				portlet.setInstanceable(true);
 			}
 
@@ -594,7 +592,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 	@Override
 	@Skip
 	public Portlet getPortletById(String portletId) {
-		return _portletsMap.get(PortletIdCodec.decodePortletName(portletId));
+		return _portletsMap.get(PortletConstants.getRootPortletId(portletId));
 	}
 
 	@Override
@@ -695,7 +693,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 
 		Map<String, Portlet> companyPortletsMap = getPortletsMap(companyId);
 
-		String rootPortletId = PortletIdCodec.decodePortletName(portletId);
+		String rootPortletId = PortletConstants.getRootPortletId(portletId);
 
 		if (portletId.equals(rootPortletId)) {
 			portlet = companyPortletsMap.get(portletId);
@@ -1022,16 +1020,6 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 		return portlet;
 	}
 
-	@Override
-	@Skip
-	public void visitPortlets(long companyId, Consumer<Portlet> consumer) {
-		Map<String, Portlet> portletsMap = getPortletsMap(companyId);
-
-		for (Entry<String, Portlet> entry : portletsMap.entrySet()) {
-			consumer.accept(entry.getValue());
-		}
-	}
-
 	protected String getPortletId(String securityPath) {
 		Map<String, String> portletIdsByStrutsPath = _portletIdsByStrutsPath;
 
@@ -1188,13 +1176,6 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 		}
 
 		String[] roleNames = portlet.getRolesArray();
-
-		Portlet existingPortlet = portletPersistence.fetchByC_P(
-			portlet.getCompanyId(), portlet.getPortletId());
-
-		if (existingPortlet != null) {
-			roleNames = existingPortlet.getRolesArray();
-		}
 
 		if (roleNames.length == 0) {
 			return;
@@ -2093,13 +2074,13 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 		portletId = PortalUtil.getJsSafePortletId(portletId);
 
 		if (portletId.length() >
-				PortletIdCodec.PORTLET_INSTANCE_KEY_MAX_LENGTH) {
+				PortletInstance.PORTLET_INSTANCE_KEY_MAX_LENGTH) {
 
 			// LPS-32878
 
 			throw new PortletIdException(
 				"Portlet ID " + portletId + " has more than " +
-					PortletIdCodec.PORTLET_INSTANCE_KEY_MAX_LENGTH +
+					PortletInstance.PORTLET_INSTANCE_KEY_MAX_LENGTH +
 						" characters");
 		}
 
@@ -2707,7 +2688,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			if (propertyValue instanceof String) {
 				String portletId = (String)propertyValue;
 
-				String rootPortletId = PortletIdCodec.decodePortletName(
+				String rootPortletId = PortletConstants.getRootPortletId(
 					portletId);
 
 				while (true) {
@@ -2737,7 +2718,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 				String[] rootPortletIds = new String[portletIds.length];
 
 				for (int i = 0; i < portletIds.length; i++) {
-					String rootPortletId = PortletIdCodec.decodePortletName(
+					String rootPortletId = PortletConstants.getRootPortletId(
 						portletIds[i]);
 
 					rootPortletIds[i] = rootPortletId;

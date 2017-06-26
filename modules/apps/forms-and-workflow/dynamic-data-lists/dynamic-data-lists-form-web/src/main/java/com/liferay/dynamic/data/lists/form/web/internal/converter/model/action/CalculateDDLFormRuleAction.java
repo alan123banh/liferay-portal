@@ -16,7 +16,6 @@ package com.liferay.dynamic.data.lists.form.web.internal.converter.model.action;
 
 import com.liferay.dynamic.data.lists.form.web.internal.converter.serializer.CalculateDDLFormRuleActionSerializer;
 import com.liferay.dynamic.data.lists.form.web.internal.converter.serializer.DDLFormRuleActionSerializer;
-import com.liferay.dynamic.data.lists.form.web.internal.converter.serializer.DDLFormRuleSerializerContext;
 import com.liferay.portal.kernel.util.HashUtil;
 
 import java.util.Objects;
@@ -70,14 +69,11 @@ public class CalculateDDLFormRuleAction extends DefaultDDLFormRuleAction {
 	}
 
 	@Override
-	public String serialize(
-		DDLFormRuleSerializerContext ddlFormRuleSerializerContext) {
-
+	public String serialize() {
 		DDLFormRuleActionSerializer ddlFormRuleActionSerializer =
 			new CalculateDDLFormRuleActionSerializer(this);
 
-		return ddlFormRuleActionSerializer.serialize(
-			ddlFormRuleSerializerContext);
+		return ddlFormRuleActionSerializer.serialize();
 	}
 
 	public void setExpression(String expression) {

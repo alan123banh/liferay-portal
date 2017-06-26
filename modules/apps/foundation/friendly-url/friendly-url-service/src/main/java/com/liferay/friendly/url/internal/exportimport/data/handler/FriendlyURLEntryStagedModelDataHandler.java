@@ -41,14 +41,6 @@ public class FriendlyURLEntryStagedModelDataHandler
 		{FriendlyURLEntry.class.getName()};
 
 	@Override
-	public FriendlyURLEntry fetchStagedModelByUuidAndGroupId(
-		String uuid, long groupId) {
-
-		return _stagedModelRepository.fetchStagedModelByUuidAndGroupId(
-			uuid, groupId);
-	}
-
-	@Override
 	public List<FriendlyURLEntry> fetchStagedModelsByUuidAndCompanyId(
 		String uuid, long companyId) {
 
@@ -59,6 +51,16 @@ public class FriendlyURLEntryStagedModelDataHandler
 	@Override
 	public String[] getClassNames() {
 		return CLASS_NAMES;
+	}
+
+	@Reference(
+		target = "(model.class.name=com.liferay.friendly.url.model.FriendlyURLEntry)",
+		unbind = "-"
+	)
+	public void setStagedModelRepository(
+		StagedModelRepository<FriendlyURLEntry> stagedModelRepository) {
+
+		_stagedModelRepository = stagedModelRepository;
 	}
 
 	@Override
@@ -102,8 +104,7 @@ public class FriendlyURLEntryStagedModelDataHandler
 
 		FriendlyURLEntry existingFriendlyURLEntry =
 			fetchStagedModelByUuidAndGroupId(
-				friendlyURLEntry.getUuid(),
-				portletDataContext.getScopeGroupId());
+				friendlyURLEntry.getUuid(), friendlyURLEntry.getGroupId());
 
 		if ((existingFriendlyURLEntry == null) ||
 			!portletDataContext.isDataStrategyMirror()) {
@@ -136,12 +137,14 @@ public class FriendlyURLEntryStagedModelDataHandler
 		return _stagedModelRepository;
 	}
 
-	@Reference
-	private ClassNameLocalService _classNameLocalService;
+	@Reference(unbind = "-")
+	protected void setClassNameLocalService(
+		ClassNameLocalService classNameLocalService) {
 
-	@Reference(
-		target = "(model.class.name=com.liferay.friendly.url.model.FriendlyURLEntry)"
-	)
+		_classNameLocalService = classNameLocalService;
+	}
+
+	private ClassNameLocalService _classNameLocalService;
 	private StagedModelRepository<FriendlyURLEntry> _stagedModelRepository;
 
 }

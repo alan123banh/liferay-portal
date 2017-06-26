@@ -212,7 +212,6 @@ jdbc.default.password=${database.password}
 
 // HikariCP
 
-jdbc.default.connectionTimeout=600000
 jdbc.default.maximumPoolSize=20
 jdbc.default.minimumIdle=0
 
@@ -1397,8 +1396,6 @@ war.path=${app.server.weblogic.portal.dir}/</echo>
 		<attribute name="task" />
 
 		<sequential>
-			<update-gradle-properties />
-
 			<if>
 				<equals arg1="${test.poshi.runner.local.release}" arg2="true" />
 				<then>
@@ -1457,28 +1454,6 @@ war.path=${app.server.weblogic.portal.dir}/</echo>
 								<include name="*.sh" />
 							</fileset>
 						</chmod>
-
-						<local name="jmx.remote.port.overwrite" />
-
-						<math
-							datatype="int"
-							operand1="${app.server.bundle.index}"
-							operand2="${jmx.remote.port}"
-							operation="+"
-							result="jmx.remote.port.overwrite"
-						/>
-
-						<replace
-							file="${test.app.server.bin.dir}/setenv.sh"
-							token="-Dcom.sun.management.jmxremote.port=${jmx.remote.port}"
-							value="-Dcom.sun.management.jmxremote.port=${jmx.remote.port.overwrite}"
-						/>
-
-						<replace
-							file="${test.app.server.bin.dir}/setenv.bat"
-							token="-Dcom.sun.management.jmxremote.port=${jmx.remote.port}"
-							value="-Dcom.sun.management.jmxremote.port=${jmx.remote.port.overwrite}"
-						/>
 
 						<replaceregexp
 							file="${test.app.server.dir}/conf/server.xml"
@@ -2731,7 +2706,7 @@ ${tomcat-gc-log}
 									<unzip dest="${tstamp.value}" src="${war.path}">
 										<flattenmapper />
 										<patternset>
-											<include name="WEB-INF/classes/dfc.properties" />
+											<include name="WEB-INF/src/dfc.properties" />
 										</patternset>
 									</unzip>
 
@@ -2740,7 +2715,7 @@ ${tomcat-gc-log}
 									</propertyfile>
 
 									<war destfile="${war.path}" update="true">
-										<zipfileset file="${tstamp.value}/dfc.properties" fullpath="WEB-INF/classes/dfc.properties" />
+										<zipfileset file="${tstamp.value}/dfc.properties" fullpath="WEB-INF/src/dfc.properties" />
 									</war>
 
 									<delete file="${tstamp.value}/dfc.properties" />
@@ -2977,11 +2952,9 @@ go</echo>
 				</elseif>
 				<elseif>
 					<or>
-						<equals arg1="@{liferay.portal.bundle}" arg2="6.2.0" />
 						<equals arg1="@{liferay.portal.bundle}" arg2="6.2.1" />
 						<equals arg1="@{liferay.portal.bundle}" arg2="6.2.2" />
 						<equals arg1="@{liferay.portal.bundle}" arg2="6.2.3" />
-						<equals arg1="@{liferay.portal.bundle}" arg2="6.2.4" />
 						<equals arg1="@{liferay.portal.bundle}" arg2="6.2.10.1" />
 						<equals arg1="@{liferay.portal.bundle}" arg2="6.2.10.2" />
 						<equals arg1="@{liferay.portal.bundle}" arg2="6.2.10.3" />
@@ -5269,23 +5242,6 @@ go]]></replacevalue>
 									<else>
 										<echo>Deploying all relevant modules that make up ${Liferay-Releng-App-Title}.lpkg.</echo>
 
-										<for param="module.dir.path">
-											<path>
-												<dirset dir="@{app.dir}">
-													<include name="*" />
-												</dirset>
-											</path>
-											<sequential>
-												<basename file="@{module.dir.path}" property="module.war.name" />
-
-												<delete failonerror="false" verbose="true">
-													<fileset dir="${liferay.home}/deploy">
-														<include name="${module.war.name}*" />
-													</fileset>
-												</delete>
-											</sequential>
-										</for>
-
 										<gradle-execute dir="@{app.dir}" task="deploy">
 											<arg value="clean" />
 										</gradle-execute>
@@ -6037,9 +5993,6 @@ go]]></replacevalue>
 				<fileset dir="util-java/test-results" erroronmissingdir="false">
 					<include name="**/TEST-*.xml" />
 				</fileset>
-				<fileset dir="${blade.samples.dir}/liferay-workspace/tests" erroronmissingdir="false">
-					<include name="**/TEST-*.xml" />
-				</fileset>
 				<report format="frames" todir="test-results/html" />
 			</junitreport>
 		</parallel>
@@ -6353,7 +6306,6 @@ jdbc.default.password=${database.password}
 
 // HikariCP
 
-jdbc.default.connectionTimeout=600000
 jdbc.default.maximumPoolSize=20
 jdbc.default.minimumIdle=0
 

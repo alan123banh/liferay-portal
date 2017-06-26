@@ -17,8 +17,8 @@ package com.liferay.taglib.util;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.model.Theme;
-import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.servlet.PluginContextListener;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.servlet.taglib.DynamicIncludeUtil;
@@ -207,11 +207,11 @@ public class ThemeUtil {
 			servletContext, portletId, path);
 
 		if (Validator.isNotNull(portletId) &&
-			PortletIdCodec.hasInstanceId(portletId) &&
+			PortletConstants.hasInstanceId(portletId) &&
 			!TemplateResourceLoaderUtil.hasTemplateResource(
 				TemplateConstants.LANG_TYPE_FTL, resourcePath)) {
 
-			String rootPortletId = PortletIdCodec.decodePortletName(portletId);
+			String rootPortletId = PortletConstants.getRootPortletId(portletId);
 
 			resourcePath = theme.getResourcePath(
 				servletContext, rootPortletId, path);
@@ -368,12 +368,12 @@ public class ThemeUtil {
 		boolean checkResourceExists = true;
 
 		if (Validator.isNotNull(portletId)) {
-			if (PortletIdCodec.hasInstanceId(portletId) &&
+			if (PortletConstants.hasInstanceId(portletId) &&
 				(checkResourceExists !=
 					TemplateResourceLoaderUtil.hasTemplateResource(
 						TemplateConstants.LANG_TYPE_VM, resourcePath))) {
 
-				String rootPortletId = PortletIdCodec.decodePortletName(
+				String rootPortletId = PortletConstants.getRootPortletId(
 					portletId);
 
 				resourcePath = theme.getResourcePath(

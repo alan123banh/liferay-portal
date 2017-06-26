@@ -28,7 +28,6 @@ import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.Portal;
 
 import java.util.Locale;
 import java.util.Map;
@@ -127,7 +126,7 @@ public class EditRuleGroupMVCActionCommand extends BaseMVCActionCommand {
 		MDRRuleGroup ruleGroup) {
 
 		LiferayPortletResponse liferayPortletResponse =
-			_portal.getLiferayPortletResponse(actionResponse);
+			(LiferayPortletResponse)actionResponse;
 
 		PortletURL portletURL = liferayPortletResponse.createRenderURL();
 
@@ -180,8 +179,5 @@ public class EditRuleGroupMVCActionCommand extends BaseMVCActionCommand {
 	}
 
 	private MDRRuleGroupService _mdrRuleGroupService;
-
-	@Reference
-	private Portal _portal;
 
 }

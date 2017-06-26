@@ -1,13 +1,19 @@
 AUI.add(
 	'liferay-ddl-form-builder-layout-deserializer',
 	function(A) {
+		var Lang = A.Lang;
+
 		var FormBuilderUtil = Liferay.DDL.FormBuilderUtil;
-		var Settings = Liferay.DDL.Settings;
+		var RendererUtil = Liferay.DDM.Renderer.Util;
 
 		var LayoutDeserializer = A.Component.create(
 			{
 				ATTRS: {
 					builder: {
+					},
+
+					definition: {
+						validator: Lang.isObject
 					},
 
 					descriptions: {
@@ -48,10 +54,10 @@ AUI.add(
 							}
 						);
 
-						if (column.fields && column.fields.length > 0) {
+						if (column.fieldNames && column.fieldNames.length > 0) {
 							var fieldsList = new Liferay.DDL.FormBuilderFieldList(
 								{
-									fields: instance._deserializeFields(deserializedColumn, column.fields)
+									fields: instance._deserializeFields(deserializedColumn, column.fieldNames)
 								}
 							);
 
@@ -67,12 +73,41 @@ AUI.add(
 						return columns.map(A.bind('_deserializeColumn', instance));
 					},
 
-					_deserializeField: function(deserializedColumn, context) {
+					_deserializeField: function(deserializedColumn, fieldName) {
 						var instance = this;
 
 						var builder = instance.get('builder');
 
-						context.portletNamespace = Settings.portletNamespace;
+						var definition = instance.get('definition');
+
+						var defaultLanguageId = definition.defaultLanguageId;
+
+						var context = RendererUtil.getFieldByKey(definition, fieldName);
+
+						A.each(
+							context,
+							function(value, key) {
+								if (key === 'options') {
+									context[key] = value.map(
+										function(option) {
+											return {
+												label: option.label[defaultLanguageId],
+												value: option.value
+											};
+										}
+									);
+								}
+								else if (Lang.isObject(value) && value[defaultLanguageId] !== undefined) {
+									context[key] = value[defaultLanguageId];
+								}
+							}
+						);
+
+						instance._deserializeFieldRules(context);
+
+						context.fieldName = context.name;
+						context.portletNamespace = builder.get('portletNamespace');
+						context.readOnly = true;
 						context.visible = true;
 						context.value = '';
 
@@ -85,28 +120,57 @@ AUI.add(
 								context,
 								{
 									context: context,
+									evaluatorURL: builder.get('evaluatorURL'),
+									getFieldNameSettingFormContextURL: builder.get('getFieldNameSettingFormContextURL'),
+									getFieldTypeSettingFormContextURL: builder.get('getFieldTypeSettingFormContextURL'),
 									parent: builder
 								}
 							)
 						);
 					},
 
-					_deserializeFields: function(deserializedColumn, fields) {
+					_deserializeFieldRules: function(context) {
 						var instance = this;
 
-						return fields.map(A.bind('_deserializeField', instance, deserializedColumn));
+						var rules = context.rules || [];
+
+						rules.forEach(
+							function(rule) {
+								if (rule.type === 'VALIDATION') {
+									context.validation = {
+										errorMessage: rule.errorMessage,
+										expression: rule.expression
+									};
+								}
+								else if (rule.type === 'VISIBILITY') {
+									context.visibilityExpression = rule.expression;
+								}
+							}
+						);
+
+						delete context.rules;
+					},
+
+					_deserializeFields: function(deserializedColumn, fieldNames) {
+						var instance = this;
+
+						return fieldNames.map(A.bind('_deserializeField', instance, deserializedColumn));
 					},
 
 					_deserializePage: function(page) {
 						var instance = this;
 
-						if (page.localizedDescription) {
-							instance.get('descriptions').push(page.localizedDescription);
-						}
+						var definition = instance.get('definition');
 
-						if (page.localizedTitle) {
-							instance.get('titles').push(page.localizedTitle);
-						}
+						var languageId = definition.defaultLanguageId;
+
+						var description = page.description && page.description[languageId];
+
+						instance.get('descriptions').push(description);
+
+						var title = page.title && page.title[languageId];
+
+						instance.get('titles').push(title);
 
 						return new A.Layout(
 							{

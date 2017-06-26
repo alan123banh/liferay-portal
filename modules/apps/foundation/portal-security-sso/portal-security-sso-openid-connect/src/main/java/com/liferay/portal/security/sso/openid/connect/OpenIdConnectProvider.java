@@ -14,9 +14,6 @@
 
 package com.liferay.portal.security.sso.openid.connect;
 
-import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
-import com.nimbusds.openid.connect.sdk.rp.OIDCClientMetadata;
-
 /**
  * @author Thuong Dinh
  * @author Edward C. Han
@@ -25,13 +22,15 @@ public class OpenIdConnectProvider {
 
 	public OpenIdConnectProvider(
 		String name, String clientId, String clientSecret, String scopes,
-		OpenIdConnectMetadataFactory openIdConnectMetadataFactory) {
+		OpenIdConnectProviderMetadataFactory
+			openIdConnectProviderMetadataFactory) {
 
 		_name = name;
 		_clientId = clientId;
 		_clientSecret = clientSecret;
 		_scopes = scopes;
-		_openIdConnectMetadataFactory = openIdConnectMetadataFactory;
+		_openIdConnectProviderMetadataFactory =
+			openIdConnectProviderMetadataFactory;
 	}
 
 	public String getClientId() {
@@ -46,18 +45,10 @@ public class OpenIdConnectProvider {
 		return _name;
 	}
 
-	public OIDCClientMetadata getOIDCClientMetadata() {
-		return _openIdConnectMetadataFactory.getOIDCClientMetadata();
-	}
+	public OpenIdConnectProviderMetadataFactory
+		getOpenIdConnectProviderMetadataFactory() {
 
-	public OIDCProviderMetadata getOIDCProviderMetadata()
-		throws OpenIdConnectServiceException.ProviderException {
-
-		return _openIdConnectMetadataFactory.getOIDCProviderMetadata();
-	}
-
-	public OpenIdConnectMetadataFactory getOpenIdConnectMetadataFactory() {
-		return _openIdConnectMetadataFactory;
+		return _openIdConnectProviderMetadataFactory;
 	}
 
 	public String getScopes() {
@@ -67,7 +58,8 @@ public class OpenIdConnectProvider {
 	private final String _clientId;
 	private final String _clientSecret;
 	private final String _name;
-	private final OpenIdConnectMetadataFactory _openIdConnectMetadataFactory;
+	private final OpenIdConnectProviderMetadataFactory
+		_openIdConnectProviderMetadataFactory;
 	private final String _scopes;
 
 }

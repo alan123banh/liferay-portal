@@ -15,39 +15,29 @@
 package com.liferay.calendar.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.calendar.constants.CalendarPortletKeys;
 import com.liferay.calendar.exception.CalendarBookingRecurrenceException;
 import com.liferay.calendar.model.Calendar;
 import com.liferay.calendar.model.CalendarBooking;
 import com.liferay.calendar.notification.NotificationType;
+import com.liferay.calendar.recurrence.Frequency;
+import com.liferay.calendar.recurrence.PositionalWeekday;
 import com.liferay.calendar.recurrence.Recurrence;
 import com.liferay.calendar.recurrence.RecurrenceSerializer;
 import com.liferay.calendar.service.CalendarBookingLocalService;
 import com.liferay.calendar.service.CalendarBookingLocalServiceUtil;
-import com.liferay.calendar.service.CalendarLocalServiceUtil;
-import com.liferay.calendar.service.CalendarResourceLocalServiceUtil;
 import com.liferay.calendar.test.util.CalendarBookingTestUtil;
 import com.liferay.calendar.test.util.CalendarTestUtil;
 import com.liferay.calendar.test.util.RecurrenceTestUtil;
 import com.liferay.calendar.util.JCalendarUtil;
 import com.liferay.calendar.workflow.CalendarBookingWorkflowConstants;
-import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
-import com.liferay.exportimport.kernel.service.StagingLocalServiceUtil;
-import com.liferay.exportimport.kernel.staging.StagingConstants;
-import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.service.PortletPreferencesLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.Sync;
-import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
-import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
-import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -57,16 +47,14 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.TimeZoneUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.test.mail.MailMessage;
-import com.liferay.portal.test.mail.MailServiceTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.SynchronousMailTestRule;
+import com.liferay.portal.util.test.MailServiceTestUtil;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -97,9 +85,7 @@ public class CalendarBookingLocalServiceTest {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
-			new LiferayIntegrationTestRule(),
-			SynchronousDestinationTestRule.INSTANCE,
-			SynchronousMailTestRule.INSTANCE);
+			new LiferayIntegrationTestRule(), SynchronousMailTestRule.INSTANCE);
 
 	@Before
 	public void setUp() throws Exception {
@@ -111,7 +97,6 @@ public class CalendarBookingLocalServiceTest {
 	@After
 	public void tearDown() {
 		tearDownCheckBookingMessageListener();
-		tearDownPortletPreferences();
 	}
 
 	@Test
@@ -209,320 +194,10 @@ public class CalendarBookingLocalServiceTest {
 				calendarBooking.getTitle(LocaleUtil.getDefault()) +
 					StringPool.QUOTE;
 
-		List<MailMessage> mailMessages = MailServiceTestUtil.getMailMessages(
-			"Subject", mailMessageSubject);
+		List<com.dumbster.smtp.MailMessage> mailMessages =
+			MailServiceTestUtil.getMailMessages("Subject", mailMessageSubject);
 
 		Assert.assertEquals(mailMessages.toString(), 2, mailMessages.size());
-	}
-
-	@Test
-	public void testAddCalendarBookingResourceRequested()
-		throws PortalException {
-
-		Calendar calendar = CalendarTestUtil.addCalendar(_user);
-
-		Calendar resourceCalendar =
-			CalendarTestUtil.addCalendarResourceCalendar(_user);
-
-		CalendarBooking firstChildCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				calendar, resourceCalendar);
-
-		Assert.assertTrue(firstChildCalendarBooking.isPending());
-
-		CalendarBooking secondChildCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				calendar, resourceCalendar);
-
-		Assert.assertTrue(secondChildCalendarBooking.isDenied());
-	}
-
-	@Test
-	public void testAddCalendarBookingResourceRequestedEndOverlapsStart()
-		throws PortalException {
-
-		Calendar calendar = CalendarTestUtil.addCalendar(_user);
-
-		Calendar resourceCalendar =
-			CalendarTestUtil.addCalendarResourceCalendar(_user);
-
-		CalendarBooking firstChildCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				calendar, resourceCalendar);
-
-		Assert.assertTrue(firstChildCalendarBooking.isPending());
-
-		long startTime = firstChildCalendarBooking.getEndTime();
-
-		long endTime = startTime + Time.HOUR;
-
-		CalendarBooking secondChildCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				calendar, resourceCalendar, startTime, endTime);
-
-		Assert.assertTrue(secondChildCalendarBooking.isPending());
-	}
-
-	@Test
-	public void testAddCalendarBookingResourceRequestedNotifiesDenial()
-		throws Exception {
-
-		Calendar calendar = CalendarTestUtil.addCalendar(_user);
-
-		Calendar resourceCalendar =
-			CalendarTestUtil.addCalendarResourceCalendar(_user);
-
-		CalendarBooking firstChildCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				calendar, resourceCalendar);
-
-		CalendarBookingTestUtil.addChildCalendarBooking(
-			calendar, resourceCalendar,
-			firstChildCalendarBooking.getStartTime(),
-			firstChildCalendarBooking.getEndTime());
-
-		String messageBodySnippet = "has declined this invitation";
-
-		Assert.assertTrue(
-			MailServiceTestUtil.lastMailMessageContains(messageBodySnippet));
-	}
-
-	@Test
-	public void testAddCalendarBookingResourceRequestedNotifiesInvitees()
-		throws Exception {
-
-		_invitingUser = UserTestUtil.addUser();
-
-		Calendar invintingCalendar = CalendarTestUtil.addCalendar(
-			_invitingUser);
-
-		Calendar invitedCalendar = CalendarTestUtil.addCalendar(_user);
-
-		_resourceUser = UserTestUtil.addUser();
-
-		Calendar resourceCalendar =
-			CalendarTestUtil.addCalendarResourceCalendar(_resourceUser);
-
-		CalendarBooking firstChildCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				invintingCalendar, resourceCalendar);
-
-		long[] childCalendarIds = new long[] {
-			invitedCalendar.getCalendarId(), resourceCalendar.getCalendarId()
-		};
-
-		CalendarBookingTestUtil.addMasterCalendarBooking(
-			_user, invintingCalendar, childCalendarIds,
-			firstChildCalendarBooking.getStartTime(),
-			firstChildCalendarBooking.getEndTime(), createServiceContext());
-
-		assertSentEmail(_user.getEmailAddress());
-
-		assertSentEmail(_invitingUser.getEmailAddress());
-	}
-
-	@Test
-	public void testAddCalendarBookingResourceRequestedOverlappingStart()
-		throws PortalException {
-
-		Calendar calendar = CalendarTestUtil.addCalendar(_user);
-
-		Calendar resourceCalendar =
-			CalendarTestUtil.addCalendarResourceCalendar(_user);
-
-		CalendarBooking firstChildCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				calendar, resourceCalendar);
-
-		Assert.assertTrue(firstChildCalendarBooking.isPending());
-
-		long startTime =
-			firstChildCalendarBooking.getStartTime() +
-				firstChildCalendarBooking.getDuration() / 2;
-		long endTime =
-			firstChildCalendarBooking.getEndTime() +
-				firstChildCalendarBooking.getDuration() / 2;
-
-		CalendarBooking secondChildCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				calendar, resourceCalendar, startTime, endTime);
-
-		Assert.assertTrue(secondChildCalendarBooking.isDenied());
-	}
-
-	@Test
-	public void testAddCalendarBookingResourceRequestedStartOverlapsEnd()
-		throws PortalException {
-
-		Calendar calendar = CalendarTestUtil.addCalendar(_user);
-
-		Calendar resourceCalendar =
-			CalendarTestUtil.addCalendarResourceCalendar(_user);
-
-		CalendarBooking firstChildCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				calendar, resourceCalendar);
-
-		Assert.assertTrue(firstChildCalendarBooking.isPending());
-
-		long endTime = firstChildCalendarBooking.getStartTime();
-
-		long startTime = endTime - Time.HOUR;
-
-		CalendarBooking secondChildCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				calendar, resourceCalendar, startTime, endTime);
-
-		Assert.assertTrue(secondChildCalendarBooking.isPending());
-	}
-
-	@Test
-	public void testAddCalendarBookingResourceReserved()
-		throws PortalException {
-
-		Calendar resourceCalendar =
-			CalendarTestUtil.addCalendarResourceCalendar(_user);
-
-		CalendarBooking firstCalendarBooking =
-			CalendarBookingTestUtil.addRegularCalendarBooking(resourceCalendar);
-
-		Assert.assertTrue(firstCalendarBooking.isApproved());
-
-		Calendar calendar = CalendarTestUtil.addCalendar(_user);
-
-		CalendarBooking secondChildCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				calendar, resourceCalendar, firstCalendarBooking.getStartTime(),
-				firstCalendarBooking.getEndTime());
-
-		Assert.assertTrue(secondChildCalendarBooking.isDenied());
-	}
-
-	@Test
-	public void testAddCalendarBookingResourceReservedEndOverlapsStart()
-		throws PortalException {
-
-		Calendar resourceCalendar =
-			CalendarTestUtil.addCalendarResourceCalendar(_user);
-
-		CalendarBooking firstCalendarBooking =
-			CalendarBookingTestUtil.addRegularCalendarBooking(resourceCalendar);
-
-		Assert.assertTrue(firstCalendarBooking.isApproved());
-
-		long endTime = firstCalendarBooking.getStartTime();
-
-		long startTime = endTime - Time.HOUR;
-
-		Calendar calendar = CalendarTestUtil.addCalendar(_user);
-
-		CalendarBooking secondChildCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				calendar, resourceCalendar, startTime, endTime);
-
-		Assert.assertTrue(secondChildCalendarBooking.isPending());
-	}
-
-	@Test
-	public void testAddCalendarBookingResourceReservedOverlappingEnd()
-		throws PortalException {
-
-		Calendar resourceCalendar =
-			CalendarTestUtil.addCalendarResourceCalendar(_user);
-
-		CalendarBooking firstCalendarBooking =
-			CalendarBookingTestUtil.addRegularCalendarBooking(resourceCalendar);
-
-		Assert.assertTrue(firstCalendarBooking.isApproved());
-
-		long startTime = firstCalendarBooking.getStartTime() - Time.HOUR / 2;
-		long endTime = firstCalendarBooking.getEndTime() - Time.HOUR / 2;
-
-		Calendar calendar = CalendarTestUtil.addCalendar(_user);
-
-		CalendarBooking secondChildCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				calendar, resourceCalendar, startTime, endTime);
-
-		Assert.assertTrue(secondChildCalendarBooking.isDenied());
-	}
-
-	@Test
-	public void testAddCalendarBookingResourceReservedOverlappingStart()
-		throws PortalException {
-
-		Calendar resourceCalendar =
-			CalendarTestUtil.addCalendarResourceCalendar(_user);
-
-		CalendarBooking firstCalendarBooking =
-			CalendarBookingTestUtil.addRegularCalendarBooking(resourceCalendar);
-
-		Assert.assertTrue(firstCalendarBooking.isApproved());
-
-		long startTime = firstCalendarBooking.getStartTime() + Time.HOUR / 2;
-		long endTime = firstCalendarBooking.getEndTime() + Time.HOUR / 2;
-
-		Calendar calendar = CalendarTestUtil.addCalendar(_user);
-
-		CalendarBooking secondChildCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				calendar, resourceCalendar, startTime, endTime);
-
-		Assert.assertTrue(secondChildCalendarBooking.isDenied());
-	}
-
-	@Test
-	public void testAddCalendarBookingResourceReservedStartOverlapsEnd()
-		throws PortalException {
-
-		Calendar resourceCalendar =
-			CalendarTestUtil.addCalendarResourceCalendar(_user);
-
-		CalendarBooking firstCalendarBooking =
-			CalendarBookingTestUtil.addRegularCalendarBooking(resourceCalendar);
-
-		Assert.assertTrue(firstCalendarBooking.isApproved());
-
-		long startTime = firstCalendarBooking.getEndTime();
-
-		long endTime = startTime + Time.HOUR;
-
-		Calendar calendar = CalendarTestUtil.addCalendar(_user);
-
-		CalendarBooking secondChildCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				calendar, resourceCalendar, startTime, endTime);
-
-		Assert.assertTrue(secondChildCalendarBooking.isPending());
-	}
-
-	@Test
-	public void testAddCalendarBookingResourseRequestedOverlappingEnd()
-		throws PortalException {
-
-		Calendar calendar = CalendarTestUtil.addCalendar(_user);
-
-		Calendar resourceCalendar =
-			CalendarTestUtil.addCalendarResourceCalendar(_user);
-
-		CalendarBooking firstChildCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				calendar, resourceCalendar);
-
-		Assert.assertTrue(firstChildCalendarBooking.isPending());
-
-		long startTime =
-			firstChildCalendarBooking.getStartTime() -
-				firstChildCalendarBooking.getDuration() / 2;
-		long endTime =
-			firstChildCalendarBooking.getEndTime() -
-				firstChildCalendarBooking.getDuration() / 2;
-
-		CalendarBooking secondChildCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				calendar, resourceCalendar, startTime, endTime);
-
-		Assert.assertTrue(secondChildCalendarBooking.isDenied());
 	}
 
 	@Test
@@ -560,15 +235,29 @@ public class CalendarBookingLocalServiceTest {
 	public void testDeleteCalendarBooking() throws Exception {
 		ServiceContext serviceContext = createServiceContext();
 
+		Calendar calendar = CalendarTestUtil.addCalendar(_user, serviceContext);
+
+		long startTime = System.currentTimeMillis();
+
+		Recurrence recurrence = RecurrenceTestUtil.getDailyRecurrence();
+
 		CalendarBooking calendarBooking =
-			CalendarBookingTestUtil.addDailyRecurringCalendarBooking(
-				_user, serviceContext);
+			CalendarBookingTestUtil.addRecurringCalendarBooking(
+				_user, calendar, startTime, startTime + (Time.HOUR * 10),
+				recurrence, serviceContext);
+
+		long instanceStartTime = startTime + Time.DAY * 2;
 
 		Map<Locale, String> titleMap = RandomTestUtil.randomLocaleStringMap();
 
 		CalendarBooking calendarBookingInstance =
-			CalendarBookingTestUtil.updateCalendarBookingInstance(
-				calendarBooking, 2, titleMap, serviceContext);
+			CalendarBookingLocalServiceUtil.updateCalendarBookingInstance(
+				_user.getUserId(), calendarBooking.getCalendarBookingId(), 2,
+				calendar.getCalendarId(), titleMap,
+				calendarBooking.getDescriptionMap(),
+				calendarBooking.getLocation(), instanceStartTime,
+				instanceStartTime + (Time.HOUR * 10), false, null, false, 0,
+				null, 0, null, serviceContext);
 
 		CalendarBookingLocalServiceUtil.deleteCalendarBooking(calendarBooking);
 
@@ -585,15 +274,29 @@ public class CalendarBookingLocalServiceTest {
 
 		ServiceContext serviceContext = createServiceContext();
 
+		Calendar calendar = CalendarTestUtil.addCalendar(_user, serviceContext);
+
+		long startTime = System.currentTimeMillis();
+
+		Recurrence recurrence = RecurrenceTestUtil.getDailyRecurrence();
+
 		CalendarBooking calendarBooking =
-			CalendarBookingTestUtil.addDailyRecurringCalendarBooking(
-				_user, serviceContext);
+			CalendarBookingTestUtil.addRecurringCalendarBooking(
+				_user, calendar, startTime, startTime + (Time.HOUR * 10),
+				recurrence, serviceContext);
+
+		long instanceStartTime = startTime + Time.DAY * 2;
 
 		Map<Locale, String> titleMap = RandomTestUtil.randomLocaleStringMap();
 
 		CalendarBooking calendarBookingInstance =
-			CalendarBookingTestUtil.updateCalendarBookingInstance(
-				calendarBooking, 2, titleMap, serviceContext);
+			CalendarBookingLocalServiceUtil.updateCalendarBookingInstance(
+				_user.getUserId(), calendarBooking.getCalendarBookingId(), 2,
+				calendar.getCalendarId(), titleMap,
+				calendarBooking.getDescriptionMap(),
+				calendarBooking.getLocation(), instanceStartTime,
+				instanceStartTime + (Time.HOUR * 10), false, null, false, 0,
+				null, 0, null, serviceContext);
 
 		CalendarBookingLocalServiceUtil.deleteCalendarBookingInstance(
 			calendarBooking, 1, true, true);
@@ -614,15 +317,28 @@ public class CalendarBookingLocalServiceTest {
 
 		ServiceContext serviceContext = createServiceContext();
 
-		CalendarBooking calendarBooking =
-			CalendarBookingTestUtil.addDailyRecurringCalendarBooking(
-				_user, serviceContext);
+		Calendar calendar = CalendarTestUtil.addCalendar(_user, serviceContext);
 
-		Map<Locale, String> titleMap = RandomTestUtil.randomLocaleStringMap();
+		long startTime = System.currentTimeMillis();
+
+		Recurrence recurrence = RecurrenceTestUtil.getDailyRecurrence();
+
+		CalendarBooking calendarBooking =
+			CalendarBookingTestUtil.addRecurringCalendarBooking(
+				_user, calendar, startTime, startTime + (Time.HOUR * 10),
+				recurrence, serviceContext);
+
+		long instanceStartTime = startTime + Time.DAY * 2;
 
 		CalendarBooking calendarBookingInstance =
-			CalendarBookingTestUtil.updateCalendarBookingInstance(
-				calendarBooking, 2, titleMap, serviceContext);
+			CalendarBookingLocalServiceUtil.updateCalendarBookingInstance(
+				_user.getUserId(), calendarBooking.getCalendarBookingId(), 2,
+				calendar.getCalendarId(),
+				RandomTestUtil.randomLocaleStringMap(),
+				calendarBooking.getDescriptionMap(),
+				calendarBooking.getLocation(), instanceStartTime,
+				instanceStartTime + (Time.HOUR * 10), false, null, false, 0,
+				null, 0, null, serviceContext);
 
 		CalendarBookingLocalServiceUtil.deleteCalendarBooking(
 			calendarBooking, true);
@@ -640,15 +356,29 @@ public class CalendarBookingLocalServiceTest {
 
 		ServiceContext serviceContext = createServiceContext();
 
+		Calendar calendar = CalendarTestUtil.addCalendar(_user, serviceContext);
+
+		long startTime = System.currentTimeMillis();
+
+		Recurrence recurrence = RecurrenceTestUtil.getDailyRecurrence();
+
 		CalendarBooking calendarBooking =
-			CalendarBookingTestUtil.addDailyRecurringCalendarBooking(
-				_user, serviceContext);
+			CalendarBookingTestUtil.addRecurringCalendarBooking(
+				_user, calendar, startTime, startTime + (Time.HOUR * 10),
+				recurrence, serviceContext);
+
+		long instanceStartTime = startTime + Time.DAY * 2;
 
 		Map<Locale, String> titleMap = RandomTestUtil.randomLocaleStringMap();
 
 		CalendarBooking calendarBookingInstance =
-			CalendarBookingTestUtil.updateCalendarBookingInstance(
-				calendarBooking, 2, titleMap, serviceContext);
+			CalendarBookingLocalServiceUtil.updateCalendarBookingInstance(
+				_user.getUserId(), calendarBooking.getCalendarBookingId(), 2,
+				calendar.getCalendarId(), titleMap,
+				calendarBooking.getDescriptionMap(),
+				calendarBooking.getLocation(), instanceStartTime,
+				instanceStartTime + (Time.HOUR * 10), false, null, false, 0,
+				null, 0, null, serviceContext);
 
 		CalendarBookingLocalServiceUtil.deleteCalendarBooking(
 			calendarBooking, false);
@@ -666,10 +396,16 @@ public class CalendarBookingLocalServiceTest {
 
 		ServiceContext serviceContext = createServiceContext();
 
+		Calendar calendar = CalendarTestUtil.addCalendar(_user, serviceContext);
+
+		long startTime = System.currentTimeMillis();
+
+		Recurrence recurrence = RecurrenceTestUtil.getDailyRecurrence(2);
+
 		CalendarBooking calendarBooking =
 			CalendarBookingTestUtil.addRecurringCalendarBooking(
-				_user, RecurrenceTestUtil.getDailyRecurrence(2),
-				serviceContext);
+				_user, calendar, startTime, startTime + (Time.HOUR * 10),
+				recurrence, serviceContext);
 
 		long calendarBookingId = calendarBooking.getCalendarBookingId();
 
@@ -694,17 +430,41 @@ public class CalendarBookingLocalServiceTest {
 	public void testGetRecurringCalendarBookings() throws Exception {
 		ServiceContext serviceContext = createServiceContext();
 
+		Calendar calendar = CalendarTestUtil.addCalendar(_user, serviceContext);
+
+		long startTime = System.currentTimeMillis();
+
+		Recurrence recurrence = RecurrenceTestUtil.getDailyRecurrence();
+
 		CalendarBooking calendarBooking =
-			CalendarBookingTestUtil.addDailyRecurringCalendarBooking(
-				_user, serviceContext);
+			CalendarBookingTestUtil.addRecurringCalendarBooking(
+				_user, calendar, startTime, startTime + (Time.HOUR * 10),
+				recurrence, serviceContext);
 
-		Map<Locale, String> titleMap = RandomTestUtil.randomLocaleStringMap();
+		Map<Locale, String> instanceTitleMap =
+			RandomTestUtil.randomLocaleStringMap();
 
-		CalendarBookingTestUtil.updateCalendarBookingInstance(
-			calendarBooking, 2, titleMap, serviceContext);
+		int instanceIndex = 2;
 
-		CalendarBookingTestUtil.updateCalendarBookingInstance(
-			calendarBooking, 4, titleMap, serviceContext);
+		long instanceStartTime = startTime + Time.DAY * instanceIndex;
+
+		CalendarBookingLocalServiceUtil.updateCalendarBookingInstance(
+			_user.getUserId(), calendarBooking.getCalendarBookingId(),
+			instanceIndex, calendar.getCalendarId(), instanceTitleMap,
+			calendarBooking.getDescriptionMap(), calendarBooking.getLocation(),
+			instanceStartTime, instanceStartTime + (Time.HOUR * 10), false,
+			null, false, 0, null, 0, null, serviceContext);
+
+		instanceIndex = 4;
+
+		instanceStartTime = instanceStartTime + Time.DAY * instanceStartTime;
+
+		CalendarBookingLocalServiceUtil.updateCalendarBookingInstance(
+			_user.getUserId(), calendarBooking.getCalendarBookingId(),
+			instanceIndex, calendar.getCalendarId(), instanceTitleMap,
+			calendarBooking.getDescriptionMap(), calendarBooking.getLocation(),
+			instanceStartTime, instanceStartTime + (Time.HOUR * 10), false,
+			null, false, 0, null, 0, null, serviceContext);
 
 		List<CalendarBooking> instances =
 			CalendarBookingLocalServiceUtil.getRecurringCalendarBookings(
@@ -719,7 +479,7 @@ public class CalendarBookingLocalServiceTest {
 				continue;
 			}
 
-			Assert.assertEquals(titleMap, instance.getTitleMap());
+			Assert.assertEquals(instanceTitleMap, instance.getTitleMap());
 		}
 	}
 
@@ -729,246 +489,52 @@ public class CalendarBookingLocalServiceTest {
 
 		ServiceContext serviceContext = createServiceContext();
 
+		Calendar calendar = CalendarTestUtil.addCalendar(_user, serviceContext);
+
+		long startTime = System.currentTimeMillis();
+
+		Recurrence recurrence = RecurrenceTestUtil.getDailyRecurrence();
+
 		CalendarBooking calendarBooking =
-			CalendarBookingTestUtil.addDailyRecurringCalendarBooking(
-				_user, serviceContext);
+			CalendarBookingTestUtil.addRecurringCalendarBooking(
+				_user, calendar, startTime, startTime + (Time.HOUR * 10),
+				recurrence, serviceContext);
 
-		Map<Locale, String> titleMap = RandomTestUtil.randomLocaleStringMap();
+		Map<Locale, String> instanceTitleMap =
+			RandomTestUtil.randomLocaleStringMap();
 
-		CalendarBooking firstCalendarBookingInstance =
-			CalendarBookingTestUtil.updateCalendarBookingInstance(
-				calendarBooking, 2, titleMap, serviceContext);
+		int instanceIndex = 2;
 
-		CalendarBooking secondCalendarBookingInstance =
-			CalendarBookingTestUtil.updateCalendarBookingInstance(
-				calendarBooking, 4, titleMap, serviceContext);
+		long firstInstancStartTime = startTime + Time.DAY * instanceIndex;
+
+		CalendarBookingLocalServiceUtil.updateCalendarBookingInstance(
+			_user.getUserId(), calendarBooking.getCalendarBookingId(),
+			instanceIndex, calendar.getCalendarId(), instanceTitleMap,
+			calendarBooking.getDescriptionMap(), calendarBooking.getLocation(),
+			firstInstancStartTime, firstInstancStartTime + (Time.HOUR * 10),
+			false, null, false, 0, null, 0, null, serviceContext);
+
+		instanceIndex = 4;
+
+		long secondInstancStartTime =
+			firstInstancStartTime + Time.DAY * instanceIndex;
+
+		CalendarBookingLocalServiceUtil.updateCalendarBookingInstance(
+			_user.getUserId(), calendarBooking.getCalendarBookingId(),
+			instanceIndex, calendar.getCalendarId(), instanceTitleMap,
+			calendarBooking.getDescriptionMap(), calendarBooking.getLocation(),
+			secondInstancStartTime, secondInstancStartTime + (Time.HOUR * 10),
+			false, null, false, 0, null, 0, null, serviceContext);
 
 		List<CalendarBooking> instances =
 			CalendarBookingLocalServiceUtil.getRecurringCalendarBookings(
-				calendarBooking,
-				firstCalendarBookingInstance.getStartTime() + 1);
+				calendarBooking, firstInstancStartTime + 1);
 
 		Assert.assertEquals(instances.toString(), 1, instances.size());
 
 		CalendarBooking instance = instances.get(0);
 
-		Assert.assertEquals(
-			secondCalendarBookingInstance.getStartTime(),
-			instance.getStartTime());
-	}
-
-	@Test
-	public void testInviteGroupCalendar() throws Exception {
-		ServiceContext serviceContext = createServiceContext();
-
-		Calendar invitingCalendar = CalendarTestUtil.addCalendar(
-			_user, serviceContext);
-
-		_group = GroupTestUtil.addGroup();
-
-		Calendar groupCalendar = CalendarTestUtil.addCalendar(
-			_group, serviceContext);
-
-		CalendarBooking childCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				invitingCalendar, groupCalendar);
-
-		assertCalendar(childCalendarBooking, groupCalendar);
-	}
-
-	@Test
-	public void testInviteGroupResourceCalendar() throws Exception {
-		ServiceContext serviceContext = createServiceContext();
-
-		Calendar invitingCalendar = CalendarTestUtil.addCalendar(
-			_user, serviceContext);
-
-		_group = GroupTestUtil.addGroup();
-
-		Calendar resourceCalendar =
-			CalendarTestUtil.addCalendarResourceCalendar(_group);
-
-		CalendarBooking childCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				invitingCalendar, resourceCalendar);
-
-		assertCalendar(childCalendarBooking, resourceCalendar);
-	}
-
-	@Test
-	public void testInviteLiveSiteCalendarCreatesStagingSiteCalendarBooking()
-		throws Exception {
-
-		_liveGroup = GroupTestUtil.addGroup();
-
-		Calendar invitingCalendar = CalendarTestUtil.addCalendar(_user);
-
-		Calendar liveCalendar = CalendarTestUtil.getDefaultCalendar(_liveGroup);
-
-		enableLocalStaging(_liveGroup, true);
-
-		Calendar stagingCalendar = CalendarTestUtil.getStagingCalendar(
-			_liveGroup, liveCalendar);
-
-		Assert.assertNotNull(stagingCalendar);
-
-		CalendarBooking childCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				invitingCalendar, liveCalendar);
-
-		assertCalendar(childCalendarBooking, stagingCalendar);
-
-		assertCalendarBookingsCount(invitingCalendar, 1);
-
-		assertCalendarBookingsCount(liveCalendar, 0);
-
-		assertCalendarBookingsCount(stagingCalendar, 1);
-	}
-
-	@Test
-	public void testInviteLiveSiteCalendarWithDeletedStagingSiteCalendarCreatesNoCalendarBooking()
-		throws Exception {
-
-		_liveGroup = GroupTestUtil.addGroup();
-
-		Calendar invitingCalendar = CalendarTestUtil.addCalendar(_user);
-
-		Calendar liveCalendar = CalendarTestUtil.addCalendar(_liveGroup);
-
-		enableLocalStaging(_liveGroup, true);
-
-		Calendar stagingCalendar = CalendarTestUtil.getStagingCalendar(
-			_liveGroup, liveCalendar);
-
-		Assert.assertNotNull(stagingCalendar);
-
-		CalendarLocalServiceUtil.deleteCalendar(stagingCalendar);
-
-		CalendarBooking childCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				invitingCalendar, liveCalendar);
-
-		Assert.assertNull(childCalendarBooking);
-
-		assertCalendarBookingsCount(invitingCalendar, 1);
-
-		assertCalendarBookingsCount(liveCalendar, 0);
-
-		assertCalendarBookingsCount(stagingCalendar, 0);
-	}
-
-	@Test
-	public void testInviteLiveSiteResourceCalendarCreatesStagingSiteResourceCalendarBooking()
-		throws Exception {
-
-		_liveGroup = GroupTestUtil.addGroup();
-
-		Calendar invitingCalendar = CalendarTestUtil.addCalendar(_user);
-
-		Calendar liveCalendar = CalendarTestUtil.addCalendarResourceCalendar(
-			_liveGroup);
-
-		enableLocalStaging(_liveGroup, true);
-
-		Calendar stagingCalendar = CalendarTestUtil.getStagingCalendar(
-			_liveGroup, liveCalendar);
-
-		Assert.assertNotNull(stagingCalendar);
-
-		CalendarBooking childCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				invitingCalendar, liveCalendar);
-
-		assertCalendar(childCalendarBooking, stagingCalendar);
-
-		assertCalendarBookingsCount(invitingCalendar, 1);
-
-		assertCalendarBookingsCount(liveCalendar, 0);
-
-		assertCalendarBookingsCount(stagingCalendar, 1);
-	}
-
-	@Test
-	public void testInviteLiveSiteResourceCalendarWithDeletedStagingSiteCalendarCreatesNoCalendarBooking()
-		throws Exception {
-
-		_liveGroup = GroupTestUtil.addGroup();
-
-		Calendar invitingCalendar = CalendarTestUtil.addCalendar(_user);
-
-		Calendar liveCalendar = CalendarTestUtil.addCalendarResourceCalendar(
-			_liveGroup);
-
-		enableLocalStaging(_liveGroup, true);
-
-		Calendar stagingCalendar = CalendarTestUtil.getStagingCalendar(
-			_liveGroup, liveCalendar);
-
-		Assert.assertNotNull(stagingCalendar);
-
-		CalendarResourceLocalServiceUtil.deleteCalendarResource(
-			stagingCalendar.getCalendarResource());
-
-		CalendarBooking childCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				invitingCalendar, liveCalendar);
-
-		Assert.assertNull(childCalendarBooking);
-
-		assertCalendarBookingsCount(invitingCalendar, 1);
-
-		assertCalendarBookingsCount(liveCalendar, 0);
-
-		assertCalendarBookingsCount(stagingCalendar, 0);
-	}
-
-	@Test
-	public void testInviteNonStagedSiteCalendarCreatesLiveSiteCalendarBooking()
-		throws Exception {
-
-		_liveGroup = GroupTestUtil.addGroup();
-
-		Calendar invitingCalendar = CalendarTestUtil.addCalendar(_user);
-
-		Calendar liveCalendar = CalendarTestUtil.getDefaultCalendar(_liveGroup);
-
-		enableLocalStaging(_liveGroup, false);
-
-		Calendar stagingCalendar = CalendarTestUtil.getStagingCalendar(
-			_liveGroup, liveCalendar);
-
-		Assert.assertNull(stagingCalendar);
-
-		CalendarBooking childCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				invitingCalendar, liveCalendar);
-
-		assertCalendar(childCalendarBooking, liveCalendar);
-	}
-
-	@Test
-	public void testInviteNonStagedSiteResourceCalendarCreatesLiveSiteResourceCalendarBooking()
-		throws Exception {
-
-		_liveGroup = GroupTestUtil.addGroup();
-
-		Calendar invitingCalendar = CalendarTestUtil.addCalendar(_user);
-
-		Calendar liveCalendar = CalendarTestUtil.addCalendarResourceCalendar(
-			_liveGroup);
-
-		enableLocalStaging(_liveGroup, false);
-
-		Calendar stagingCalendar = CalendarTestUtil.getStagingCalendar(
-			_liveGroup, liveCalendar);
-
-		Assert.assertNull(stagingCalendar);
-
-		CalendarBooking childCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				invitingCalendar, liveCalendar);
-
-		assertCalendar(childCalendarBooking, liveCalendar);
+		Assert.assertEquals(secondInstancStartTime, instance.getStartTime());
 	}
 
 	@Test
@@ -1000,32 +566,6 @@ public class CalendarBookingLocalServiceTest {
 	}
 
 	@Test
-	public void testInviteToPublishedCalendarBookingNotifiesInvitee()
-		throws Exception {
-
-		_invitingUser = UserTestUtil.addUser();
-
-		Calendar invitingcalendar = CalendarTestUtil.addCalendar(_invitingUser);
-
-		Calendar invitedCalendar = CalendarTestUtil.addCalendar(_user);
-
-		CalendarBooking calendarBooking =
-			CalendarBookingTestUtil.addMasterCalendarBookingWithWorkflow(
-				invitingcalendar, invitedCalendar,
-				WorkflowConstants.ACTION_PUBLISH);
-
-		String mailMessageSubject =
-			"Calendar: Event Notification for " + StringPool.QUOTE +
-				calendarBooking.getTitle(LocaleUtil.getDefault()) +
-					StringPool.QUOTE;
-
-		List<MailMessage> mailMessages = MailServiceTestUtil.getMailMessages(
-			"Subject", mailMessageSubject);
-
-		Assert.assertEquals(mailMessages.toString(), 1, mailMessages.size());
-	}
-
-	@Test
 	public void testInviteToPublishedCalendarBookingResultsInPendingChild()
 		throws Exception {
 
@@ -1050,25 +590,6 @@ public class CalendarBookingLocalServiceTest {
 
 		Assert.assertEquals(
 			WorkflowConstants.STATUS_PENDING, childCalendarBooking.getStatus());
-	}
-
-	@Test
-	public void testInviteUserResourceCalendar() throws Exception {
-		ServiceContext serviceContext = createServiceContext();
-
-		_group = GroupTestUtil.addGroup();
-
-		Calendar invitingCalendar = CalendarTestUtil.addCalendar(
-			_group, serviceContext);
-
-		Calendar resourceCalendar =
-			CalendarTestUtil.addCalendarResourceCalendar(_user);
-
-		CalendarBooking childCalendarBooking =
-			CalendarBookingTestUtil.addChildCalendarBooking(
-				invitingCalendar, resourceCalendar);
-
-		assertCalendar(childCalendarBooking, resourceCalendar);
 	}
 
 	@Test
@@ -1363,42 +884,63 @@ public class CalendarBookingLocalServiceTest {
 	public void testUpdateAllFollowingFromSingleInstance() throws Exception {
 		ServiceContext serviceContext = createServiceContext();
 
+		Calendar calendar = CalendarTestUtil.addCalendar(_user, serviceContext);
+
+		long startTime = System.currentTimeMillis();
+
+		long endTime = startTime + (Time.HOUR * 10);
+
+		Recurrence recurrence = RecurrenceTestUtil.getDailyRecurrence();
+
 		CalendarBooking calendarBooking =
-			CalendarBookingTestUtil.addDailyRecurringCalendarBooking(
-				_user, serviceContext);
+			CalendarBookingTestUtil.addRecurringCalendarBooking(
+				_user, calendar, startTime, endTime, recurrence,
+				serviceContext);
 
 		Map<Locale, String> earlierDescriptionMap = new HashMap<>(
 			calendarBooking.getDescriptionMap());
 
-		Map<Locale, String> laterDescriptionMap =
-			RandomTestUtil.randomLocaleStringMap();
+		int instanceIndex = 2;
+
+		Map<Locale, String> titleMap = RandomTestUtil.randomLocaleStringMap();
+
+		long instanceStartTime = startTime + Time.DAY * 2;
+
+		long instanceEndTime = instanceStartTime + (Time.HOUR * 10);
 
 		CalendarBooking calendarBookingInstance =
 			CalendarBookingTestUtil.updateCalendarBookingInstance(
-				calendarBooking, 2, RandomTestUtil.randomLocaleStringMap(),
-				serviceContext);
+				_user, calendarBooking, instanceIndex, titleMap,
+				calendarBooking.getDescriptionMap(), instanceStartTime,
+				instanceEndTime, serviceContext);
 
-		long instanceStartTime = calendarBookingInstance.getStartTime();
-		long instanceEndTime = calendarBookingInstance.getEndTime();
+		instanceIndex = 0;
 
-		CalendarBookingLocalServiceUtil.updateCalendarBookingInstance(
-			_user.getUserId(), calendarBookingInstance.getCalendarBookingId(),
-			0, calendarBookingInstance.getCalendarId(),
-			calendarBookingInstance.getTitleMap(), laterDescriptionMap,
-			calendarBookingInstance.getLocation(), instanceStartTime,
-			instanceEndTime, false, null, true, 0, null, 0, null,
+		Map<Locale, String> laterDescriptionMap =
+			RandomTestUtil.randomLocaleStringMap();
+
+		CalendarBookingTestUtil.updateCalendarBookingInstanceAndAllFollowing(
+			_user, calendarBookingInstance, instanceIndex, titleMap,
+			laterDescriptionMap, instanceStartTime, instanceEndTime,
 			serviceContext);
+
+		List<CalendarBooking> earlierCalendarBookings = new ArrayList<>();
+		List<CalendarBooking> laterCalendarBookings = new ArrayList<>();
 
 		List<CalendarBooking> recurringCalendarBookings =
 			CalendarBookingLocalServiceUtil.getRecurringCalendarBookings(
 				calendarBooking);
 
-		List<CalendarBooking> earlierCalendarBookings = new ArrayList<>();
-		List<CalendarBooking> laterCalendarBookings = new ArrayList<>();
+		for (CalendarBooking recurringCalendarBooking :
+				recurringCalendarBookings) {
 
-		partitionCalendarBookingListByStartTime(
-			recurringCalendarBookings, instanceStartTime,
-			earlierCalendarBookings, laterCalendarBookings);
+			if (recurringCalendarBooking.getStartTime() >= instanceStartTime) {
+				laterCalendarBookings.add(recurringCalendarBooking);
+			}
+			else {
+				earlierCalendarBookings.add(recurringCalendarBooking);
+			}
+		}
 
 		Assert.assertEquals(
 			earlierCalendarBookings.toString(), 1,
@@ -1424,65 +966,106 @@ public class CalendarBookingLocalServiceTest {
 
 		ServiceContext serviceContext = createServiceContext();
 
+		Calendar calendar = CalendarTestUtil.addCalendar(_user, serviceContext);
+
+		long startTime = System.currentTimeMillis();
+
+		long endTime = startTime + (Time.HOUR * 10);
+
+		Recurrence recurrence = RecurrenceTestUtil.getDailyRecurrence();
+
 		CalendarBooking calendarBooking =
-			CalendarBookingTestUtil.addDailyRecurringCalendarBooking(
-				_user, serviceContext);
+			CalendarBookingTestUtil.addRecurringCalendarBooking(
+				_user, calendar, startTime, endTime, recurrence,
+				serviceContext);
+
+		int instanceIndex = 2;
 
 		Map<Locale, String> titleMap = RandomTestUtil.randomLocaleStringMap();
 
-		long instanceStartTime = calendarBooking.getStartTime() + Time.DAY * 2;
+		long instanceStartTime = startTime + Time.DAY * 2;
 
 		long instanceEndTime = instanceStartTime + (Time.HOUR * 10);
 
 		CalendarBooking calendarBookingInstance =
 			CalendarBookingTestUtil.updateCalendarBookingInstance(
-				_user, calendarBooking, 2, titleMap,
+				_user, calendarBooking, instanceIndex, titleMap,
 				calendarBooking.getDescriptionMap(), instanceStartTime,
 				instanceEndTime, serviceContext);
+
+		instanceIndex = 0;
 
 		Map<Locale, String> laterDescriptionMap =
 			RandomTestUtil.randomLocaleStringMap();
 
-		calendarBookingInstance =
-			CalendarBookingTestUtil.
-				updateCalendarBookingInstanceAndAllFollowing(
-					_user, calendarBookingInstance, 0, titleMap,
-					laterDescriptionMap, instanceStartTime, instanceEndTime,
-					serviceContext);
+		CalendarBookingTestUtil.updateCalendarBookingInstanceAndAllFollowing(
+			_user, calendarBookingInstance, instanceIndex, titleMap,
+			laterDescriptionMap, instanceStartTime, instanceEndTime,
+			serviceContext);
 
 		List<CalendarBooking> recurringCalendarBookings =
 			CalendarBookingLocalServiceUtil.getRecurringCalendarBookings(
-				calendarBooking, calendarBooking.getEndTime());
+				calendarBooking, endTime);
 
 		Assert.assertEquals(
 			recurringCalendarBookings.toString(), 2,
 			recurringCalendarBookings.size());
 
-		java.util.Calendar expectedEndTimeJCalendar =
-			JCalendarUtil.getJCalendar(
-				instanceEndTime, calendarBookingInstance.getTimeZone());
+		calendarBookingInstance = recurringCalendarBookings.get(0);
 
 		java.util.Calendar expectedStartTimeJCalendar =
 			JCalendarUtil.getJCalendar(
 				instanceStartTime, calendarBookingInstance.getTimeZone());
 
-		assertCalendarBookingPeriod(
-			recurringCalendarBookings.get(0), expectedStartTimeJCalendar,
-			expectedEndTimeJCalendar);
+		java.util.Calendar instanceStartTimeJCalendar =
+			JCalendarUtil.getJCalendar(
+				calendarBookingInstance.getStartTime(),
+				calendarBookingInstance.getTimeZone());
 
-		expectedEndTimeJCalendar = JCalendarUtil.getJCalendar(
-			instanceEndTime, calendarBookingInstance.getTimeZone());
+		assertSameDay(expectedStartTimeJCalendar, instanceStartTimeJCalendar);
 
-		expectedEndTimeJCalendar.add(java.util.Calendar.DAY_OF_MONTH, 1);
+		assertSameTime(expectedStartTimeJCalendar, instanceStartTimeJCalendar);
+
+		java.util.Calendar expectedEndTimeJCalendar =
+			JCalendarUtil.getJCalendar(
+				instanceEndTime, calendarBookingInstance.getTimeZone());
+
+		java.util.Calendar instanceEndTimeJCalendar =
+			JCalendarUtil.getJCalendar(
+				calendarBookingInstance.getEndTime(),
+				calendarBookingInstance.getTimeZone());
+
+		assertSameDay(expectedEndTimeJCalendar, instanceEndTimeJCalendar);
+
+		assertSameTime(expectedEndTimeJCalendar, instanceEndTimeJCalendar);
+
+		calendarBookingInstance = recurringCalendarBookings.get(1);
 
 		expectedStartTimeJCalendar = JCalendarUtil.getJCalendar(
 			instanceStartTime, calendarBookingInstance.getTimeZone());
 
 		expectedStartTimeJCalendar.add(java.util.Calendar.DAY_OF_MONTH, 1);
 
-		assertCalendarBookingPeriod(
-			recurringCalendarBookings.get(1), expectedStartTimeJCalendar,
-			expectedEndTimeJCalendar);
+		instanceStartTimeJCalendar = JCalendarUtil.getJCalendar(
+			calendarBookingInstance.getStartTime(),
+			calendarBookingInstance.getTimeZone());
+
+		assertSameDay(expectedStartTimeJCalendar, instanceStartTimeJCalendar);
+
+		assertSameTime(expectedStartTimeJCalendar, instanceStartTimeJCalendar);
+
+		expectedEndTimeJCalendar = JCalendarUtil.getJCalendar(
+			instanceEndTime, calendarBookingInstance.getTimeZone());
+
+		expectedEndTimeJCalendar.add(java.util.Calendar.DAY_OF_MONTH, 1);
+
+		instanceEndTimeJCalendar = JCalendarUtil.getJCalendar(
+			calendarBookingInstance.getEndTime(),
+			calendarBookingInstance.getTimeZone());
+
+		assertSameDay(expectedEndTimeJCalendar, instanceEndTimeJCalendar);
+
+		assertSameTime(expectedEndTimeJCalendar, instanceEndTimeJCalendar);
 	}
 
 	@Test
@@ -1504,148 +1087,93 @@ public class CalendarBookingLocalServiceTest {
 				_user, calendar, startTime, endTime, recurrence,
 				serviceContext);
 
+		int instanceIndex = 2;
+
 		Map<Locale, String> titleMap = RandomTestUtil.randomLocaleStringMap();
+
+		long instanceStartTime = startTime + Time.DAY * 2;
+
+		long instanceEndTime = instanceStartTime + Time.DAY;
+
+		CalendarBooking calendarBookingInstance =
+			CalendarBookingTestUtil.updateCalendarBookingInstance(
+				_user, calendarBooking, instanceIndex, titleMap,
+				calendarBooking.getDescriptionMap(), instanceStartTime,
+				instanceEndTime, serviceContext);
+
+		instanceIndex = 0;
 
 		Map<Locale, String> laterDescriptionMap =
 			RandomTestUtil.randomLocaleStringMap();
 
-		CalendarBooking calendarBookingInstance =
-			CalendarBookingTestUtil.updateCalendarBookingInstance(
-				calendarBooking, 2, titleMap, serviceContext);
-
-		long instanceEndTime = calendarBookingInstance.getEndTime();
-		long instanceStartTime = calendarBookingInstance.getStartTime();
-
-		calendarBookingInstance =
-			CalendarBookingTestUtil.
-				updateCalendarBookingInstanceAndAllFollowing(
-					_user, calendarBookingInstance, 0, titleMap,
-					laterDescriptionMap, instanceStartTime, instanceEndTime,
-					serviceContext);
+		CalendarBookingTestUtil.updateCalendarBookingInstanceAndAllFollowing(
+			_user, calendarBookingInstance, instanceIndex, titleMap,
+			laterDescriptionMap, instanceStartTime, instanceEndTime,
+			serviceContext);
 
 		List<CalendarBooking> recurringCalendarBookings =
 			CalendarBookingLocalServiceUtil.getRecurringCalendarBookings(
-				calendarBooking, calendarBooking.getEndTime());
+				calendarBooking, endTime);
 
 		Assert.assertEquals(
 			recurringCalendarBookings.toString(), 2,
 			recurringCalendarBookings.size());
 
-		java.util.Calendar expectedEndTimeJCalendar =
-			JCalendarUtil.getJCalendar(
-				instanceEndTime, calendarBookingInstance.getTimeZone());
+		calendarBookingInstance = recurringCalendarBookings.get(0);
 
 		java.util.Calendar expectedStartTimeJCalendar =
 			JCalendarUtil.getJCalendar(
 				instanceStartTime, calendarBookingInstance.getTimeZone());
 
-		assertCalendarBookingPeriod(
-			recurringCalendarBookings.get(0), expectedStartTimeJCalendar,
-			expectedEndTimeJCalendar);
+		java.util.Calendar instanceStartTimeJCalendar =
+			JCalendarUtil.getJCalendar(
+				calendarBookingInstance.getStartTime(),
+				calendarBookingInstance.getTimeZone());
 
-		expectedEndTimeJCalendar = JCalendarUtil.getJCalendar(
-			instanceEndTime, calendarBookingInstance.getTimeZone());
+		assertSameDay(expectedStartTimeJCalendar, instanceStartTimeJCalendar);
 
-		expectedEndTimeJCalendar.add(java.util.Calendar.DAY_OF_MONTH, 1);
+		assertSameTime(expectedStartTimeJCalendar, instanceStartTimeJCalendar);
+
+		java.util.Calendar expectedEndTimeJCalendar =
+			JCalendarUtil.getJCalendar(
+				instanceEndTime, calendarBookingInstance.getTimeZone());
+
+		java.util.Calendar instanceEndTimeJCalendar =
+			JCalendarUtil.getJCalendar(
+				calendarBookingInstance.getEndTime(),
+				calendarBookingInstance.getTimeZone());
+
+		assertSameDay(expectedEndTimeJCalendar, instanceEndTimeJCalendar);
+
+		assertSameTime(expectedEndTimeJCalendar, instanceEndTimeJCalendar);
+
+		calendarBookingInstance = recurringCalendarBookings.get(1);
 
 		expectedStartTimeJCalendar = JCalendarUtil.getJCalendar(
 			instanceStartTime, calendarBookingInstance.getTimeZone());
 
 		expectedStartTimeJCalendar.add(java.util.Calendar.DAY_OF_MONTH, 1);
 
-		assertCalendarBookingPeriod(
-			recurringCalendarBookings.get(1), expectedStartTimeJCalendar,
-			expectedEndTimeJCalendar);
-	}
+		instanceStartTimeJCalendar = JCalendarUtil.getJCalendar(
+			calendarBookingInstance.getStartTime(),
+			calendarBookingInstance.getTimeZone());
 
-	@Test
-	public void testUpdateAllFollowingWhenRecurrenceIsInSpecificTimeZone()
-		throws Exception {
+		assertSameDay(expectedStartTimeJCalendar, instanceStartTimeJCalendar);
 
-		ServiceContext serviceContext = createServiceContext();
+		assertSameTime(expectedStartTimeJCalendar, instanceStartTimeJCalendar);
 
-		Calendar calendar = CalendarTestUtil.addCalendar(_user, serviceContext);
+		expectedEndTimeJCalendar = JCalendarUtil.getJCalendar(
+			instanceEndTime, calendarBookingInstance.getTimeZone());
 
-		java.util.Calendar startTimeJCalendar = new GregorianCalendar(
-			_losAngelesTimeZone);
+		expectedEndTimeJCalendar.add(java.util.Calendar.DAY_OF_MONTH, 1);
 
-		startTimeJCalendar.set(java.util.Calendar.YEAR, 2017);
-		startTimeJCalendar.set(
-			java.util.Calendar.MONTH, java.util.Calendar.MAY);
-		startTimeJCalendar.set(
-			java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.SUNDAY);
-		startTimeJCalendar.set(java.util.Calendar.HOUR_OF_DAY, 20);
-		startTimeJCalendar.set(java.util.Calendar.MINUTE, 0);
+		instanceEndTimeJCalendar = JCalendarUtil.getJCalendar(
+			calendarBookingInstance.getEndTime(),
+			calendarBookingInstance.getTimeZone());
 
-		long startTime = startTimeJCalendar.getTimeInMillis();
+		assertSameDay(expectedEndTimeJCalendar, instanceEndTimeJCalendar);
 
-		long endTime = startTime + (Time.HOUR * 1);
-
-		Recurrence recurrence = RecurrenceTestUtil.getDailyRecurrence(
-			_losAngelesTimeZone);
-
-		recurrence.setInterval(1);
-
-		CalendarBooking calendarBooking =
-			CalendarBookingTestUtil.addRecurringCalendarBooking(
-				_user, calendar, startTime, endTime, recurrence,
-				serviceContext);
-
-		int instanceIndex = 2;
-
-		Map<Locale, String> titleMap = RandomTestUtil.randomLocaleStringMap();
-
-		long instanceStartTime = startTime + (Time.DAY * 2) + (Time.HOUR * 1);
-
-		long instanceEndTime = instanceStartTime + (Time.HOUR * 1);
-
-		CalendarBookingTestUtil.updateCalendarBookingInstance(
-			_user, calendarBooking, instanceIndex, titleMap,
-			calendarBooking.getDescriptionMap(), instanceStartTime,
-			instanceEndTime, serviceContext);
-
-		instanceIndex = 1;
-
-		instanceStartTime = startTime + (Time.DAY * 1) + (Time.HOUR * 1);
-
-		instanceEndTime = instanceStartTime + (Time.HOUR * 1);
-
-		calendarBooking = CalendarBookingLocalServiceUtil.fetchCalendarBooking(
-			calendarBooking.getCalendarBookingId());
-
-		CalendarBooking expectedCalendarBookingInstance =
-			CalendarBookingTestUtil.
-				updateRecurringCalendarBookingInstanceAndAllFollowing(
-					_user, calendarBooking, instanceIndex,
-					calendarBooking.getTitleMap(),
-					calendarBooking.getDescriptionMap(), instanceStartTime,
-					instanceEndTime, calendarBooking.getRecurrence(),
-					serviceContext);
-
-		java.util.Calendar expectedJCalendar = new GregorianCalendar(
-			_losAngelesTimeZone);
-
-		expectedJCalendar.setTimeInMillis(
-			expectedCalendarBookingInstance.getStartTime());
-
-		Assert.assertEquals(
-			expectedJCalendar.get(java.util.Calendar.DAY_OF_WEEK),
-			java.util.Calendar.MONDAY);
-
-		Assert.assertEquals(
-			expectedJCalendar.get(java.util.Calendar.HOUR_OF_DAY),
-			startTimeJCalendar.get(java.util.Calendar.HOUR_OF_DAY) + 1);
-
-		expectedJCalendar.setTimeInMillis(
-			expectedCalendarBookingInstance.getEndTime());
-
-		Assert.assertEquals(
-			expectedJCalendar.get(java.util.Calendar.DAY_OF_WEEK),
-			java.util.Calendar.MONDAY);
-
-		Assert.assertEquals(
-			expectedJCalendar.get(java.util.Calendar.HOUR_OF_DAY),
-			startTimeJCalendar.get(java.util.Calendar.HOUR_OF_DAY) + 2);
+		assertSameTime(expectedEndTimeJCalendar, instanceEndTimeJCalendar);
 	}
 
 	@Test
@@ -1654,87 +1182,79 @@ public class CalendarBookingLocalServiceTest {
 
 		ServiceContext serviceContext = createServiceContext();
 
+		Calendar calendar = CalendarTestUtil.addCalendar(_user, serviceContext);
+
+		long startTime = System.currentTimeMillis();
+
+		long endTime = startTime + (Time.HOUR * 10);
+
+		Recurrence recurrence = new Recurrence();
+
+		recurrence.setFrequency(Frequency.DAILY);
+		recurrence.setPositionalWeekdays(new ArrayList<PositionalWeekday>());
+
 		CalendarBooking calendarBooking =
-			CalendarBookingTestUtil.addDailyRecurringCalendarBooking(
-				_user, serviceContext);
+			CalendarBookingTestUtil.addRecurringCalendarBooking(
+				_user, calendar, startTime, endTime, recurrence,
+				serviceContext);
+
+		long instanceStartTime = startTime + Time.DAY * 2;
+
+		long instanceEndTime = instanceStartTime + (Time.HOUR * 10);
 
 		Map<Locale, String> titleMap = RandomTestUtil.randomLocaleStringMap();
 
-		CalendarBooking thirdCalendarBookingInstance =
-			CalendarBookingTestUtil.updateCalendarBookingInstance(
-				calendarBooking, 2, titleMap, serviceContext);
-
-		CalendarBooking secondCalendarBookingInstance =
-			CalendarBookingLocalServiceUtil.getCalendarBookingInstance(
-				calendarBooking.getCalendarBookingId(), 1);
+		CalendarBooking calendarBookingInstance =
+			CalendarBookingLocalServiceUtil.updateCalendarBookingInstance(
+				_user.getUserId(), calendarBooking.getCalendarBookingId(), 2,
+				calendar.getCalendarId(), titleMap,
+				calendarBooking.getDescriptionMap(),
+				calendarBooking.getLocation(), instanceStartTime,
+				instanceEndTime, false, null, false, 0, null, 0, null,
+				serviceContext);
 
 		CalendarBookingLocalServiceUtil.invokeTransition(
-			_user.getUserId(), calendarBooking,
-			secondCalendarBookingInstance.getStartTime(),
+			_user.getUserId(), calendarBooking, startTime + Time.DAY,
 			CalendarBookingWorkflowConstants.STATUS_MAYBE, true, true,
-			serviceContext);
-
-		thirdCalendarBookingInstance =
-			CalendarBookingLocalServiceUtil.fetchCalendarBooking(
-				thirdCalendarBookingInstance.getCalendarBookingId());
-
-		Assert.assertEquals(
-			CalendarBookingWorkflowConstants.STATUS_MAYBE,
-			thirdCalendarBookingInstance.getStatus());
-	}
-
-	@Test
-	public void testUpdateCalendarBookingInstance() throws Exception {
-		ServiceContext serviceContext = createServiceContext();
-
-		CalendarBooking calendarBooking =
-			CalendarBookingTestUtil.addDailyRecurringCalendarBooking(
-				_user, serviceContext);
-
-		Map<Locale, String> instanceTitleMap =
-			RandomTestUtil.randomLocaleStringMap();
-
-		CalendarBooking calendarBookingInstance =
-			CalendarBookingTestUtil.updateCalendarBookingInstance(
-				calendarBooking, 2, instanceTitleMap, serviceContext);
-
-		Assert.assertEquals(
-			instanceTitleMap, calendarBookingInstance.getTitleMap());
-
-		Map<Locale, String> newTitleMap =
-			RandomTestUtil.randomLocaleStringMap();
-
-		CalendarBookingLocalServiceUtil.updateCalendarBookingInstance(
-			_user.getUserId(), calendarBooking.getCalendarBookingId(), 1,
-			calendarBooking.getCalendarId(), newTitleMap,
-			calendarBooking.getDescriptionMap(), calendarBooking.getLocation(),
-			calendarBooking.getStartTime(), calendarBooking.getEndTime(), false,
-			calendarBooking.getRecurrence(), true, 0, null, 0, null,
 			serviceContext);
 
 		calendarBookingInstance =
 			CalendarBookingLocalServiceUtil.fetchCalendarBooking(
 				calendarBookingInstance.getCalendarBookingId());
 
-		Assert.assertEquals(newTitleMap, calendarBookingInstance.getTitleMap());
+		Assert.assertEquals(
+			CalendarBookingWorkflowConstants.STATUS_MAYBE,
+			calendarBookingInstance.getStatus());
 	}
 
 	@Test
-	public void testUpdateCalendarBookingInstanceWithoutRecurrence()
-		throws Exception {
-
+	public void testUpdateCalendarBookingInstance() throws Exception {
 		ServiceContext serviceContext = createServiceContext();
 
+		Calendar calendar = CalendarTestUtil.addCalendar(_user, serviceContext);
+
+		long startTime = System.currentTimeMillis();
+
+		Recurrence recurrence = RecurrenceTestUtil.getDailyRecurrence();
+
 		CalendarBooking calendarBooking =
-			CalendarBookingTestUtil.addDailyRecurringCalendarBooking(
-				_user, serviceContext);
+			CalendarBookingTestUtil.addRecurringCalendarBooking(
+				_user, calendar, startTime, startTime + (Time.HOUR * 10),
+				recurrence, serviceContext);
 
 		Map<Locale, String> instanceTitleMap =
 			RandomTestUtil.randomLocaleStringMap();
 
+		long instanceStartTime = startTime + Time.DAY * 2;
+
 		CalendarBooking calendarBookingInstance =
-			CalendarBookingTestUtil.updateCalendarBookingInstance(
-				calendarBooking, 2, instanceTitleMap, serviceContext);
+			CalendarBookingLocalServiceUtil.updateCalendarBookingInstance(
+				_user.getUserId(), calendarBooking.getCalendarBookingId(), 2,
+				calendar.getCalendarId(), instanceTitleMap,
+				calendarBooking.getDescriptionMap(),
+				calendarBooking.getLocation(), instanceStartTime,
+				instanceStartTime + (Time.HOUR * 10), false, null, false, 0,
+				null, 0, null, serviceContext);
 
 		Assert.assertEquals(
 			instanceTitleMap, calendarBookingInstance.getTitleMap());
@@ -1744,9 +1264,9 @@ public class CalendarBookingLocalServiceTest {
 
 		CalendarBookingLocalServiceUtil.updateCalendarBookingInstance(
 			_user.getUserId(), calendarBooking.getCalendarBookingId(), 1,
-			calendarBooking.getCalendarId(), newTitleMap,
+			calendar.getCalendarId(), newTitleMap,
 			calendarBooking.getDescriptionMap(), calendarBooking.getLocation(),
-			calendarBooking.getStartTime(), calendarBooking.getEndTime(), false,
+			startTime, startTime + (Time.HOUR * 10), false,
 			calendarBooking.getRecurrence(), true, 0, null, 0, null,
 			serviceContext);
 
@@ -2070,107 +1590,6 @@ public class CalendarBookingLocalServiceTest {
 	}
 
 	@Test
-	public void testUpdateLastInstanceCalendarBookingRecurrence()
-		throws Exception {
-
-		ServiceContext serviceContext = createServiceContext();
-
-		CalendarBooking calendarBooking =
-			CalendarBookingTestUtil.addDailyRecurringCalendarBooking(
-				_user, serviceContext);
-
-		CalendarBooking calendarBookingInstance =
-			CalendarBookingTestUtil.updateCalendarBookingInstance(
-				calendarBooking, 2, RandomTestUtil.randomLocaleStringMap(),
-				serviceContext);
-
-		java.util.Calendar untilJCalendar = CalendarFactoryUtil.getCalendar(
-			calendarBooking.getStartTime());
-
-		untilJCalendar.add(java.util.Calendar.DAY_OF_MONTH, 10);
-
-		Recurrence recurrence = RecurrenceTestUtil.getDailyRecurrence(
-			untilJCalendar);
-
-		CalendarBookingLocalServiceUtil.
-			updateLastInstanceCalendarBookingRecurrence(
-				calendarBookingInstance,
-				RecurrenceSerializer.serialize(recurrence));
-
-		assertDoesNotRepeat(calendarBookingInstance);
-
-		assertRepeatsUntil(calendarBooking, untilJCalendar);
-	}
-
-	@Test
-	public void testUpdateLastInstanceCalendarBookingRecurrenceFromSingleInstance()
-		throws Exception {
-
-		ServiceContext serviceContext = createServiceContext();
-
-		CalendarBooking calendarBooking =
-			CalendarBookingTestUtil.addDailyRecurringCalendarBooking(
-				_user, serviceContext);
-
-		CalendarBooking calendarBookingInstance =
-			CalendarBookingTestUtil.updateCalendarBookingInstance(
-				calendarBooking, 2, RandomTestUtil.randomLocaleStringMap(),
-				serviceContext);
-
-		java.util.Calendar untilJCalendar = CalendarFactoryUtil.getCalendar(
-			calendarBooking.getStartTime());
-
-		untilJCalendar.add(java.util.Calendar.DAY_OF_MONTH, 10);
-
-		Recurrence recurrence = RecurrenceTestUtil.getDailyRecurrence(
-			untilJCalendar);
-
-		CalendarBookingLocalServiceUtil.
-			updateLastInstanceCalendarBookingRecurrence(
-				calendarBookingInstance,
-				RecurrenceSerializer.serialize(recurrence));
-
-		assertDoesNotRepeat(calendarBookingInstance);
-
-		assertRepeatsUntil(calendarBooking, untilJCalendar);
-	}
-
-	@Test
-	public void testUpdateLastInstanceCalendarBookingRecurrencePreservesExceptionDate()
-		throws Exception {
-
-		ServiceContext serviceContext = createServiceContext();
-
-		CalendarBooking calendarBooking =
-			CalendarBookingTestUtil.addDailyRecurringCalendarBooking(
-				_user, serviceContext);
-
-		CalendarBooking calendarBookingInstance =
-			CalendarBookingTestUtil.updateCalendarBookingInstance(
-				calendarBooking, 2, RandomTestUtil.randomLocaleStringMap(),
-				serviceContext);
-
-		java.util.Calendar untilJCalendar = CalendarFactoryUtil.getCalendar(
-			calendarBooking.getStartTime());
-
-		untilJCalendar.add(java.util.Calendar.DAY_OF_MONTH, 10);
-
-		Recurrence recurrence = RecurrenceTestUtil.getDailyRecurrence(
-			untilJCalendar);
-
-		CalendarBookingLocalServiceUtil.
-			updateLastInstanceCalendarBookingRecurrence(
-				calendarBookingInstance,
-				RecurrenceSerializer.serialize(recurrence));
-
-		java.util.Calendar instanceStartTimeJCalendar =
-			CalendarFactoryUtil.getCalendar(
-				calendarBookingInstance.getStartTime(), _utcTimeZone);
-
-		assertRepeatsExceptFor(calendarBooking, instanceStartTimeJCalendar);
-	}
-
-	@Test
 	public void testUpdateRecurringCalendarBooking() throws Exception {
 		ServiceContext serviceContext = createServiceContext();
 
@@ -2265,22 +1684,6 @@ public class CalendarBookingLocalServiceTest {
 		assertCalendarBookingInstancesCount(calendarBookingId, 1);
 	}
 
-	protected void addStagingAttribute(
-		ServiceContext serviceContext, String key, Object value) {
-
-		String affixedKey =
-			StagingConstants.STAGED_PREFIX + key + StringPool.DOUBLE_DASH;
-
-		serviceContext.setAttribute(affixedKey, String.valueOf(value));
-	}
-
-	protected void assertCalendar(
-		CalendarBooking calendarBooking, Calendar calendar) {
-
-		Assert.assertEquals(
-			calendar.getCalendarId(), calendarBooking.getCalendarId());
-	}
-
 	protected void assertCalendarBookingInstancesCount(
 			long calendarBookingId, int count)
 		throws PortalException {
@@ -2302,43 +1705,6 @@ public class CalendarBookingLocalServiceTest {
 		Assert.assertNull(calendarBookingInstance);
 	}
 
-	protected void assertCalendarBookingPeriod(
-		CalendarBooking calendarBooking, java.util.Calendar startTimeJCalendar,
-		java.util.Calendar endTimeJCalendar) {
-
-		java.util.Calendar instanceStartTimeJCalendar =
-			JCalendarUtil.getJCalendar(
-				calendarBooking.getStartTime(), calendarBooking.getTimeZone());
-
-		assertSameDay(startTimeJCalendar, instanceStartTimeJCalendar);
-
-		assertSameTime(startTimeJCalendar, instanceStartTimeJCalendar);
-
-		java.util.Calendar instanceEndTimeJCalendar =
-			JCalendarUtil.getJCalendar(
-				calendarBooking.getEndTime(), calendarBooking.getTimeZone());
-
-		assertSameDay(endTimeJCalendar, instanceEndTimeJCalendar);
-
-		assertSameTime(endTimeJCalendar, instanceEndTimeJCalendar);
-	}
-
-	protected void assertCalendarBookingsCount(Calendar calendar, int count) {
-		List<CalendarBooking> calendarBookings =
-			CalendarBookingLocalServiceUtil.getCalendarBookings(
-				calendar.getCalendarId());
-
-		Assert.assertEquals(
-			calendarBookings.toString(), count, calendarBookings.size());
-	}
-
-	protected void assertDoesNotRepeat(CalendarBooking calendarBooking) {
-		calendarBooking = CalendarBookingLocalServiceUtil.fetchCalendarBooking(
-			calendarBooking.getCalendarBookingId());
-
-		Assert.assertNull(calendarBooking.getRecurrenceObj());
-	}
-
 	protected void assertEqualsTime(
 		int hour, int minute, java.util.Calendar jCalendar) {
 
@@ -2348,41 +1714,9 @@ public class CalendarBookingLocalServiceTest {
 		Assert.assertEquals(minute, jCalendar.get(java.util.Calendar.MINUTE));
 	}
 
-	protected void assertRepeatsExceptFor(
-		CalendarBooking calendarBooking,
-		java.util.Calendar exceptionJCalendar) {
-
-		calendarBooking = CalendarBookingLocalServiceUtil.fetchCalendarBooking(
-			calendarBooking.getCalendarBookingId());
-
-		Recurrence recurrence = calendarBooking.getRecurrenceObj();
-
-		List<java.util.Calendar> exceptionJCalendars =
-			recurrence.getExceptionJCalendars();
-
-		Assert.assertEquals(
-			exceptionJCalendars.toString(), 1, exceptionJCalendars.size());
-
-		assertSameDay(exceptionJCalendar, exceptionJCalendars.get(0));
-	}
-
-	protected void assertRepeatsUntil(
-		CalendarBooking calendarBooking, java.util.Calendar untilJCalendar) {
-
-		calendarBooking = CalendarBookingLocalServiceUtil.fetchCalendarBooking(
-			calendarBooking.getCalendarBookingId());
-
-		Recurrence recurrence = calendarBooking.getRecurrenceObj();
-
-		assertSameDay(untilJCalendar, recurrence.getUntilJCalendar());
-	}
-
 	protected void assertSameDay(
 		java.util.Calendar expectedJCalendar,
 		java.util.Calendar actualJCalendar) {
-
-		Assert.assertNotNull(expectedJCalendar);
-		Assert.assertNotNull(actualJCalendar);
 
 		Assert.assertEquals(
 			expectedJCalendar.get(java.util.Calendar.YEAR),
@@ -2401,9 +1735,6 @@ public class CalendarBookingLocalServiceTest {
 		java.util.Calendar expectedJCalendar,
 		java.util.Calendar actualJCalendar) {
 
-		Assert.assertNotNull(expectedJCalendar);
-		Assert.assertNotNull(actualJCalendar);
-
 		Assert.assertEquals(
 			expectedJCalendar.get(java.util.Calendar.HOUR),
 			actualJCalendar.get(java.util.Calendar.HOUR));
@@ -2413,44 +1744,12 @@ public class CalendarBookingLocalServiceTest {
 			actualJCalendar.get(java.util.Calendar.MINUTE));
 	}
 
-	protected void assertSentEmail(String to) {
-		List<MailMessage> mailMessages = MailServiceTestUtil.getMailMessages(
-			"To", to);
-
-		Assert.assertFalse(mailMessages.toString(), mailMessages.isEmpty());
-	}
-
 	protected ServiceContext createServiceContext() {
 		ServiceContext serviceContext = new ServiceContext();
 
 		serviceContext.setCompanyId(_user.getCompanyId());
 
-		serviceContext.setUserId(_user.getUserId());
-
 		return serviceContext;
-	}
-
-	protected void enableLocalStaging(
-			Group group, boolean enableCalendarStaging)
-		throws PortalException {
-
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(group.getGroupId());
-
-		addStagingAttribute(
-			serviceContext,
-			StagingUtil.getStagedPortletId(CalendarPortletKeys.CALENDAR),
-			enableCalendarStaging);
-		addStagingAttribute(
-			serviceContext, PortletDataHandlerKeys.PORTLET_CONFIGURATION_ALL,
-			false);
-		addStagingAttribute(
-			serviceContext, PortletDataHandlerKeys.PORTLET_DATA_ALL, false);
-		addStagingAttribute(
-			serviceContext, PortletDataHandlerKeys.PORTLET_SETUP_ALL, false);
-
-		StagingLocalServiceUtil.enableLocalStaging(
-			_user.getUserId(), group, false, false, serviceContext);
 	}
 
 	protected CalendarBooking getChildCalendarBooking(
@@ -2466,21 +1765,6 @@ public class CalendarBookingLocalServiceTest {
 		}
 
 		return childCalendarBooking;
-	}
-
-	protected void partitionCalendarBookingListByStartTime(
-		List<CalendarBooking> calendarBookings, long startTime,
-		List<CalendarBooking> earlierCalendarBookings,
-		List<CalendarBooking> laterCalendarBookings) {
-
-		for (CalendarBooking calendarBooking : calendarBookings) {
-			if (calendarBooking.getStartTime() >= startTime) {
-				laterCalendarBookings.add(calendarBooking);
-			}
-			else {
-				earlierCalendarBookings.add(calendarBooking);
-			}
-		}
 	}
 
 	protected void setUpCheckBookingMessageListener() {
@@ -2526,13 +1810,6 @@ public class CalendarBookingLocalServiceTest {
 			CalendarBookingLocalServiceUtil.getService());
 	}
 
-	protected void tearDownPortletPreferences() {
-		if (_liveGroup != null) {
-			PortletPreferencesLocalServiceUtil.deletePortletPreferencesByPlid(
-				0);
-		}
-	}
-
 	private static final TimeZone _losAngelesTimeZone = TimeZone.getTimeZone(
 		"America/Los_Angeles");
 	private static final TimeZone _utcTimeZone = TimeZoneUtil.getTimeZone(
@@ -2541,16 +1818,7 @@ public class CalendarBookingLocalServiceTest {
 	private Object _checkBookingMessageListener;
 
 	@DeleteAfterTestRun
-	private Group _group;
-
-	@DeleteAfterTestRun
 	private User _invitingUser;
-
-	@DeleteAfterTestRun
-	private Group _liveGroup;
-
-	@DeleteAfterTestRun
-	private User _resourceUser;
 
 	@DeleteAfterTestRun
 	private User _user;

@@ -21,10 +21,6 @@ import java.util.List;
 
 import org.eclipse.jgit.api.ResetCommand.ResetType;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.transport.RemoteConfig;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 /**
  * @author Michael Hashimoto
@@ -43,32 +39,16 @@ public class MergeCentralSubrepositoryUtil {
 		File modulesDir = new File(
 			centralGitWorkingDirectory.getWorkingDirectory(), "modules");
 
-		if (!modulesDir.exists()) {
-			return;
-		}
+		if (modulesDir.exists()) {
+			List<File> gitrepoFiles = JenkinsResultsParserUtil.findFiles(
+				modulesDir, ".gitrepo");
 
-		List<File> gitrepoFiles = JenkinsResultsParserUtil.findFiles(
-			modulesDir, ".gitrepo");
+			for (File gitrepoFile : gitrepoFiles) {
+				CentralSubrepository centralSubrepository =
+					new CentralSubrepository(
+						gitrepoFile, centralUpstreamBranchName);
 
-		for (File gitrepoFile : gitrepoFiles) {
-			CentralSubrepository centralSubrepository =
-				new CentralSubrepository(
-					gitrepoFile, centralUpstreamBranchName);
-
-			if (!centralSubrepository.isAutoPullEnabled()) {
-				continue;
-			}
-
-			if (centralSubrepository.isCentralPullRequestCandidate()) {
-				String mergeBranchName = _getMergeBranchName(
-					centralSubrepository.getSubrepositoryName(),
-					centralSubrepository.getSubrepositoryUpstreamCommit());
-				RemoteConfig upstreamRemoteConfig =
-					centralGitWorkingDirectory.getRemoteConfig("upstream");
-
-				if (!centralGitWorkingDirectory.branchExists(
-						mergeBranchName, upstreamRemoteConfig)) {
-
+				if (centralSubrepository.isCentralPullRequestCandidate()) {
 					_createMergeBranch(
 						centralGitWorkingDirectory, centralSubrepository,
 						topLevelBranchName);
@@ -80,19 +60,12 @@ public class MergeCentralSubrepositoryUtil {
 					_pushMergeBranchToRemote(
 						centralGitWorkingDirectory, centralSubrepository,
 						receiverUserName);
+
+					_createMergePullRequest(
+						centralGitWorkingDirectory, centralSubrepository,
+						receiverUserName);
 				}
-
-				_createMergePullRequest(
-					centralGitWorkingDirectory, centralSubrepository,
-					receiverUserName);
 			}
-
-			_deleteStalePulls(
-				centralGitWorkingDirectory, centralSubrepository,
-				receiverUserName);
-
-			_deleteStaleBranches(
-				centralGitWorkingDirectory, centralSubrepository);
 		}
 	}
 
@@ -152,153 +125,18 @@ public class MergeCentralSubrepositoryUtil {
 		String subrepositoryUpstreamCommit =
 			centralSubrepository.getSubrepositoryUpstreamCommit();
 
-		String url = JenkinsResultsParserUtil.combine(
-			"https://api.github.com/repos/", receiverUserName, "/",
-			subrepositoryName, "/statuses/", subrepositoryUpstreamCommit);
+		String mergeBranchName = _getMergeBranchName(
+			subrepositoryName, subrepositoryUpstreamCommit);
 
-		JSONObject requestJSONObject = new JSONObject();
-
-		requestJSONObject.put("context", "liferay/central-pull-request");
-		requestJSONObject.put("description", "Tests are queued on Jenkins.");
-		requestJSONObject.put("state", "pending");
+		String title = subrepositoryName + " - Central Merge Pull Request";
 
 		String body = JenkinsResultsParserUtil.combine(
 			"Merging the following commit: [", subrepositoryUpstreamCommit,
 			"](https://github.com/", receiverUserName, "/", subrepositoryName,
 			"/commit/", subrepositoryUpstreamCommit, ")");
-		String mergeBranchName = _getMergeBranchName(
-			subrepositoryName, subrepositoryUpstreamCommit);
-		String title = subrepositoryName + " - Central Merge Pull Request";
 
-		String pullRequestURL = centralGitWorkingDirectory.createPullRequest(
+		centralGitWorkingDirectory.createPullRequest(
 			body, mergeBranchName, receiverUserName, title);
-
-		requestJSONObject.put("target_url", pullRequestURL);
-
-		JenkinsResultsParserUtil.toJSONObject(
-			url, requestJSONObject.toString());
-	}
-
-	private static void _deleteStaleBranches(
-			GitWorkingDirectory centralGitWorkingDirectory,
-			CentralSubrepository centralSubrepository)
-		throws GitAPIException, IOException {
-
-		RemoteConfig upstreamRemoteConfig =
-			centralGitWorkingDirectory.getRemoteConfig("upstream");
-
-		if (_upstreamRemoteBranchNames == null) {
-			_upstreamRemoteBranchNames =
-				centralGitWorkingDirectory.getRemoteBranchNames(
-					upstreamRemoteConfig);
-		}
-
-		String mergeBranchName = _getMergeBranchName(
-			centralSubrepository.getSubrepositoryName(),
-			centralSubrepository.getSubrepositoryUpstreamCommit());
-
-		String mergeBranchNamePrefix = mergeBranchName.substring(
-			0, mergeBranchName.lastIndexOf("-"));
-
-		for (String upstreamRemoteBranchName : _upstreamRemoteBranchNames) {
-			if (upstreamRemoteBranchName.equals(mergeBranchName) &&
-				!centralSubrepository.isSubrepositoryUpstreamCommitMerged()) {
-
-				continue;
-			}
-
-			if (!upstreamRemoteBranchName.startsWith(mergeBranchNamePrefix)) {
-				continue;
-			}
-
-			centralGitWorkingDirectory.deleteRemoteBranch(
-				upstreamRemoteBranchName, upstreamRemoteConfig);
-		}
-	}
-
-	private static void _deleteStalePulls(
-			GitWorkingDirectory centralGitWorkingDirectory,
-			CentralSubrepository centralSubrepository, String receiverUserName)
-		throws IOException {
-
-		if (_pullsJSONArray == null) {
-			_pullsJSONArray = new JSONArray();
-
-			int page = 1;
-
-			while (page < 10) {
-				String url = JenkinsResultsParserUtil.combine(
-					"https://api.github.com/repos/", receiverUserName, "/",
-					centralGitWorkingDirectory.getRepositoryName(),
-					"/pulls?page=", String.valueOf(page));
-
-				JSONArray jsonArray = JenkinsResultsParserUtil.toJSONArray(url);
-
-				if ((jsonArray != null) && (jsonArray.length() > 0)) {
-					for (int i = 0; i < jsonArray.length(); i++) {
-						JSONObject jsonObject = jsonArray.getJSONObject(i);
-
-						JSONObject userJSONObject = jsonObject.getJSONObject(
-							"user");
-
-						String login = userJSONObject.getString("login");
-
-						if (login.equals("liferay-continuous-integration")) {
-							_pullsJSONArray.put(jsonObject);
-						}
-					}
-				}
-				else {
-					break;
-				}
-
-				page++;
-			}
-		}
-
-		String mergeBranchName = _getMergeBranchName(
-			centralSubrepository.getSubrepositoryName(),
-			centralSubrepository.getSubrepositoryUpstreamCommit());
-
-		String mergeBranchNamePrefix = mergeBranchName.substring(
-			0, mergeBranchName.lastIndexOf("-"));
-
-		for (int i = 0; i < _pullsJSONArray.length(); i++) {
-			JSONObject jsonObject = _pullsJSONArray.getJSONObject(i);
-
-			JSONObject headJSONObject = jsonObject.getJSONObject("head");
-
-			String refName = headJSONObject.getString("ref");
-
-			if (refName.equals(mergeBranchName) &&
-				!centralSubrepository.isSubrepositoryUpstreamCommitMerged()) {
-
-				continue;
-			}
-
-			if (!refName.startsWith(mergeBranchNamePrefix)) {
-				continue;
-			}
-
-			System.out.println(
-				"Closing pull request " + jsonObject.getString("html_url"));
-
-			JSONObject requestJSONObject = new JSONObject();
-
-			requestJSONObject.put(
-				"body", "This stale merge pull request has been closed.");
-
-			JenkinsResultsParserUtil.toJSONObject(
-				jsonObject.getString("comments_url"),
-				requestJSONObject.toString());
-
-			requestJSONObject = new JSONObject();
-
-			requestJSONObject.put("state", "closed");
-
-			JenkinsResultsParserUtil.toJSONObject(
-				jsonObject.getString("url"), requestJSONObject.toString());
-		}
 	}
 
 	private static String _getCiMergeFilePath(
@@ -344,8 +182,5 @@ public class MergeCentralSubrepositoryUtil {
 		centralGitWorkingDirectory.pushToRemote(
 			false, mergeBranchName, originRemoteURL);
 	}
-
-	private static JSONArray _pullsJSONArray;
-	private static List<String> _upstreamRemoteBranchNames;
 
 }

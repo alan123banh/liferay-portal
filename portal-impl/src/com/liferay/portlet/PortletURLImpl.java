@@ -495,7 +495,7 @@ public class PortletURLImpl
 			throw new IllegalArgumentException();
 		}
 
-		if (value == null) {
+		if ((value == null) || value.isEmpty()) {
 			removeParameter(name);
 
 			return;
@@ -859,7 +859,7 @@ public class PortletURLImpl
 				sb.append(StringPool.AMPERSAND);
 			}
 			catch (Exception e) {
-				_log.error("Unable to get company", e);
+				_log.error(e);
 			}
 		}
 		else {
@@ -1322,7 +1322,7 @@ public class PortletURLImpl
 			}
 		}
 		catch (Exception e) {
-			_log.error("Unable to get company key", e);
+			_log.error(e);
 		}
 
 		return null;

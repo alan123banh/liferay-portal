@@ -38,8 +38,7 @@ public abstract class IfStatementCheck extends BaseFileCheck {
 			!ifClause.matches("[^()]*\\([^()]*\\)[^()]*")) {
 
 			addMessage(
-				fileName, "Redundant parentheses in if-statement",
-				"if_statement_parentheses.markdown", lineCount);
+				fileName, "Redundant parentheses in if-statement", lineCount);
 
 			return;
 		}
@@ -56,8 +55,7 @@ public abstract class IfStatementCheck extends BaseFileCheck {
 			_hasRedundantParentheses(ifClause, "&&", "||")) {
 
 			addMessage(
-				fileName, "Redundant parentheses in if-statement",
-				"if_statement_parentheses.markdown", lineCount);
+				fileName, "Redundant parentheses in if-statement", lineCount);
 
 			return;
 		}
@@ -95,7 +93,7 @@ public abstract class IfStatementCheck extends BaseFileCheck {
 
 						addMessage(
 							fileName, "Redundant parentheses in if-statement",
-							"if_statement_parentheses.markdown", lineCount);
+							lineCount);
 
 						return;
 					}
@@ -154,7 +152,7 @@ public abstract class IfStatementCheck extends BaseFileCheck {
 				if (_hasMissingParentheses(s)) {
 					addMessage(
 						fileName, "Missing parentheses in if-statement",
-						"if_statement_parentheses.markdown", lineCount);
+						lineCount);
 
 					return;
 				}

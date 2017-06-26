@@ -14,7 +14,6 @@
 
 package com.liferay.document.library.item.selector.web.internal;
 
-import com.liferay.document.library.item.selector.web.internal.constants.DLItemSelectorWebKeys;
 import com.liferay.document.library.item.selector.web.internal.display.context.DLItemSelectorViewDisplayContext;
 import com.liferay.item.selector.ItemSelectorCriterion;
 import com.liferay.item.selector.ItemSelectorReturnTypeResolverHandler;
@@ -96,7 +95,7 @@ public abstract class BaseDLItemSelectorView<T extends ItemSelectorCriterion>
 				itemSelectedEventName, search, portletURL);
 
 		request.setAttribute(
-			DLItemSelectorWebKeys.DL_ITEM_SELECTOR_VIEW_DISPLAY_CONTEXT,
+			DL_ITEM_SELECTOR_VIEW_DISPLAY_CONTEXT,
 			dlItemSelectorViewDisplayContext);
 
 		requestDispatcher.include(request, response);

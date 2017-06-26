@@ -29,7 +29,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.webdav.methods.Method;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.webserver.test.BaseWebServerTestCase;
 
 import java.util.Arrays;
 import java.util.HashMap;

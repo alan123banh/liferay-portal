@@ -241,12 +241,10 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 
 	@Override
 	public BlogsEntry getEntry(long entryId) throws PortalException {
-		BlogsEntry entry = blogsEntryLocalService.getEntry(entryId);
-
 		BlogsEntryPermission.check(
-			getPermissionChecker(), entry, ActionKeys.VIEW);
+			getPermissionChecker(), entryId, ActionKeys.VIEW);
 
-		return entry;
+		return blogsEntryLocalService.getEntry(entryId);
 	}
 
 	@Override
@@ -256,7 +254,7 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 		BlogsEntry entry = blogsEntryLocalService.getEntry(groupId, urlTitle);
 
 		BlogsEntryPermission.check(
-			getPermissionChecker(), entry, ActionKeys.VIEW);
+			getPermissionChecker(), entry.getEntryId(), ActionKeys.VIEW);
 
 		return entry;
 	}

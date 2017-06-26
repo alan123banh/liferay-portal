@@ -39,46 +39,44 @@ AUI.add(
 			bindFieldClassAttributesStatus: function(fieldClass) {
 				var instance = this;
 
+				var EXTENDS = fieldClass;
+
 				var context = instance.get('context');
 
-				var setAttributeChangeEvent = function(attributes, attributeName) {
-					if (context.hasOwnProperty(attributeName)) {
-						var attributeValue = instance.get('value');
+				var setAttributeChangeEvent = function(attributeName) {
+					var stateAttribute = EXTENDS.ATTRS[attributeName].state;
 
-						if (!Util.compare(attributeValue, context[attributeName])) {
+					if (stateAttribute) {
+						if (context[attributeName]) {
 							instance.set(attributeName, context[attributeName]);
+						}
+						else {
+							context[attributeName] = instance.get(attributeName);
 						}
 
 						instance.after(attributeName + 'Change', A.bind(instance._afterAttributeChange, instance, attributeName));
 					}
 
-					instance._setStateRepaintableAttributeValue(attributeName, !!attributes[attributeName].state);
+					instance._setStateRepaintableAttributeValue(attributeName, stateAttribute);
 				};
 
-				var classAttrs = instance.getAttrs();
+				for (var attr in context) {
+					if (!instance.getAttrs().hasOwnProperty(attr)) {
 
-				AObject.keys(context).forEach(
-					function(attr) {
-						if (!classAttrs.hasOwnProperty(attr)) {
-							var config = {
-								state: true,
-								value: context[attr]
-							};
+						var config = {
+							state: true,
+							value: context[attr]
+						};
 
-							instance.addAttr(attr, config);
-							instance.after(attr + 'Change', A.bind(instance._afterAttributeChange, instance, attr));
-						}
+						instance.addAttr(attr, config);
+						instance.after(attr + 'Change', A.bind(instance._afterAttributeChange, instance, attr));
 					}
-				);
+				}
 
-				var parentClass = fieldClass;
+				while (EXTENDS) {
+					AObject.keys(EXTENDS.ATTRS).forEach(setAttributeChangeEvent);
 
-				while (parentClass) {
-					var attrs = parentClass.ATTRS;
-
-					AObject.keys(attrs).forEach(A.bind(setAttributeChangeEvent, instance, attrs));
-
-					parentClass = parentClass.EXTENDS;
+					EXTENDS = EXTENDS.EXTENDS;
 				}
 
 				instance._eventHandlers.push(instance.after('contextChange', instance._afterContextChange));

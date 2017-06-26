@@ -15,7 +15,7 @@
 package com.liferay.portal.tools.bundle.support.maven;
 
 import com.liferay.portal.tools.bundle.support.commands.DistBundleCommand;
-import com.liferay.portal.tools.bundle.support.constants.BundleSupportConstants;
+import com.liferay.portal.tools.bundle.support.commands.InitBundleCommand;
 import com.liferay.portal.tools.bundle.support.internal.util.BundleSupportUtil;
 import com.liferay.portal.tools.bundle.support.internal.util.FileUtil;
 import com.liferay.portal.tools.bundle.support.internal.util.MavenUtil;
@@ -33,10 +33,9 @@ import org.apache.maven.project.MavenProject;
 
 /**
  * @author David Truong
- * @author Andrea Di Giorgi
  */
 @Mojo(name = "dist")
-public class DistBundleMojo extends InitBundleMojo {
+public class DistBundleMojo extends AbstractBundleMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException {
@@ -85,7 +84,19 @@ public class DistBundleMojo extends InitBundleMojo {
 
 				File liferayHomeDir = getLiferayHomeDir();
 
-				super.execute();
+				InitBundleCommand initBundleCommand = new InitBundleCommand();
+
+				initBundleCommand.setCacheDir(cacheDir);
+				initBundleCommand.setConfigsDir(
+					new File(project.getBasedir(), configs));
+				initBundleCommand.setEnvironment(environment);
+				initBundleCommand.setLiferayHomeDir(liferayHomeDir);
+				initBundleCommand.setPassword(password);
+				initBundleCommand.setStripComponents(stripComponents);
+				initBundleCommand.setUrl(url);
+				initBundleCommand.setUserName(userName);
+
+				initBundleCommand.execute();
 
 				DistBundleCommand distBundleCommand = new DistBundleCommand();
 
@@ -98,9 +109,6 @@ public class DistBundleMojo extends InitBundleMojo {
 
 				FileUtil.deleteDirectory(liferayHomeDir.toPath());
 			}
-		}
-		catch (MojoExecutionException mee) {
-			throw mee;
 		}
 		catch (Exception e) {
 			throw new MojoExecutionException(
@@ -117,16 +125,10 @@ public class DistBundleMojo extends InitBundleMojo {
 	)
 	protected File deployFile;
 
-	@Parameter(
-		defaultValue = BundleSupportConstants.DEFAULT_BUNDLE_FORMAT,
-		required = true
-	)
+	@Parameter(defaultValue = "zip", required = true)
 	protected String format;
 
-	@Parameter(
-		defaultValue = "" + BundleSupportConstants.DEFAULT_INCLUDE_FOLDER,
-		required = true
-	)
+	@Parameter(defaultValue = "true", required = true)
 	protected boolean includeFolder;
 
 	@Parameter(

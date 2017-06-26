@@ -203,12 +203,12 @@ public class CacheFilter extends BasePortalFilter {
 		}
 		catch (NoSuchLayoutException nsle) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(nsle, nsle);
+				_log.warn(nsle);
 			}
 		}
 		catch (Exception e) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to get friendly URL group", e);
+				_log.warn(e);
 			}
 
 			return 0;
@@ -248,12 +248,12 @@ public class CacheFilter extends BasePortalFilter {
 			return layout.getPlid();
 		}
 		catch (NoSuchLayoutException nsle) {
-			_log.warn("Unable to get friendly URL layout", nsle);
+			_log.warn(nsle);
 
 			return 0;
 		}
 		catch (Exception e) {
-			_log.error("Unable to get friendly URL layout", e);
+			_log.error(e);
 
 			return 0;
 		}

@@ -126,6 +126,8 @@ public class DDMFormTemplateContextFactoryImpl
 		setDDMFormFieldsEvaluableProperty(ddmForm);
 
 		templateContext.put(
+			"definition", _ddmFormJSONSerializer.serialize(ddmForm));
+		templateContext.put(
 			"evaluatorURL", getDDMFormContextProviderServletURL());
 
 		List<DDMFormFieldType> ddmFormFieldTypes =
@@ -135,7 +137,8 @@ public class DDMFormTemplateContextFactoryImpl
 			"fieldTypes",
 			_ddmFormFieldTypesJSONSerializer.serialize(ddmFormFieldTypes));
 
-		templateContext.put("groupId", ddmFormRenderingContext.getGroupId());
+		templateContext.put(
+			"layout", _ddmFormLayoutJSONSerializer.serialize(ddmFormLayout));
 
 		List<Object> pages = getPages(
 			ddmForm, ddmFormLayout, ddmFormRenderingContext);
@@ -158,7 +161,6 @@ public class DDMFormTemplateContextFactoryImpl
 			"requiredFieldsWarningMessageHTML",
 			getRequiredFieldsWarningMessageHTML(resourceBundle));
 
-		templateContext.put("rules", ddmForm.getDDMFormRules());
 		templateContext.put(
 			"showRequiredFieldsWarning",
 			ddmFormRenderingContext.isShowRequiredFieldsWarning());
@@ -271,9 +273,6 @@ public class DDMFormTemplateContextFactoryImpl
 		}
 		else if (Objects.equals(paginationMode, DDMFormLayout.TABBED_MODE)) {
 			return "ddm.tabbed_form";
-		}
-		else if (Objects.equals(paginationMode, DDMFormLayout.WIZARD_MODE)) {
-			return "ddm.wizard_form";
 		}
 
 		return "ddm.paginated_form";

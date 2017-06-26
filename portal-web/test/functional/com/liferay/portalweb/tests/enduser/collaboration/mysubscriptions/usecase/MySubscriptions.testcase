@@ -26,9 +26,17 @@
 	</set-up>
 
 	<tear-down>
-		<execute macro="PortalInstances#tearDownCP">
-			<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
-		</execute>
+		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+
+		<if>
+			<equals arg1="${testPortalInstance}" arg2="true" />
+			<then>
+				<execute macro="PortalInstances#tearDownCP" />
+			</then>
+			<else>
+				<execute macro="Page#tearDownPG" />
+			</else>
+		</if>
 	</tear-down>
 
 	<command name="SubscribeAndUnsubscribetoBookmarksRootFolder">
@@ -56,9 +64,7 @@
 			<var name="assetType" value="Bookmarks Folder" />
 		</execute>
 
-		<execute macro="Subscriptions#unsubscribeViaMySubscriptions">
-			<var name="rowNumber" value="1" />
-		</execute>
+		<execute macro="Subscriptions#unsubscribeViaMySubscriptions" />
 
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="My Subscriptions Page" />

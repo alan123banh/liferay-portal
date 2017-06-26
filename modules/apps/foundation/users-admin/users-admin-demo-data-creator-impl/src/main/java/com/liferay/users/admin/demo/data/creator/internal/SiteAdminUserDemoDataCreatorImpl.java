@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
-import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
 import com.liferay.users.admin.demo.data.creator.SiteAdminUserDemoDataCreator;
 
 import org.osgi.service.component.annotations.Component;
@@ -47,24 +46,27 @@ public class SiteAdminUserDemoDataCreatorImpl
 
 		User user = createUser(group.getCompanyId(), emailAddress);
 
-		userLocalService.addGroupUser(groupId, user.getUserId());
+		userLocalService.setGroupUsers(groupId, new long[] {user.getUserId()});
 
 		Role role = _roleLocalService.getRole(
 			group.getCompanyId(), RoleConstants.SITE_ADMINISTRATOR);
 
-		_userGroupRoleLocalService.addUserGroupRoles(
-			user.getUserId(), groupId, new long[] {role.getRoleId()});
+		userLocalService.addRoleUser(role.getRoleId(), user);
 
 		return userLocalService.getUser(user.getUserId());
 	}
 
-	@Reference
+	@Reference(unbind = "-")
+	protected void setGroupLocalService(GroupLocalService groupLocalService) {
+		_groupLocalService = groupLocalService;
+	}
+
+	@Reference(unbind = "-")
+	protected void setRoleLocalService(RoleLocalService roleLocalService) {
+		_roleLocalService = roleLocalService;
+	}
+
 	private GroupLocalService _groupLocalService;
-
-	@Reference
 	private RoleLocalService _roleLocalService;
-
-	@Reference
-	private UserGroupRoleLocalService _userGroupRoleLocalService;
 
 }

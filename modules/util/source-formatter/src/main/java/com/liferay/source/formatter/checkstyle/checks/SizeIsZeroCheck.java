@@ -28,6 +28,8 @@ import java.util.List;
  */
 public class SizeIsZeroCheck extends AbstractCheck {
 
+	public static final String MSG_USE_METHOD = "method.use";
+
 	@Override
 	public int[] getDefaultTokens() {
 		return new int[] {TokenTypes.CTOR_DEF, TokenTypes.METHOD_DEF};
@@ -94,12 +96,10 @@ public class SizeIsZeroCheck extends AbstractCheck {
 
 			if (typeName.matches(".*(Collection|List|Map|Set)")) {
 				log(
-					methodCallAST.getLineNo(), _MSG_USE_METHOD,
+					methodCallAST.getLineNo(), MSG_USE_METHOD,
 					variableName + ".isEmpty()");
 			}
 		}
 	}
-
-	private static final String _MSG_USE_METHOD = "method.use";
 
 }

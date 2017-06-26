@@ -43,11 +43,6 @@ public class TitleFieldQueryBuilderTest
 	}
 
 	@Override
-	public void testLuceneUnfriendlyTerms() throws Exception {
-		super.testLuceneUnfriendlyTerms();
-	}
-
-	@Override
 	@Test
 	public void testMultiwordPhrasePrefixes() throws Exception {
 		super.testMultiwordPhrasePrefixes();
@@ -87,18 +82,6 @@ public class TitleFieldQueryBuilderTest
 	@Test
 	public void testStopwords() throws Exception {
 		super.testStopwords();
-	}
-
-	@Override
-	@Test
-	public void testWhitespace() throws Exception {
-		super.testWhitespace();
-	}
-
-	@Override
-	@Test
-	public void testWildcardCharacters() throws Exception {
-		super.testWildcardCharacters();
 	}
 
 	@Override

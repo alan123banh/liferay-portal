@@ -24,6 +24,14 @@ import com.puppycrawl.tools.checkstyle.utils.AnnotationUtility;
  */
 public class SubnameCheck extends AbstractCheck {
 
+	public static final String MSG_METHOD_INVALID_NAME = "method.invalidName";
+
+	public static final String MSG_PARAMETER_INVALID_NAME =
+		"parameter.invalidName";
+
+	public static final String MSG_VARIABLE_INVALID_NAME =
+		"variable.invalidName";
+
 	@Override
 	public int[] getDefaultTokens() {
 		return new int[] {
@@ -42,25 +50,17 @@ public class SubnameCheck extends AbstractCheck {
 			if (name.matches("(^_?sub|.*Sub)[A-Z].*") &&
 				!AnnotationUtility.containsAnnotation(detailAST, "Override")) {
 
-				log(detailAST.getLineNo(), _MSG_METHOD_INVALID_NAME, name);
+				log(detailAST.getLineNo(), MSG_METHOD_INVALID_NAME, name);
 			}
 		}
 		else if (name.matches("^_?sub[A-Z].*")) {
 			if (detailAST.getType() == TokenTypes.PARAMETER_DEF) {
-				log(detailAST.getLineNo(), _MSG_PARAMETER_INVALID_NAME, name);
+				log(detailAST.getLineNo(), MSG_PARAMETER_INVALID_NAME, name);
 			}
 			else {
-				log(detailAST.getLineNo(), _MSG_VARIABLE_INVALID_NAME, name);
+				log(detailAST.getLineNo(), MSG_VARIABLE_INVALID_NAME, name);
 			}
 		}
 	}
-
-	private static final String _MSG_METHOD_INVALID_NAME = "method.invalidName";
-
-	private static final String _MSG_PARAMETER_INVALID_NAME =
-		"parameter.invalidName";
-
-	private static final String _MSG_VARIABLE_INVALID_NAME =
-		"variable.invalidName";
 
 }

@@ -66,7 +66,7 @@
 					CKEDITOR.getUrl(path + 'bbcode_parser.js')
 				];
 
-				CKEDITOR.scriptLoader.load(
+				CKEDITOR.scriptLoader.loadScripts(
 					dependencies,
 					function() {
 						var bbcodeDataProcessor = CKEDITOR.plugins.get('bbcode_data_processor');

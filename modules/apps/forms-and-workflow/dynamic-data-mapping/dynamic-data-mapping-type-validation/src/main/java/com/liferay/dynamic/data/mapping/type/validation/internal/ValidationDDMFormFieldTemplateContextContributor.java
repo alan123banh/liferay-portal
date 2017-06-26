@@ -37,8 +37,8 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	immediate = true, property = "ddm.form.field.type.name=validation",
 	service = {
-		DDMFormFieldTemplateContextContributor.class,
-		ValidationDDMFormFieldTemplateContextContributor.class
+		ValidationDDMFormFieldTemplateContextContributor.class,
+		DDMFormFieldTemplateContextContributor.class
 	}
 )
 public class ValidationDDMFormFieldTemplateContextContributor

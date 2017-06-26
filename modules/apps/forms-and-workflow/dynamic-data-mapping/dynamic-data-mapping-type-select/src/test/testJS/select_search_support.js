@@ -85,7 +85,7 @@ describe(
 					}
 				);
 
-				xit(
+				it(
 					'should clear the search input after closing the field',
 					function() {
 						selectField.set('options', [{label: 'foo', value: 'foo'}, {label: 'bar', value: 'bar'}]);
@@ -104,7 +104,7 @@ describe(
 					}
 				);
 
-				xit(
+				it(
 					'should clear the options list after closing the field',
 					function(done) {
 						selectField.set('options', [{label: 'foo', value: 'foo'}, {label: 'bar', value: 'bar'}]);
@@ -137,7 +137,7 @@ describe(
 				);
 
 				it(
-					'should render an empty list if the term doesn`t match',
+					'should render an empety list if the term doesn`t match',
 					function(done) {
 						selectField.set('options', [{label: 'foo', value: 'foo'}, {label: 'bar', value: 'bar'}]);
 
@@ -155,9 +155,7 @@ describe(
 							function() {
 								var items = container.all('.drop-chosen ul > li');
 
-								assert.strictEqual(items.size(), 1);
-
-								assert.strictEqual(items._nodes[0].className, 'no-results-list')
+								assert.strictEqual(items.size(), 0);
 
 								done();
 							},
@@ -166,7 +164,7 @@ describe(
 					}
 				);
 
-				xit(
+				it(
 					'should not filter if no term was passed',
 					function(done) {
 						selectField.set('options', [{label: 'foo', value: 'foo'}, {label: 'bar', value: 'bar'}]);

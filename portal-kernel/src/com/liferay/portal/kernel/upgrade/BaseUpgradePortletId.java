@@ -20,8 +20,8 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.LayoutTypePortletConstants;
 import com.liferay.portal.kernel.model.PortletConstants;
+import com.liferay.portal.kernel.model.PortletInstance;
 import com.liferay.portal.kernel.model.ResourceConstants;
-import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -106,17 +106,17 @@ public abstract class BaseUpgradePortletId extends UpgradeProcess {
 					continue;
 				}
 
-				String rootPortletId = PortletIdCodec.decodePortletName(
+				String rootPortletId = PortletConstants.getRootPortletId(
 					portletId);
 
 				if (!rootPortletId.equals(oldRootPortletId)) {
 					continue;
 				}
 
-				long userId = PortletIdCodec.decodeUserId(portletId);
-				String instanceId = PortletIdCodec.decodeInstanceId(portletId);
+				long userId = PortletConstants.getUserId(portletId);
+				String instanceId = PortletConstants.getInstanceId(portletId);
 
-				portletIds[j] = PortletIdCodec.encode(
+				portletIds[j] = PortletConstants.assemblePortletId(
 					newRootPortletId, userId, instanceId);
 			}
 
@@ -414,7 +414,7 @@ public abstract class BaseUpgradePortletId extends UpgradeProcess {
 		List<String> actionIds = new ArrayList<>();
 
 		try (PreparedStatement ps = connection.prepareStatement(
-				"select actionId from ResourceAction where name = '" + newName +
+				"select actionId from ResourceAction where name = '" + oldName +
 					"'");
 			ResultSet rs = ps.executeQuery()) {
 
@@ -488,11 +488,11 @@ public abstract class BaseUpgradePortletId extends UpgradeProcess {
 					String portletId = oldPrimKey.substring(
 						pos + PortletConstants.LAYOUT_SEPARATOR.length());
 
-					String instanceId = PortletIdCodec.decodeInstanceId(
+					String instanceId = PortletConstants.getInstanceId(
 						portletId);
-					long userId = PortletIdCodec.decodeUserId(portletId);
+					long userId = PortletConstants.getUserId(portletId);
 
-					String newPortletId = PortletIdCodec.encode(
+					String newPortletId = PortletConstants.assemblePortletId(
 						newRootPortletId, userId, instanceId);
 
 					String newPrimKey = PortletPermissionUtil.getPrimaryKey(
@@ -573,7 +573,10 @@ public abstract class BaseUpgradePortletId extends UpgradeProcess {
 			String[] uninstanceablePortletIds = getUninstanceablePortletIds();
 
 			for (String portletId : uninstanceablePortletIds) {
-				if (PortletIdCodec.hasInstanceId(portletId)) {
+				PortletInstance portletInstance =
+					PortletInstance.fromPortletInstanceKey(portletId);
+
+				if (portletInstance.hasInstanceId()) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Portlet " + portletId +
@@ -583,9 +586,11 @@ public abstract class BaseUpgradePortletId extends UpgradeProcess {
 					continue;
 				}
 
-				PortletIdCodec.validatePortletName(portletId);
+				PortletInstance newPortletInstance = new PortletInstance(
+					portletId);
 
-				String newPortletInstanceKey = PortletIdCodec.encode(portletId);
+				String newPortletInstanceKey =
+					newPortletInstance.getPortletInstanceKey();
 
 				updateGroup(portletId, newPortletInstanceKey);
 				updateInstanceablePortletPreferences(

@@ -1,6 +1,7 @@
 AUI.add(
 	'liferay-ddm-form-renderer',
 	function(A) {
+		var AArray = A.Array;
 		var Renderer = Liferay.DDM.Renderer;
 
 		var TPL_CONTAINER = '<div class="lfr-ddm-form-container"></div>';
@@ -17,8 +18,16 @@ AUI.add(
 						value: ''
 					},
 
+					definition: {
+						value: {}
+					},
+
 					enableEvaluations: {
 						value: true
+					},
+
+					layout: {
+						value: {}
 					},
 
 					portletNamespace: {
@@ -83,7 +92,9 @@ AUI.add(
 						return {
 							p_auth: Liferay.authToken,
 							portletNamespace: instance.get('portletNamespace'),
-							serializedFormContext: JSON.stringify(instance.get('context'))
+							serializedDDMForm: JSON.stringify(instance.get('definition')),
+							serializedDDMFormLayout: JSON.stringify(instance.get('layout')),
+							serializedDDMFormValues: JSON.stringify(instance.toJSON())
 						};
 					},
 
@@ -142,7 +153,13 @@ AUI.add(
 					toJSON: function() {
 						var instance = this;
 
-						return instance.get('context');
+						var defaultLanguageId = themeDisplay.getDefaultLanguageId();
+
+						return {
+							availableLanguageIds: [defaultLanguageId],
+							defaultLanguageId: defaultLanguageId,
+							fieldValues: AArray.invoke(instance.getImmediateFields(), 'toJSON')
+						};
 					},
 
 					_afterFormRender: function() {
@@ -159,14 +176,6 @@ AUI.add(
 						if (submitButton) {
 							submitButton.attr('disabled', false);
 						}
-
-						var container = instance.get('container');
-
-						Liferay.fire(Liferay.namespace('DDM').Form + ':render',
-							{
-								containerId: container.get('id')
-							}
-						);
 					},
 
 					_onLiferaySubmitForm: function(event) {

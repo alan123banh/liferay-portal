@@ -31,11 +31,11 @@ import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.LayoutTypePortletConstants;
 import com.liferay.portal.kernel.model.Plugin;
 import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.model.PortletPreferencesIds;
 import com.liferay.portal.kernel.model.PortletWrapper;
 import com.liferay.portal.kernel.model.ResourcePermission;
 import com.liferay.portal.kernel.portlet.PortalPreferences;
-import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletLayoutListener;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -70,7 +70,6 @@ import java.text.DateFormat;
 import java.text.Format;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -455,9 +454,15 @@ public class LayoutTypePortletImpl
 	public List<String> getPortletIds() {
 		List<String> portletIds = new ArrayList<>();
 
-		for (String column : getColumns()) {
-			Collections.addAll(
-				portletIds, StringUtil.split(getColumnValue(column)));
+		List<String> columns = getColumns();
+
+		for (int i = 0; i < columns.size(); i++) {
+			String columnId = columns.get(i);
+
+			String columnValue = getColumnValue(columnId);
+
+			portletIds.addAll(
+				ListUtil.fromArray(StringUtil.split(columnValue)));
 		}
 
 		return portletIds;
@@ -1313,11 +1318,10 @@ public class LayoutTypePortletImpl
 		}
 
 		if (portlet.isInstanceable() &&
-			!PortletIdCodec.hasInstanceId(portletId)) {
+			!PortletConstants.hasInstanceId(portletId)) {
 
-			PortletIdCodec.validatePortletName(portletId);
-
-			portletId = PortletIdCodec.encode(portletId);
+			portletId = PortletConstants.assemblePortletId(
+				portletId, PortletConstants.generateInstanceId());
 		}
 
 		if (hasPortletId(portletId, strictHasPortlet)) {
@@ -1344,9 +1348,8 @@ public class LayoutTypePortletImpl
 			}
 
 			if (hasUserPreferences()) {
-				portletId = PortletIdCodec.encode(
-					PortletIdCodec.decodePortletName(portletId), userId,
-					PortletIdCodec.decodeInstanceId(portletId));
+				portletId = PortletConstants.assemblePortletId(
+					portletId, userId);
 			}
 		}
 
@@ -1484,9 +1487,8 @@ public class LayoutTypePortletImpl
 				}
 
 				if (Validator.isNull(portletIdColumnId) &&
-					Objects.equals(
-						PortletIdCodec.decodePortletName(columnPortletId),
-						PortletIdCodec.decodePortletName(portletId))) {
+					PortletConstants.hasIdenticalRootPortletId(
+						columnPortletId, portletId)) {
 
 					portletIdColumnId = columnId;
 				}
@@ -1506,7 +1508,7 @@ public class LayoutTypePortletImpl
 
 			columns.addAll(layoutTemplate.getColumns());
 
-			Collections.addAll(columns, getNestedColumns());
+			columns.addAll(getNestedColumns());
 		}
 		else if (layout.isTypePanel()) {
 			columns.add("panelSelectedPortlets");
@@ -1547,11 +1549,11 @@ public class LayoutTypePortletImpl
 		return defaultLayoutTypePortletImpl;
 	}
 
-	protected String[] getNestedColumns() {
+	protected List<String> getNestedColumns() {
 		String nestedColumnIds = getTypeSettingsProperty(
 			LayoutTypePortletConstants.NESTED_COLUMN_IDS);
 
-		return StringUtil.split(nestedColumnIds);
+		return ListUtil.fromArray(StringUtil.split(nestedColumnIds));
 	}
 
 	protected long getPlid() {
@@ -1726,7 +1728,7 @@ public class LayoutTypePortletImpl
 					continue;
 				}
 
-				String rootPortletId = PortletIdCodec.decodePortletName(
+				String rootPortletId = PortletConstants.getRootPortletId(
 					portletId);
 
 				if (!PortletPermissionUtil.contains(
@@ -1755,18 +1757,17 @@ public class LayoutTypePortletImpl
 				_log.error(se, se);
 			}
 
-			if (PortletIdCodec.hasInstanceId(portletId) ||
+			if (PortletConstants.hasInstanceId(portletId) ||
 				preferencesUniquePerLayout) {
 
 				String instanceId = null;
 
-				if (PortletIdCodec.hasInstanceId(portletId)) {
-					instanceId = PortletIdCodec.generateInstanceId();
+				if (PortletConstants.hasInstanceId(portletId)) {
+					instanceId = PortletConstants.generateInstanceId();
 				}
 
-				newPortletId = PortletIdCodec.encode(
-					PortletIdCodec.decodePortletName(portletId),
-					_portalPreferences.getUserId(), instanceId);
+				newPortletId = PortletConstants.assemblePortletId(
+					portletId, _portalPreferences.getUserId(), instanceId);
 
 				copyPreferences(
 					_portalPreferences.getUserId(), portletId, newPortletId);
@@ -1810,7 +1811,7 @@ public class LayoutTypePortletImpl
 
 		for (String nonstaticPortletId : columnValues) {
 			if (nonstaticPortletId.equals(portletId) ||
-				PortletIdCodec.decodePortletName(
+				PortletConstants.getRootPortletId(
 					nonstaticPortletId).equals(portletId)) {
 
 				return true;
@@ -1829,7 +1830,7 @@ public class LayoutTypePortletImpl
 
 		for (String staticPortletId : staticPortletIdsStart) {
 			if (staticPortletId.equals(portletId) ||
-				PortletIdCodec.decodePortletName(
+				PortletConstants.getRootPortletId(
 					staticPortletId).equals(portletId)) {
 
 				return true;
@@ -1838,7 +1839,7 @@ public class LayoutTypePortletImpl
 
 		for (String staticPortletId : staticPortletIdsEnd) {
 			if (staticPortletId.equals(portletId) ||
-				PortletIdCodec.decodePortletName(
+				PortletConstants.getRootPortletId(
 					staticPortletId).equals(portletId)) {
 
 				return true;
@@ -1878,7 +1879,7 @@ public class LayoutTypePortletImpl
 
 			portletIdList.add(portletId);
 
-			String rootPortletId = PortletIdCodec.decodePortletName(portletId);
+			String rootPortletId = PortletConstants.getRootPortletId(portletId);
 
 			if (rootPortletId.equals(PortletKeys.NESTED_PORTLETS)) {
 				String portletNamespace = PortalUtil.getPortletNamespace(

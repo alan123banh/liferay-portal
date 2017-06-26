@@ -73,34 +73,19 @@ public class UnitConverterUtil {
 
 	private static final double _fromTemperature(int toId, double fromValue) {
 		if (toId == 0) {
-
-			// Kelvin
-
-			return fromValue;
+			return fromValue;					// Kelvin
 		}
 		else if (toId == 1) {
-
-			// Celsius
-
-			return fromValue - 273.15;
+			return fromValue - 273.15;			// Celsius
 		}
 		else if (toId == 2) {
-
-			// Fahrenheit
-
-			return (1.8 * fromValue) - 459.67;
+			return (1.8 * fromValue) - 459.67;	// Fahrenheit
 		}
 		else if (toId == 3) {
-
-			// Rankine
-
-			return 1.8 * fromValue;
+			return 1.8 * fromValue;				// Rankine
 		}
 		else if (toId == 4) {
-
-			// R?aumure
-
-			return .8 * (fromValue - 273.15);
+			return .8 * (fromValue - 273.15);	// R?aumure
 		}
 		else {
 			return 0;
@@ -108,35 +93,20 @@ public class UnitConverterUtil {
 	}
 
 	private static final double _toTemperature(int fromId, double fromValue) {
-		if (fromId == 0) {
-
-			// Kelvin
-
+		if (fromId == 0) {						// Kelvin
 			return fromValue;
 		}
-		else if (fromId == 1) {
-
-			// Celsius
-
+		else if (fromId == 1) {					// Celsius
 			return fromValue + 273.15;
 		}
-		else if (fromId == 2) {
-
-			// Fahrenheit
-
+		else if (fromId == 2) {				// Fahrenheit
 			return .5555555555 * (fromValue + 459.67);
 		}
-		else if (fromId == 3) {
-
-			// Rankine
-
+		else if (fromId == 3) {				// Rankine
 			return .5555555555 * fromValue;
 		}
 		else if (fromId == 4) {
-
-			// R?aumure
-
-			return (1.25 * fromValue) + 273.15;
+			return (1.25 * fromValue) + 273.15;	// R?aumure
 		}
 		else {
 			return 0;

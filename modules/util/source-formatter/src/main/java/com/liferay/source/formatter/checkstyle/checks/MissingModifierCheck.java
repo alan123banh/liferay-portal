@@ -24,6 +24,8 @@ import com.puppycrawl.tools.checkstyle.utils.ScopeUtils;
  */
 public class MissingModifierCheck extends AbstractCheck {
 
+	public static final String MSG_MISSING_MODIFIER = "modifier.missing";
+
 	@Override
 	public int[] getDefaultTokens() {
 		return new int[] {
@@ -50,9 +52,7 @@ public class MissingModifierCheck extends AbstractCheck {
 
 		DetailAST nameAST = detailAST.findFirstToken(TokenTypes.IDENT);
 
-		log(detailAST.getLineNo(), _MSG_MISSING_MODIFIER, nameAST.getText());
+		log(detailAST.getLineNo(), MSG_MISSING_MODIFIER, nameAST.getText());
 	}
-
-	private static final String _MSG_MISSING_MODIFIER = "modifier.missing";
 
 }

@@ -14,26 +14,18 @@
 
 package com.liferay.dynamic.data.mapping.type.options.internal;
 
-import com.liferay.dynamic.data.mapping.model.DDMForm;
-import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 /**
  * @author Marcellus Tavares
@@ -41,99 +33,45 @@ import java.util.ResourceBundle;
 public class OptionsDDMFormFieldContextHelper {
 
 	public OptionsDDMFormFieldContextHelper(
-		JSONFactory jsonFactory, DDMFormField ddmFormField, String value) {
+		JSONFactory jsonFactory, String value) {
 
-		_ddmForm = ddmFormField.getDDMForm();
 		_jsonFactory = jsonFactory;
 		_value = value;
 	}
 
-	public Map<String, Object> getValue() {
-		Map<String, Object> localizedValue = new HashMap<>();
+	protected List<Object> getValue() {
+		List<Object> list = new ArrayList<>();
 
 		if (Validator.isNull(_value)) {
-			localizedValue.put(
-				LocaleUtil.toLanguageId(_ddmForm.getDefaultLocale()),
-				createDefaultOptions());
-
-			return localizedValue;
+			return list;
 		}
 
 		try {
-			JSONObject jsonObject = _jsonFactory.createJSONObject(_value);
+			JSONArray jsonArray = _jsonFactory.createJSONArray(_value);
 
-			Iterator<String> itr = jsonObject.keys();
+			for (int i = 0; i < jsonArray.length(); i++) {
+				JSONObject jsonObject = jsonArray.getJSONObject(i);
 
-			while (itr.hasNext()) {
-				String languageId = itr.next();
+				Map<String, String> optionMap = new HashMap<>();
 
-				List<Object> options = createOptions(
-					jsonObject.getJSONArray(languageId));
+				optionMap.put("label", jsonObject.getString("label"));
+				optionMap.put("value", jsonObject.getString("value"));
 
-				localizedValue.put(languageId, options);
+				list.add(optionMap);
 			}
 
-			return localizedValue;
+			return list;
 		}
 		catch (JSONException jsone) {
 			_log.error("Unable to parse JSON array", jsone);
 
-			return localizedValue;
+			return list;
 		}
-	}
-
-	protected List<Object> createDefaultOptions() {
-		List<Object> options = new ArrayList<>();
-
-		String defaultOptionLabel = getDefaultOptionLabel();
-
-		options.add(createOption(defaultOptionLabel, defaultOptionLabel));
-
-		return options;
-	}
-
-	protected Map<String, String> createOption(String label, String value) {
-		Map<String, String> map = new HashMap<>();
-
-		map.put("label", label);
-		map.put("value", value);
-
-		return map;
-	}
-
-	protected List<Object> createOptions(JSONArray jsonArray) {
-		List<Object> options = new ArrayList<>();
-
-		for (int i = 0; i < jsonArray.length(); i++) {
-			JSONObject jsonObject = jsonArray.getJSONObject(i);
-
-			Map<String, String> option = createOption(
-				jsonObject.getString("label"), jsonObject.getString("value"));
-
-			options.add(option);
-		}
-
-		return options;
-	}
-
-	protected String getDefaultOptionLabel() {
-		ResourceBundle resourceBundle = getResourceBundle(
-			_ddmForm.getDefaultLocale());
-
-		return LanguageUtil.get(resourceBundle, "option");
-	}
-
-	protected ResourceBundle getResourceBundle(Locale locale) {
-		Class<?> clazz = getClass();
-
-		return ResourceBundleUtil.getBundle(
-			"content.Language", locale, clazz.getClassLoader());
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		OptionsDDMFormFieldContextHelper.class);
 
-	private final DDMForm _ddmForm;
 	private final JSONFactory _jsonFactory;
 	private final String _value;
 

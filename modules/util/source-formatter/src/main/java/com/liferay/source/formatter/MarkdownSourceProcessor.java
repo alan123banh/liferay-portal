@@ -23,8 +23,7 @@ public class MarkdownSourceProcessor extends BaseSourceProcessor {
 
 	@Override
 	protected List<String> doGetFileNames() throws Exception {
-		return getFileNames(
-			new String[] {"**/build_gradle/node/**"}, getIncludes());
+		return getFileNames(new String[0], getIncludes());
 	}
 
 	@Override
@@ -32,7 +31,6 @@ public class MarkdownSourceProcessor extends BaseSourceProcessor {
 		return _INCLUDES;
 	}
 
-	private static final String[] _INCLUDES =
-		new String[] {"**/*.markdown", "**/*.md"};
+	private static final String[] _INCLUDES = new String[] {"**/*.markdown"};
 
 }

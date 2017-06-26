@@ -10,9 +10,14 @@
 	</set-up>
 
 	<tear-down>
-		<execute macro="PortalInstances#tearDownCP">
-			<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
-		</execute>
+		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+
+		<if>
+			<equals arg1="${testPortalInstance}" arg2="true" />
+			<then>
+				<execute macro="PortalInstances#tearDownCP" />
+			</then>
+		</if>
 	</tear-down>
 
 	<command name="AssertRelatedAssetsDisplayWithCategory" priority="4">
@@ -181,9 +186,8 @@
 			<var name="portletName" value="Related Assets" />
 		</execute>
 
-		<execute macro="AssetPublisherPortlet#configureFilterByCategories">
+		<execute macro="RelatedAssets#configureFilterByCategories">
 			<var name="categoryName" value="Category Name" />
-			<var name="portletName" value="Related Assets" />
 			<var name="vocabularyName" value="Vocabulary Name" />
 		</execute>
 

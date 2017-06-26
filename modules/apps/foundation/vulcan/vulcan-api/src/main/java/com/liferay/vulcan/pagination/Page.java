@@ -32,8 +32,6 @@ public interface Page<T> {
 
 	public int getLastPageNumber();
 
-	public Class<T> getModelClass();
-
 	public int getPageNumber();
 
 	public int getTotalCount();

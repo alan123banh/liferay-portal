@@ -23,11 +23,14 @@ import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderException;
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderOutputParametersSettings;
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderRequest;
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderResponse;
-import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderResponse.Status;
 import com.liferay.dynamic.data.mapping.data.provider.DDMDataProviderResponseOutput;
 import com.liferay.portal.kernel.cache.MultiVMPool;
 import com.liferay.portal.kernel.cache.PortalCache;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -37,13 +40,12 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
 
-import java.net.ConnectException;
-
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
-import jodd.http.HttpException;
 import jodd.http.HttpRequest;
 import jodd.http.HttpResponse;
 
@@ -63,7 +65,7 @@ public class DDMRESTDataProvider implements DDMDataProvider {
 
 		try {
 			DDMDataProviderRequest ddmDataProviderRequest =
-				createDDMDataProviderRequest(ddmDataProviderContext);
+				new DDMDataProviderRequest(ddmDataProviderContext, null);
 
 			DDMDataProviderResponse ddmDataProviderResponse = doGetData(
 				ddmDataProviderRequest);
@@ -76,8 +78,8 @@ public class DDMRESTDataProvider implements DDMDataProvider {
 
 			return results;
 		}
-		catch (Exception e) {
-			throw new DDMDataProviderException(e);
+		catch (PortalException pe) {
+			throw new DDMDataProviderException(pe);
 		}
 	}
 
@@ -89,42 +91,14 @@ public class DDMRESTDataProvider implements DDMDataProvider {
 		try {
 			return doGetData(ddmDataProviderRequest);
 		}
-		catch (HttpException he) {
-			Throwable cause = he.getCause();
-
-			if (cause instanceof ConnectException) {
-				return DDMDataProviderResponse.error(
-					Status.SERVICE_UNAVAILABLE);
-			}
-			else {
-				throw new DDMDataProviderException(he);
-			}
-		}
-		catch (Exception e) {
-			throw new DDMDataProviderException(e);
+		catch (PortalException pe) {
+			throw new DDMDataProviderException(pe);
 		}
 	}
 
 	@Override
 	public Class<?> getSettings() {
 		return DDMRESTDataProviderSettings.class;
-	}
-
-	protected DDMDataProviderRequest createDDMDataProviderRequest(
-		DDMDataProviderContext ddmDataProviderContext) {
-
-		DDMDataProviderRequest ddmDataProviderRequest =
-			new DDMDataProviderRequest(null, null);
-
-		ddmDataProviderRequest.setDDMDataProviderContext(
-			ddmDataProviderContext);
-
-		// Backwards compatibility
-
-		ddmDataProviderRequest.queryString(
-			ddmDataProviderContext.getParameters());
-
-		return ddmDataProviderRequest;
 	}
 
 	protected DDMDataProviderResponse createDDMDataProviderResponse(
@@ -151,38 +125,28 @@ public class DDMRESTDataProvider implements DDMDataProvider {
 			String type = outputParameterSettings.outputParameterType();
 			String path = outputParameterSettings.outputParameterPath();
 
-			if (Objects.equals(type, "text")) {
-				String value = documentContext.read(
-					normalizePath(path), String.class);
+			if (Objects.equals(type, "[\"text\"]")) {
+				String nomalizedPath = normalizePath(path);
 
-				if (value != null) {
-					ddmDataProviderResponseOutputs.add(
-						DDMDataProviderResponseOutput.of(name, "text", value));
-				}
+				ddmDataProviderResponseOutputs.add(
+					DDMDataProviderResponseOutput.of(
+						name, "text", documentContext.read(nomalizedPath)));
 			}
-			else if (Objects.equals(type, "number")) {
-				Number value = documentContext.read(
-					normalizePath(path), Number.class);
+			else if (Objects.equals(type, "[\"number\"]")) {
+				String nomalizedPath = normalizePath(path);
 
-				if (value != null) {
-					ddmDataProviderResponseOutputs.add(
-						DDMDataProviderResponseOutput.of(
-							name, "number", value));
-				}
+				ddmDataProviderResponseOutputs.add(
+					DDMDataProviderResponseOutput.of(
+						name, "number", documentContext.read(nomalizedPath)));
 			}
-			else if (Objects.equals(type, "list")) {
+			else if (Objects.equals(type, "[\"list\"]")) {
 				String[] paths = StringUtil.split(path, CharPool.SEMICOLON);
 
 				String normalizedValuePath = normalizePath(paths[0]);
 
 				String normalizedKeyPath = normalizedValuePath;
 
-				List<String> values = documentContext.read(
-					normalizedValuePath, List.class);
-
-				if (values == null) {
-					continue;
-				}
+				List<String> values = documentContext.read(normalizedValuePath);
 
 				List<String> keys = new ArrayList<>(values);
 
@@ -226,7 +190,8 @@ public class DDMRESTDataProvider implements DDMDataProvider {
 	}
 
 	protected DDMDataProviderResponse doGetData(
-		DDMDataProviderRequest ddmDataProviderRequest) {
+			DDMDataProviderRequest ddmDataProviderRequest)
+		throws JSONException {
 
 		DDMDataProviderContext ddmDataProviderContext =
 			ddmDataProviderRequest.getDDMDataProviderContext();
@@ -280,6 +245,30 @@ public class DDMRESTDataProvider implements DDMDataProvider {
 		return httpRequest.url();
 	}
 
+	protected Set<String> getOutputParameterPaths(
+		DDMDataProviderContext ddmDataProviderContext) {
+
+		DDMRESTDataProviderSettings ddmRESTDataProviderSettings =
+			ddmDataProviderContext.getSettingsInstance(
+				DDMRESTDataProviderSettings.class);
+
+		Set<String> outputParameterPaths = new HashSet<>();
+
+		for (DDMDataProviderOutputParametersSettings outputParameterSettings :
+				ddmRESTDataProviderSettings.outputParameters()) {
+
+			String[] paths = StringUtil.split(
+				outputParameterSettings.outputParameterPath(),
+				CharPool.SEMICOLON);
+
+			for (String path : paths) {
+				outputParameterPaths.add(path);
+			}
+		}
+
+		return outputParameterPaths;
+	}
+
 	protected String normalizePath(String path) {
 		if (StringUtil.startsWith(path, StringPool.PERIOD) ||
 			StringUtil.startsWith(path, StringPool.DOLLAR)) {
@@ -324,6 +313,9 @@ public class DDMRESTDataProvider implements DDMDataProvider {
 
 		httpRequest.query(ddmDataProviderRequest.getParameters());
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DDMRESTDataProvider.class);
 
 	private JSONFactory _jsonFactory;
 	private PortalCache<String, DDMRESTDataProviderResult> _portalCache;

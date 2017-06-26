@@ -16,14 +16,11 @@ package com.liferay.portal.kernel.deploy.auto;
 
 import com.liferay.portal.kernel.deploy.auto.context.AutoDeploymentContext;
 
-import java.io.Closeable;
-import java.io.IOException;
-
 /**
  * @author Ivica Cardic
  * @author Brian Wing Shun Chan
  */
-public interface AutoDeployer extends Closeable {
+public interface AutoDeployer {
 
 	public static final int CODE_DEFAULT = 1;
 
@@ -35,9 +32,5 @@ public interface AutoDeployer extends Closeable {
 		throws AutoDeployException;
 
 	public AutoDeployer cloneAutoDeployer() throws AutoDeployException;
-
-	@Override
-	public default void close() throws IOException {
-	}
 
 }

@@ -15,7 +15,7 @@
 package com.liferay.layout.admin.web.internal.portlet.configuration.icon;
 
 import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
-import com.liferay.exportimport.kernel.staging.Staging;
+import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.layout.admin.web.internal.constants.LayoutAdminPortletKeys;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
@@ -102,7 +102,8 @@ public class CopyApplicationsPortletConfigurationIcon
 			if (layoutRevision != null) {
 				long layoutSetBranchId = layoutRevision.getLayoutSetBranchId();
 
-				incomplete = _staging.isIncomplete(layout, layoutSetBranchId);
+				incomplete = StagingUtil.isIncomplete(
+					layout, layoutSetBranchId);
 			}
 
 			if (incomplete) {
@@ -163,8 +164,5 @@ public class CopyApplicationsPortletConfigurationIcon
 	}
 
 	private LayoutLocalService _layoutLocalService;
-
-	@Reference
-	private Staging _staging;
 
 }

@@ -15,7 +15,7 @@
 package com.liferay.exportimport.web.internal.portlet.action;
 
 import com.liferay.exportimport.constants.ExportImportPortletKeys;
-import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManager;
+import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManagerUtil;
 import com.liferay.portal.kernel.exception.NoSuchBackgroundTaskException;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
@@ -27,7 +27,6 @@ import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Daniel Kocsis
@@ -53,7 +52,8 @@ public class DeleteLayoutImportBackgroundTaskMVCActionCommand
 				actionRequest, "deleteBackgroundTaskIds");
 
 			for (long backgroundTaskId : backgroundTaskIds) {
-				_backgroundTaskManager.deleteBackgroundTask(backgroundTaskId);
+				BackgroundTaskManagerUtil.deleteBackgroundTask(
+					backgroundTaskId);
 			}
 		}
 		catch (Exception e) {
@@ -69,8 +69,5 @@ public class DeleteLayoutImportBackgroundTaskMVCActionCommand
 			}
 		}
 	}
-
-	@Reference
-	private BackgroundTaskManager _backgroundTaskManager;
 
 }

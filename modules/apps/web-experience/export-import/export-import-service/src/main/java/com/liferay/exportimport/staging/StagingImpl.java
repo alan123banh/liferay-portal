@@ -38,14 +38,17 @@ import com.liferay.exportimport.kernel.lar.MissingReferences;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
+import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
+import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
 import com.liferay.exportimport.kernel.service.StagingLocalService;
 import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
 import com.liferay.exportimport.kernel.staging.Staging;
 import com.liferay.exportimport.kernel.staging.StagingConstants;
+import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
-import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManager;
+import com.liferay.portal.kernel.backgroundtask.BackgroundTaskManagerUtil;
 import com.liferay.portal.kernel.exception.LayoutPrototypeException;
 import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
@@ -76,6 +79,7 @@ import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.RecentLayoutBranch;
 import com.liferay.portal.kernel.model.RecentLayoutRevision;
 import com.liferay.portal.kernel.model.RecentLayoutSetBranch;
+import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.WorkflowInstanceLink;
 import com.liferay.portal.kernel.model.adapter.StagedTheme;
@@ -162,24 +166,6 @@ import org.osgi.service.component.annotations.Reference;
 @DoPrivileged
 @ProviderType
 public class StagingImpl implements Staging {
-
-	@Override
-	public String buildRemoteURL(
-		ExportImportConfiguration exportImportConfiguration) {
-
-		Map<String, Serializable> settingsMap =
-			exportImportConfiguration.getSettingsMap();
-
-		String remoteAddress = MapUtil.getString(settingsMap, "remoteAddress");
-		int remotePort = MapUtil.getInteger(settingsMap, "remotePort");
-		String remotePathContext = MapUtil.getString(
-			settingsMap, "remotePathContext");
-		boolean secureConnection = MapUtil.getBoolean(
-			settingsMap, "secureConnection");
-
-		return buildRemoteURL(
-			remoteAddress, remotePort, remotePathContext, secureConnection);
-	}
 
 	@Override
 	public String buildRemoteURL(
@@ -920,8 +906,20 @@ public class StagingImpl implements Staging {
 		else if (e instanceof PortletDataException) {
 			PortletDataException pde = (PortletDataException)e;
 
-			String referrerClassName = pde.getStagedModelClassName();
-			String referrerDisplayName = pde.getStagedModelDisplayName();
+			StagedModel stagedModel = pde.getStagedModel();
+
+			String referrerClassName = StringPool.BLANK;
+			String referrerDisplayName = StringPool.BLANK;
+
+			if (stagedModel != null) {
+				StagedModelType stagedModelType =
+					stagedModel.getStagedModelType();
+
+				referrerClassName = stagedModelType.getClassName();
+
+				referrerDisplayName = StagedModelDataHandlerUtil.getDisplayName(
+					stagedModel);
+			}
 
 			String modelResource = ResourceActionsUtil.getModelResource(
 				locale, referrerClassName);
@@ -1238,7 +1236,7 @@ public class StagingImpl implements Staging {
 			stagingGroup.getTypeSettingsProperties();
 
 		HttpPrincipal httpPrincipal = new HttpPrincipal(
-			buildRemoteURL(typeSettingsProperties), user.getLogin(),
+			StagingUtil.buildRemoteURL(typeSettingsProperties), user.getLogin(),
 			user.getPassword(), user.getPasswordEncrypted());
 
 		long remoteGroupId = GetterUtil.getLong(
@@ -1466,21 +1464,21 @@ public class StagingImpl implements Staging {
 			layout);
 
 		if (layoutRevision == null) {
-			List<LayoutRevision> layoutRevisions =
-				_layoutRevisionLocalService.getLayoutRevisions(
+			try {
+				layoutRevision = _layoutRevisionLocalService.getLayoutRevision(
 					layoutSetBranchId, layout.getPlid(), true);
 
-			if (!layoutRevisions.isEmpty()) {
 				return false;
+			}
+			catch (Exception e) {
 			}
 		}
 
-		List<LayoutRevision> layoutRevisions =
-			_layoutRevisionLocalService.getLayoutRevisions(
+		try {
+			layoutRevision = _layoutRevisionLocalService.getLayoutRevision(
 				layoutSetBranchId, layout.getPlid(), false);
-
-		if (!layoutRevisions.isEmpty()) {
-			layoutRevision = layoutRevisions.get(0);
+		}
+		catch (Exception e) {
 		}
 
 		if ((layoutRevision == null) ||
@@ -1573,7 +1571,7 @@ public class StagingImpl implements Staging {
 		taskContextMap.put("privateLayout", privateLayout);
 
 		BackgroundTask backgroundTask =
-			_backgroundTaskManager.addBackgroundTask(
+			BackgroundTaskManagerUtil.addBackgroundTask(
 				userId, exportImportConfiguration.getGroupId(),
 				backgroundTaskName,
 				BackgroundTaskExecutorNames.
@@ -1727,7 +1725,7 @@ public class StagingImpl implements Staging {
 			exportImportConfiguration.getExportImportConfigurationId());
 
 		BackgroundTask backgroundTask =
-			_backgroundTaskManager.addBackgroundTask(
+			BackgroundTaskManagerUtil.addBackgroundTask(
 				userId, exportImportConfiguration.getGroupId(),
 				exportImportConfiguration.getName(),
 				BackgroundTaskExecutorNames.
@@ -2597,7 +2595,7 @@ public class StagingImpl implements Staging {
 		taskContextMap.put("httpPrincipal", httpPrincipal);
 
 		BackgroundTask backgroundTask =
-			_backgroundTaskManager.addBackgroundTask(
+			BackgroundTaskManagerUtil.addBackgroundTask(
 				user.getUserId(), exportImportConfiguration.getGroupId(),
 				backgroundTaskName,
 				BackgroundTaskExecutorNames.
@@ -3266,9 +3264,6 @@ public class StagingImpl implements Staging {
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(StagingImpl.class);
-
-	@Reference
-	private BackgroundTaskManager _backgroundTaskManager;
 
 	@Reference
 	private DLValidator _dlValidator;

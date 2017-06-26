@@ -43,16 +43,8 @@ public class OpenIdConnectSession implements Serializable {
 		return _loginTime;
 	}
 
-	public long getLoginUserId() {
-		return _loginUserId;
-	}
-
 	public Nonce getNonce() {
 		return _nonce;
-	}
-
-	public OpenIdConnectFlowState getOpenIdConnectFlowState() {
-		return _openIdConnectFlowState;
 	}
 
 	public String getOpenIdProviderName() {
@@ -79,16 +71,6 @@ public class OpenIdConnectSession implements Serializable {
 		_loginTime = loginTime;
 	}
 
-	public void setLoginUserId(long loginUserId) {
-		_loginUserId = loginUserId;
-	}
-
-	public void setOpenIdConnectFlowState(
-		OpenIdConnectFlowState openIdConnectFlowState) {
-
-		_openIdConnectFlowState = openIdConnectFlowState;
-	}
-
 	public void setRefreshToken(RefreshToken refreshToken) {
 		_refreshToken = refreshToken;
 	}
@@ -99,10 +81,7 @@ public class OpenIdConnectSession implements Serializable {
 
 	private AccessToken _accessToken;
 	private long _loginTime;
-	private long _loginUserId;
 	private final Nonce _nonce;
-	private OpenIdConnectFlowState _openIdConnectFlowState =
-		OpenIdConnectFlowState.INITIALIZED;
 	private final String _openIdProviderName;
 	private RefreshToken _refreshToken;
 	private final State _state;

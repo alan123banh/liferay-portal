@@ -24,11 +24,11 @@ import com.liferay.portal.kernel.comment.display.context.CommentTreeDisplayConte
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.trash.kernel.util.TrashUtil;
 
 import java.util.Locale;
 
@@ -81,7 +81,9 @@ public class DefaultCommentTreeDisplayContext
 			return false;
 		}
 
-		return !_discussionComment.isInTrash();
+		return !TrashUtil.isInTrash(
+			_discussionComment.getModelClassName(),
+			_discussionComment.getCommentId());
 	}
 
 	@Override
@@ -90,8 +92,8 @@ public class DefaultCommentTreeDisplayContext
 			return false;
 		}
 
-		return _discussionPermission.hasPermission(
-			_discussionComment, ActionKeys.DELETE_DISCUSSION);
+		return _discussionPermission.hasDeletePermission(
+			_discussionComment.getCommentId());
 	}
 
 	@Override
@@ -105,7 +107,12 @@ public class DefaultCommentTreeDisplayContext
 
 	@Override
 	public boolean isEditActionControlVisible() throws PortalException {
-		return hasUpdatePermission();
+		if (_discussionPermission == null) {
+			return false;
+		}
+
+		return _discussionPermission.hasUpdatePermission(
+			_discussionComment.getCommentId());
 	}
 
 	@Override
@@ -125,7 +132,9 @@ public class DefaultCommentTreeDisplayContext
 			return false;
 		}
 
-		return _discussionComment.isInTrash();
+		return !TrashUtil.isInTrash(
+			_discussionComment.getModelClassName(),
+			_discussionComment.getCommentId());
 	}
 
 	@Override
@@ -166,12 +175,8 @@ public class DefaultCommentTreeDisplayContext
 			return false;
 		}
 
-		if (_hasUpdatePermission == null) {
-			_hasUpdatePermission = _discussionPermission.hasPermission(
-				_discussionComment, ActionKeys.UPDATE_DISCUSSION);
-		}
-
-		return _hasUpdatePermission;
+		return _discussionPermission.hasUpdatePermission(
+			_discussionComment.getCommentId());
 	}
 
 	protected boolean hasViewPermission() throws PortalException {
@@ -251,6 +256,5 @@ public class DefaultCommentTreeDisplayContext
 	private final DiscussionPermission _discussionPermission;
 	private final DiscussionRequestHelper _discussionRequestHelper;
 	private final DiscussionTaglibHelper _discussionTaglibHelper;
-	private Boolean _hasUpdatePermission;
 
 }

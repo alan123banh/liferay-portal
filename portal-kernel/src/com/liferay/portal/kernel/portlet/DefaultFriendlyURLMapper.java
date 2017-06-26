@@ -16,7 +16,8 @@ package com.liferay.portal.kernel.portlet;
 
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.ObjectValuePair;
+import com.liferay.portal.kernel.model.PortletConstants;
+import com.liferay.portal.kernel.model.PortletInstance;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
@@ -265,16 +266,16 @@ public class DefaultFriendlyURLMapper extends BaseFriendlyURLMapper {
 		if (Validator.isNotNull(portletInstanceKey)) {
 			routeParameters.put("p_p_id", portletInstanceKey);
 
-			long userId = PortletIdCodec.decodeUserId(portletInstanceKey);
-			String instanceId = PortletIdCodec.decodeInstanceId(
-				portletInstanceKey);
+			PortletInstance portletInstance =
+				PortletInstance.fromPortletInstanceKey(portletInstanceKey);
 
 			routeParameters.put(
 				"userIdAndInstanceId",
-				PortletIdCodec.encodeUserIdAndInstanceId(userId, instanceId));
+				portletInstance.getUserIdAndInstanceId());
 
-			if (instanceId != null) {
-				routeParameters.put("instanceId", instanceId);
+			if (portletInstance.hasInstanceId()) {
+				routeParameters.put(
+					"instanceId", portletInstance.getInstanceId());
 			}
 		}
 
@@ -326,22 +327,18 @@ public class DefaultFriendlyURLMapper extends BaseFriendlyURLMapper {
 		}
 
 		if (Validator.isNotNull(userIdAndInstanceId)) {
-			PortletIdCodec.validatePortletName(getPortletId());
+			PortletInstance portletInstance =
+				PortletInstance.fromPortletNameAndUserIdAndInstanceId(
+					getPortletId(), userIdAndInstanceId);
 
-			ObjectValuePair<Long, String> objectValuePair =
-				PortletIdCodec.decodeUserIdAndInstanceId(userIdAndInstanceId);
-
-			return PortletIdCodec.encode(
-				getPortletId(), objectValuePair.getKey(),
-				objectValuePair.getValue());
+			return portletInstance.getPortletInstanceKey();
 		}
 
 		String instanceId = routeParameters.remove("instanceId");
 
 		if (Validator.isNotNull(instanceId)) {
-			PortletIdCodec.validatePortletName(getPortletId());
-
-			return PortletIdCodec.encode(getPortletId(), instanceId);
+			return PortletConstants.assemblePortletId(
+				getPortletId(), instanceId);
 		}
 
 		if (!isAllPublicRenderParameters(routeParameters)) {

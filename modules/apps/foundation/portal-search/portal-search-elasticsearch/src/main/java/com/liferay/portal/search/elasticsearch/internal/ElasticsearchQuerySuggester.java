@@ -28,7 +28,6 @@ import com.liferay.portal.kernel.search.suggest.SuggesterResult;
 import com.liferay.portal.kernel.search.suggest.SuggesterResults;
 import com.liferay.portal.kernel.search.suggest.SuggesterTranslator;
 import com.liferay.portal.kernel.search.suggest.TermSuggester;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.search.elasticsearch.connection.ElasticsearchConnectionManager;
 import com.liferay.portal.search.elasticsearch.index.IndexNameBuilder;
 
@@ -162,6 +161,8 @@ public class ElasticsearchQuerySuggester extends BaseQuerySuggester {
 	public String[] suggestKeywordQueries(
 		SearchContext searchContext, int max) {
 
+		List<String> keywordQueries = new ArrayList<>();
+
 		String field = DocumentImpl.getLocalizedName(
 			searchContext.getLocale(), Field.KEYWORD_SEARCH);
 
@@ -176,15 +177,8 @@ public class ElasticsearchQuerySuggester extends BaseQuerySuggester {
 		SuggesterResult suggesterResult = suggesterResults.getSuggesterResult(
 			phraseSuggester.getName());
 
-		if (suggesterResult == null) {
-			return StringPool.EMPTY_ARRAY;
-		}
-
 		List<SuggesterResult.Entry> suggesterResultEntries =
 			suggesterResult.getEntries();
-
-		List<String> keywordQueries = new ArrayList<>(
-			suggesterResultEntries.size());
 
 		for (SuggesterResult.Entry suggesterResultEntry :
 				suggesterResultEntries) {

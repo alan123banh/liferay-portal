@@ -29,8 +29,6 @@ import com.liferay.portal.kernel.model.PortletPreferences;
 import com.liferay.portal.kernel.model.PortletPreferencesIds;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
-import com.liferay.portal.kernel.settings.PortletInstanceSettingsLocator;
-import com.liferay.portal.kernel.settings.Settings;
 import com.liferay.portal.kernel.spring.aop.Property;
 import com.liferay.portal.kernel.spring.aop.Retry;
 import com.liferay.portal.kernel.spring.aop.Skip;
@@ -169,12 +167,6 @@ public interface PortletPreferencesLocalService extends BaseLocalService,
 	public PortletPreferences updatePreferences(long ownerId, int ownerType,
 		long plid, java.lang.String portletId,
 		javax.portlet.PortletPreferences portletPreferences);
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public Settings getPortletInstanceSettings(long companyId, long groupId,
-		java.lang.String portletId,
-		PortletInstanceSettingsLocator portletInstanceSettingsLocator,
-		Settings portalPreferencesSettings);
 
 	/**
 	* Returns the number of portlet preferenceses.

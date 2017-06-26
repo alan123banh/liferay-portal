@@ -45,6 +45,9 @@ import java.util.Map;
  */
 public class PersistenceCallCheck extends AbstractCheck {
 
+	public static final String MSG_ILLEGAL_PERSISTENCE_CALL =
+		"persistence.call.illegal";
+
 	@Override
 	public int[] getDefaultTokens() {
 		return new int[] {TokenTypes.CLASS_DEF};
@@ -141,7 +144,7 @@ public class PersistenceCallCheck extends AbstractCheck {
 			}
 
 			if (!packageName.startsWith(importName.substring(0, pos))) {
-				log(lineNo, _MSG_ILLEGAL_PERSISTENCE_CALL, importName);
+				log(lineNo, MSG_ILLEGAL_PERSISTENCE_CALL, importName);
 			}
 		}
 	}
@@ -204,7 +207,7 @@ public class PersistenceCallCheck extends AbstractCheck {
 		}
 
 		if (!packageName.startsWith(fullyQualifiedTypeName.substring(0, pos))) {
-			log(lineNo, _MSG_ILLEGAL_PERSISTENCE_CALL, fullyQualifiedTypeName);
+			log(lineNo, MSG_ILLEGAL_PERSISTENCE_CALL, fullyQualifiedTypeName);
 		}
 	}
 
@@ -265,8 +268,5 @@ public class PersistenceCallCheck extends AbstractCheck {
 
 		return variablesMap;
 	}
-
-	private static final String _MSG_ILLEGAL_PERSISTENCE_CALL =
-		"persistence.call.illegal";
 
 }

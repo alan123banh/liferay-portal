@@ -23,8 +23,7 @@ import org.osgi.service.component.annotations.Component;
 	immediate = true,
 	property = {
 		"auth.public.path=/portal/wedeploy/access_token",
-		"auth.public.path=/portal/wedeploy/authorize",
-		"auth.public.path=/portal/wedeploy/user"
+		"auth.public.path=/portal/wedeploy/authorize"
 	},
 	service = Object.class
 )

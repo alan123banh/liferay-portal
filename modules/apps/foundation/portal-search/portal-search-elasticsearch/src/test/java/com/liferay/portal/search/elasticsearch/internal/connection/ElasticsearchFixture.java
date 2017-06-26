@@ -14,7 +14,6 @@
 
 package com.liferay.portal.search.elasticsearch.internal.connection;
 
-import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.search.elasticsearch.configuration.ElasticsearchConfiguration;
@@ -22,7 +21,6 @@ import com.liferay.portal.search.elasticsearch.internal.cluster.ClusterSettingsC
 import com.liferay.portal.search.elasticsearch.internal.cluster.UnicastSettingsContributor;
 import com.liferay.portal.search.elasticsearch.settings.BaseSettingsContributor;
 import com.liferay.portal.search.elasticsearch.settings.ClientSettingsHelper;
-import com.liferay.portal.util.FileImpl;
 
 import java.io.File;
 
@@ -71,9 +69,6 @@ public class ElasticsearchFixture implements IndicesAdminClientSupplier {
 		deleteTmpDir();
 
 		_embeddedElasticsearchConnection = createElasticsearchConnection();
-
-		ReflectionTestUtil.setFieldValue(
-			_embeddedElasticsearchConnection, "_file", new FileImpl());
 	}
 
 	public void destroyNode() throws Exception {

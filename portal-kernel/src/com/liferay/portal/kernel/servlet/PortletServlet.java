@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletSession;
 import com.liferay.portal.kernel.portlet.PortletFilterUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
-import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.IOException;
@@ -119,7 +118,7 @@ public class PortletServlet extends HttpServlet {
 		HttpServletRequest request, PortletRequest portletRequest) {
 
 		LiferayPortletRequest liferayPortletRequest =
-			PortalUtil.getLiferayPortletRequest(portletRequest);
+			(LiferayPortletRequest)portletRequest;
 
 		Portlet portlet = liferayPortletRequest.getPortlet();
 

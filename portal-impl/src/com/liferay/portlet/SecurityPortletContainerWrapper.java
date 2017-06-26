@@ -115,13 +115,6 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 	}
 
 	@Override
-	public void processPublicRenderParameters(
-		HttpServletRequest request, Layout layout) {
-
-		_portletContainer.processPublicRenderParameters(request, layout);
-	}
-
-	@Override
 	public void render(
 			HttpServletRequest request, HttpServletResponse response,
 			Portlet portlet)

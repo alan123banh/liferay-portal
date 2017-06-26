@@ -23,7 +23,7 @@ import com.liferay.exportimport.kernel.lar.PortletDataHandlerBoolean;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerControl;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
-import com.liferay.portal.kernel.comment.CommentManager;
+import com.liferay.portal.kernel.comment.CommentManagerUtil;
 import com.liferay.portal.kernel.comment.DiscussionStagingHandler;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -38,7 +38,6 @@ import javax.portlet.PortletPreferences;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Gergely Mathe
@@ -57,7 +56,7 @@ public class PageCommentsPortletDataHandler extends BasePortletDataHandler {
 	@Override
 	public StagedModelType[] getDeletionSystemEventStagedModelTypes() {
 		DiscussionStagingHandler discussionStagingHandler =
-			_commentManager.getDiscussionStagingHandler();
+			CommentManagerUtil.getDiscussionStagingHandler();
 
 		if (discussionStagingHandler == null) {
 			return new StagedModelType[0];
@@ -75,7 +74,7 @@ public class PageCommentsPortletDataHandler extends BasePortletDataHandler {
 	@Override
 	public PortletDataHandlerControl[] getExportControls() {
 		DiscussionStagingHandler discussionStagingHandler =
-			_commentManager.getDiscussionStagingHandler();
+			CommentManagerUtil.getDiscussionStagingHandler();
 
 		if (discussionStagingHandler == null) {
 			return new PortletDataHandlerControl[0];
@@ -118,7 +117,7 @@ public class PageCommentsPortletDataHandler extends BasePortletDataHandler {
 			return portletPreferences;
 		}
 
-		_commentManager.deleteGroupComments(
+		CommentManagerUtil.deleteGroupComments(
 			portletDataContext.getScopeGroupId());
 
 		return portletPreferences;
@@ -131,7 +130,7 @@ public class PageCommentsPortletDataHandler extends BasePortletDataHandler {
 		throws Exception {
 
 		DiscussionStagingHandler discussionStagingHandler =
-			_commentManager.getDiscussionStagingHandler();
+			CommentManagerUtil.getDiscussionStagingHandler();
 
 		if (discussionStagingHandler == null) {
 			return StringPool.BLANK;
@@ -162,7 +161,7 @@ public class PageCommentsPortletDataHandler extends BasePortletDataHandler {
 		throws Exception {
 
 		ExportImportProcessCallbackRegistryUtil.registerCallback(
-			new ImportCommentsCallable(_commentManager, portletDataContext));
+			new ImportCommentsCallable(portletDataContext));
 
 		return null;
 	}
@@ -174,7 +173,7 @@ public class PageCommentsPortletDataHandler extends BasePortletDataHandler {
 		throws Exception {
 
 		DiscussionStagingHandler discussionStagingHandler =
-			_commentManager.getDiscussionStagingHandler();
+			CommentManagerUtil.getDiscussionStagingHandler();
 
 		if (discussionStagingHandler == null) {
 			return;
@@ -187,23 +186,16 @@ public class PageCommentsPortletDataHandler extends BasePortletDataHandler {
 		actionableDynamicQuery.performCount();
 	}
 
-	@Reference
-	private CommentManager _commentManager;
-
 	private static class ImportCommentsCallable implements Callable<Void> {
 
-		public ImportCommentsCallable(
-			CommentManager commentManager,
-			PortletDataContext portletDataContext) {
-
-			_commentManager = commentManager;
+		public ImportCommentsCallable(PortletDataContext portletDataContext) {
 			_portletDataContext = portletDataContext;
 		}
 
 		@Override
 		public Void call() throws PortalException {
 			DiscussionStagingHandler discussionStagingHandler =
-				_commentManager.getDiscussionStagingHandler();
+				CommentManagerUtil.getDiscussionStagingHandler();
 
 			if (discussionStagingHandler == null) {
 				return null;
@@ -232,7 +224,6 @@ public class PageCommentsPortletDataHandler extends BasePortletDataHandler {
 			return null;
 		}
 
-		private final CommentManager _commentManager;
 		private final PortletDataContext _portletDataContext;
 
 	}
