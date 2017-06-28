@@ -193,6 +193,8 @@
 		<execute macro="WebContent#selectLocale">
 			<var name="locale" value="${locale}" />
 		</execute>
+
+		<execute function="Pause" locator1="5000" />
 	</command>
 
 	<command name="addLocalizedPGViaWCD">
