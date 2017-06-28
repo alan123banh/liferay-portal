@@ -324,7 +324,7 @@
 
 		<execute function="AssertClick" locator1="Button#REPLY" value1="Reply" />
 
-		<execute function="Pause" value="5000" /> 
+		<execute function="Pause" locator1="5000" /> 
 
 		<execute function="AssertElementPresent" locator1="Comments#THUMBS_UP" />
 		<execute function="AssertElementPresent" locator1="Comments#THUMBS_DOWN" />

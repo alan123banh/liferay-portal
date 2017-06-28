@@ -194,7 +194,7 @@
 			<var name="locale" value="${locale}" />
 		</execute>
 
-		<execute function="Pause" locator="5000" />
+		<execute function="Pause" locator1="5000" />
 	</command>
 
 	<command name="addLocalizedPGViaWCD">
