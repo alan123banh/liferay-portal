@@ -8,6 +8,8 @@
 	</command>
 
 	<command name="gotoNotifications">
+		<execute function="Pause" locator1="1000"/>
+		
 		<if>
 			<condition function="IsElementPresent" locator1="Notifications#USER_BAR_BADGE_COUNT" />
 			<then>
