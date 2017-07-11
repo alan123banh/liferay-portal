@@ -49,6 +49,8 @@
 	</tear-down>
 
 	<command name="ViewNewSiteMember" priority="4">
+		<property name="portal.acceptance" value1="bwah"/>
+		
 		<execute macro="ProductMenu#gotoControlPanelSites">
 			<var name="portlet" value="Sites" />
 		</execute>
