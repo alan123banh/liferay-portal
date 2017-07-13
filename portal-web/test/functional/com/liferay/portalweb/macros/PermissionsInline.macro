@@ -77,6 +77,14 @@
 		</for>
 	</command>
 
+	<command name="checkDeleteNotActive">
+		<var name="key_dmFolderName" value="${dmFolderName}"/>
+		
+		<execute function="Check" locator1="DocumentsAndMedia#ICON_FOLDER_CHECKBOX" />
+
+		<execute function="AssertElementNotPresent" locator1="Button_RECYCLE_BIN" />
+	</command>
+
 	<command name="gotoBlogsCP">
 		<if>
 			<isset var="siteName" />

@@ -323,9 +323,9 @@
 			<var name="pageName" value="Documents and Media Page" />
 		</execute>
 
-		<var name="key_dmFolderName" value="DM Folder Name" />
-
-		<execute function="AssertElementNotPresent" locator1="DocumentsAndMedia#ICON_FOLDER_CHECKBOX" />
+		<execute macro="PermissionsInline#checkDeleteNotActive">
+			<var name="dmFolderName" value="DM Folder Name" />
+		</execute>
 
 		<execute macro="User#logoutAndLoginPG">
 			<var name="userLoginEmailAddress" value="test@liferay.com" />
@@ -393,9 +393,9 @@
 			<var name="pageName" value="Documents and Media Page" />
 		</execute>
 
-		<var name="key_dmFolderName" value="DM Folder Name" />
-
-		<execute function="AssertElementNotPresent" locator1="DocumentsAndMedia#ICON_FOLDER_CHECKBOX" />
+		<execute macro="PermissionsInline#checkDeleteNotActive">
+			<var name="dmFolderName" value="DM Folder Name" />
+		</execute>
 	</command>
 
 	<command name="ViewDMFolderGuestInline" priority="4">
