@@ -1,21 +1,17 @@
 <definition>
-	<command name="_applyChanges">
+	<command name="applyChanges">
 		<execute function="AssertClick" locator1="Button#APPLY_EFFECTS" value1="Apply" />
 	</command>
 
-	<command name="_saveFile">
-		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-	</command>
-
 	<command name="applyChangesAndSaveFile">
-		<execute macro="ImageEditor#_applyChanges" />
+		<execute macro="ImageEditor#applyChanges" />
 
 		<execute function="Pause" locator1="3000" />
 
-		<execute macro="ImageEditor#_saveFile" />
+		<execute macro="Button#clickSave" />
 	</command>
 
-	<command name="cancel Changes">
+	<command name="cancelChanges">
 		<execute function="AssertClick" locator1="Button#CANCEL_EFFECTS" value1="Cancel" />
 	</command>
 
