@@ -78,6 +78,8 @@
 	</command>
 
 	<command name="rotateImage">
+		<execute function="SelectFrame" locator1="IFrame#EDIT_ASSET" />
+		
 		<execute macro="ImageEditor#gotoRotateImage" />
 
 		<if>
