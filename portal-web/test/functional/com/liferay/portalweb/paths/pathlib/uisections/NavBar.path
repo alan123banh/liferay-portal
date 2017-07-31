@@ -124,6 +124,16 @@
 	<td></td>
 </tr>
 <tr>
+	<td>IFRAME_BASIC_SEARCH_FIELD</td>
+	<td>//body[contains(@class,'iframe-popup')]//div[contains(@class,'navbar-default')]//input[contains(@id,'keywords')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>IFRAME_BASIC_SEARCH_BUTTON</td>
+	<td>//body[contains(@class,'iframe-popup')]//div[contains(@class,'navbar-default')]//button[contains(@data-qa-id,'search')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>RECENT</td>
 	<td>//*[@data-qa-id='navigation']//a[contains(.,'Recent')] | //div[contains(@class,'navbar-default')]//a/span[contains(.,'Recent')]</td>
 	<td></td>
