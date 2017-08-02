@@ -1915,7 +1915,7 @@
 
 	<command name="ViewBlogsEntryWithImageEditedViaItemSelector" priority="4">
 		<property name="portal.acceptance" value="bwah" />
-		
+
 		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoSitesContent">
