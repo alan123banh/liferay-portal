@@ -33,7 +33,7 @@
 	</command>
 
 	<command name="ViewEntry" priority="5">
-		<property name="test.name.skip.portal.instance" value="OSGiTwitterportlet#ViewEntry" />
+		<property name="portal.acceptance" value="bwah" />
 
 		<execute macro="UserBar#gotoProfile" />
 
@@ -78,6 +78,8 @@
 		<execute function="Pause" locator1="3000" />
 
 		<execute function="Refresh" />
+
+		<execute function="Pause" locator1="3000" />
 
 		<execute macro="Twitter#viewFeedEntry">
 			<var name="entryContent" value="This is a tweet sent on Twitter." />
